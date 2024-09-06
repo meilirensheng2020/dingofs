@@ -452,9 +452,11 @@ int DiskCacheManager::TrimStop() {
   return 0;
 }
 
-void DiskCacheManager::InitMetrics(const std::string& fsName) {
+void DiskCacheManager::InitMetrics(const std::string& fsName,
+                                   std::shared_ptr<S3Metric> s3Metric) {
   metric_ = std::make_shared<DiskCacheMetric>(fsName);
-  cacheWrite_->InitMetrics(metric_);
+  // add s3Metric
+  cacheWrite_->InitMetrics(metric_, s3Metric);
   cacheRead_->InitMetrics(metric_);
   // this function move to here from init，
   // Otherwise, you can't get the original metric.

@@ -23,6 +23,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
 #include "curvefs/src/client/s3/disk_cache_manager.h"
 #include "curvefs/test/client/mock_client_s3.h"
@@ -270,7 +271,8 @@ TEST_F(TestDiskCacheManager, TrimRun_1) {
   EXPECT_CALL(*wrapper, stat(NotNull(), NotNull())).WillOnce(Return(-1));
   EXPECT_CALL(*wrapper, mkdir(_, _)).WillOnce(Return(-1));
   diskCacheManager_->Init(client_, option);
-  diskCacheManager_->InitMetrics("test");
+  auto s3Metric_ = std::make_shared<S3Metric>("test");
+  diskCacheManager_->InitMetrics("test", s3Metric_);
   EXPECT_CALL(*wrapper, statfs(NotNull(), NotNull()))
       .WillRepeatedly(Return(-1));
   (void)diskCacheManager_->TrimRun();
@@ -303,7 +305,8 @@ TEST_F(TestDiskCacheManager, TrimCache_2) {
   EXPECT_CALL(*wrapper, stat(NotNull(), NotNull())).WillOnce(Return(-1));
   EXPECT_CALL(*wrapper, mkdir(_, _)).WillOnce(Return(-1));
   diskCacheManager_->Init(client_, option);
-  diskCacheManager_->InitMetrics("test");
+  auto s3Metric_ = std::make_shared<S3Metric>("test");
+  diskCacheManager_->InitMetrics("test", s3Metric_);
   diskCacheManager_->AddCache("test");
   (void)diskCacheManager_->TrimRun();
   sleep(6);
@@ -337,7 +340,8 @@ TEST_F(TestDiskCacheManager, TrimCache_4) {
   EXPECT_CALL(*wrapper, mkdir(_, _)).WillOnce(Return(-1));
   option.objectPrefix = 0;
   diskCacheManager_->Init(client_, option);
-  diskCacheManager_->InitMetrics("test");
+  auto s3Metric_ = std::make_shared<S3Metric>("test");
+  diskCacheManager_->InitMetrics("test", s3Metric_);
   diskCacheManager_->AddCache("test");
   (void)diskCacheManager_->TrimRun();
   sleep(6);
@@ -372,7 +376,8 @@ TEST_F(TestDiskCacheManager, TrimCache_5) {
   EXPECT_CALL(*wrapper, stat(NotNull(), NotNull())).WillOnce(Return(-1));
   EXPECT_CALL(*wrapper, mkdir(_, _)).WillOnce(Return(-1));
   diskCacheManager_->Init(client_, option);
-  diskCacheManager_->InitMetrics("test");
+  auto s3Metric_ = std::make_shared<S3Metric>("test");
+  diskCacheManager_->InitMetrics("test", s3Metric_);
   diskCacheManager_->AddCache("test");
   (void)diskCacheManager_->TrimRun();
   sleep(6);
@@ -415,7 +420,8 @@ TEST_F(TestDiskCacheManager, TrimCache_noexceed) {
       .WillOnce(Return(-1))
       .WillOnce(DoAll(SetArgPointee<1>(rf), Return(0)));
   (void)diskCacheManager_->TrimRun();
-  diskCacheManager_->InitMetrics("test");
+  auto s3Metric_ = std::make_shared<S3Metric>("test");
+  diskCacheManager_->InitMetrics("test", s3Metric_);
   sleep(6);
   diskCacheManager_->UmountDiskCache();
 }
@@ -458,7 +464,8 @@ TEST_F(TestDiskCacheManager, TrimCache_exceed) {
       .WillOnce(Return(-1))
       .WillOnce(Return(0));
   diskCacheManager_->TrimRun();
-  diskCacheManager_->InitMetrics("test");
+  auto s3Metric_ = std::make_shared<S3Metric>("test");
+  diskCacheManager_->InitMetrics("test", s3Metric_);
   sleep(6);
   diskCacheManager_->UmountDiskCache();
 }

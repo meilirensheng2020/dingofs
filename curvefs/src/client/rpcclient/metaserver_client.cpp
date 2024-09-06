@@ -67,6 +67,7 @@ using GetOrModifyS3ChunkInfoExcutor = TaskExecutor;
 using UpdateVolumeExtentExecutor = TaskExecutor;
 using GetVolumeExtentExecutor = TaskExecutor;
 
+using ::curvefs::common::LatencyListUpdater;
 using ::curvefs::common::LatencyUpdater;
 using ::curvefs::common::StreamConnection;
 using ::curvefs::common::StreamOptions;
@@ -125,8 +126,14 @@ MetaStatusCode MetaServerClientImpl::GetDentry(uint32_t fsId, uint64_t inodeid,
                                                Dentry* out) {
   auto task = RPCTask {
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.getDentry.qps.count << 1;
-    LatencyUpdater updater(&metric_.getDentry.latency);
+    metric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updater(
+        {&metric_.getDentry.latency, &metric_.getAllOperation.latency});
+
     GetDentryResponse response;
     GetDentryRequest request;
     request.set_poolid(poolID);
@@ -188,8 +195,14 @@ MetaStatusCode MetaServerClientImpl::ListDentry(uint32_t fsId, uint64_t inodeid,
                                                 std::list<Dentry>* dentryList) {
   auto task = RPCTask {
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.listDentry.qps.count << 1;
-    LatencyUpdater updater(&metric_.listDentry.latency);
+    metric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updater(
+        {&metric_.listDentry.latency, &metric_.getAllOperation.latency});
+
     ListDentryRequest request;
     ListDentryResponse response;
     request.set_poolid(poolID);
@@ -253,8 +266,16 @@ MetaStatusCode MetaServerClientImpl::CreateDentry(const Dentry& dentry) {
   auto task = RPCTask {
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.createDentry.qps.count << 1;
-    LatencyUpdater updater(&metric_.createDentry.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.createDentry.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     CreateDentryResponse response;
     CreateDentryRequest request;
     request.set_poolid(poolID);
@@ -324,8 +345,16 @@ MetaStatusCode MetaServerClientImpl::DeleteDentry(uint32_t fsId,
   auto task = RPCTask {
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.deleteDentry.qps.count << 1;
-    LatencyUpdater updater(&metric_.deleteDentry.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.deleteDentry.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     DeleteDentryResponse response;
     DeleteDentryRequest request;
     request.set_poolid(poolID);
@@ -384,8 +413,16 @@ MetaStatusCode MetaServerClientImpl::PrepareRenameTx(
     (void)txId;
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.prepareRenameTx.qps.count << 1;
-    LatencyUpdater updater(&metric_.prepareRenameTx.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.prepareRenameTx.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     PrepareRenameTxRequest request;
     PrepareRenameTxResponse response;
     request.set_poolid(poolID);
@@ -438,8 +475,14 @@ MetaStatusCode MetaServerClientImpl::GetInode(uint32_t fsId, uint64_t inodeid,
   auto task = RPCTask {
     (void)txId;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.getInode.qps.count << 1;
-    LatencyUpdater updater(&metric_.getInode.latency);
+    metric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updater(
+        {&metric_.getInode.latency, &metric_.getAllOperation.latency});
+
     GetInodeRequest request;
     GetInodeResponse response;
     request.set_poolid(poolID);
@@ -566,8 +609,7 @@ void BatchGetInodeAttrRpcDone::Run() {
 
   MetaStatusCode ret = response.statuscode();
   if (ret != MetaStatusCode::OK) {
-    LOG(WARNING) << "batchGetInodeAttr failed"
-                 << ", errcode = " << ret
+    LOG(WARNING) << "batchGetInodeAttr failed" << ", errcode = " << ret
                  << ", errmsg = " << MetaStatusCode_Name(ret);
   } else if (response.has_appliedindex()) {
     metaCache->UpdateApplyIndex(taskCtx->target.groupID,
@@ -607,8 +649,14 @@ MetaStatusCode MetaServerClientImpl::BatchGetInodeAttr(
     auto task = RPCTask {
       (void)txId;
       (void)taskExecutorDone;
+
+      // update metaserver operation metrics stats
+      // recorderLists store the bvar::LatencyRecorder list
       metric_.batchGetInodeAttr.qps.count << 1;
-      LatencyUpdater updater(&metric_.batchGetInodeAttr.latency);
+      metric_.getAllOperation.qps.count << 1;
+      LatencyListUpdater updater({&metric_.batchGetInodeAttr.latency,
+                                  &metric_.getAllOperation.latency});
+
       BatchGetInodeAttrRequest request;
       BatchGetInodeAttrResponse response;
       request.set_poolid(poolID);
@@ -671,8 +719,14 @@ MetaStatusCode MetaServerClientImpl::BatchGetInodeAttrAsync(
 
   auto task = AsyncRPCTask {
     (void)txId;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.batchGetInodeAttr.qps.count << 1;
-    LatencyUpdater updater(&metric_.batchGetInodeAttr.latency);
+    metric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updater(
+        {&metric_.batchGetInodeAttr.latency, &metric_.getAllOperation.latency});
+
     BatchGetInodeAttrRequest request;
     BatchGetInodeAttrResponse response;
     request.set_poolid(poolID);
@@ -716,8 +770,14 @@ MetaStatusCode MetaServerClientImpl::BatchGetXAttr(
     auto task = RPCTask {
       (void)txId;
       (void)taskExecutorDone;
+
+      // update metaserver operation metrics stats
+      // recorderLists store the bvar::LatencyRecorder list
       metric_.batchGetXattr.qps.count << 1;
-      LatencyUpdater updater(&metric_.batchGetXattr.latency);
+      metric_.getAllOperation.qps.count << 1;
+      LatencyListUpdater updater(
+          {&metric_.batchGetXattr.latency, &metric_.getAllOperation.latency});
+
       BatchGetXAttrRequest request;
       BatchGetXAttrResponse response;
       request.set_poolid(poolID);
@@ -776,8 +836,15 @@ MetaStatusCode MetaServerClientImpl::UpdateInode(
     (void)txId;
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.updateInode.qps.count << 1;
-    LatencyUpdater updater(&metric_.updateInode.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.updateInode.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
 
     UpdateInodeRequest req = request;
     req.set_poolid(poolID);
@@ -940,8 +1007,7 @@ void UpdateInodeRpcDone::Run() {
     return;
   }
 
-  VLOG(6) << "UpdateInode done, "
-          << "response: " << response.DebugString();
+  VLOG(6) << "UpdateInode done, " << "response: " << response.DebugString();
   done_->SetRetCode(ret);
 }
 
@@ -950,7 +1016,15 @@ void MetaServerClientImpl::UpdateInodeAsync(const UpdateInodeRequest& request,
   auto task = AsyncRPCTask {
     (void)txId;
     (void)applyIndex;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.updateInode.qps.count << 1;
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.updateInode.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
 
     UpdateInodeRequest req = request;
     req.set_poolid(poolID);
@@ -1032,8 +1106,16 @@ MetaStatusCode MetaServerClientImpl::GetOrModifyS3ChunkInfo(
     (void)txId;
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.appendS3ChunkInfo.qps.count << 1;
-    LatencyUpdater updater(&metric_.appendS3ChunkInfo.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.appendS3ChunkInfo.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     GetOrModifyS3ChunkInfoRequest request;
     GetOrModifyS3ChunkInfoResponse response;
     request.set_poolid(poolID);
@@ -1090,8 +1172,7 @@ MetaStatusCode MetaServerClientImpl::GetOrModifyS3ChunkInfo(
         CHECK(out != nullptr) << "out ptr should be set.";
         auto status = connection->WaitAllDataReceived();
         if (status != StreamStatus::STREAM_OK) {
-          LOG(ERROR) << "Receive stream data failed"
-                     << ", status=" << status;
+          LOG(ERROR) << "Receive stream data failed" << ", status=" << status;
           return MetaStatusCode::RPC_STREAM_ERROR;
         }
       }
@@ -1175,7 +1256,15 @@ void MetaServerClientImpl::GetOrModifyS3ChunkInfoAsync(
   auto task = AsyncRPCTask {
     (void)txId;
     (void)applyIndex;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.appendS3ChunkInfo.qps.count << 1;
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.appendS3ChunkInfo.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
 
     GetOrModifyS3ChunkInfoRequest request;
     request.set_poolid(poolID);
@@ -1208,8 +1297,16 @@ MetaStatusCode MetaServerClientImpl::CreateInode(const InodeParam& param,
     (void)txId;
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.createInode.qps.count << 1;
-    LatencyUpdater updater(&metric_.createInode.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.createInode.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     CreateInodeResponse response;
     CreateInodeRequest request;
     request.set_poolid(poolID);
@@ -1280,8 +1377,16 @@ MetaStatusCode MetaServerClientImpl::CreateManageInode(const InodeParam& param,
     (void)txId;
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.createInode.qps.count << 1;
-    LatencyUpdater updater(&metric_.createInode.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.createInode.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     CreateManageInodeResponse response;
     CreateManageInodeRequest request;
     request.set_poolid(poolID);
@@ -1346,8 +1451,16 @@ MetaStatusCode MetaServerClientImpl::DeleteInode(uint32_t fsId,
     (void)txId;
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.deleteInode.qps.count << 1;
-    LatencyUpdater updater(&metric_.deleteInode.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.deleteInode.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     DeleteInodeResponse response;
     DeleteInodeRequest request;
     request.set_poolid(poolID);
@@ -1448,7 +1561,16 @@ void MetaServerClientImpl::AsyncUpdateVolumeExtent(
   auto task = AsyncRPCTask {
     (void)txId;
     (void)applyIndex;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.updateVolumeExtent.qps.count << 1;
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater({&metric_.updateVolumeExtent.latency,
+                                &metric_.getTxnOperation.latency,
+                                &metric_.getAllOperation.latency});
+
     metaserver::UpdateVolumeExtentRequest request;
     SET_COMMON_FIELDS;
     request.set_allocated_extents(new VolumeExtentList{extents});
@@ -1495,8 +1617,15 @@ MetaStatusCode MetaServerClientImpl::GetVolumeExtent(
     (void)txId;
     (void)applyIndex;
     (void)taskExecutorDone;
+
+    // update metaserver operation metrics stats
+    // recorderLists store the bvar::LatencyRecorder list
     metric_.getVolumeExtent.qps.count << 1;
-    LatencyUpdater updater(&metric_.getVolumeExtent.latency);
+    metric_.getAllOperation.qps.count << 1;
+    metric_.getTxnOperation.qps.count << 1;
+    LatencyListUpdater updater(
+        {&metric_.getVolumeExtent.latency, &metric_.getAllOperation.latency});
+
     metaserver::GetVolumeExtentRequest request;
     metaserver::GetVolumeExtentResponse response;
 

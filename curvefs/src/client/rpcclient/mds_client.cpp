@@ -33,6 +33,7 @@ namespace curvefs {
 namespace client {
 namespace rpcclient {
 
+using ::curvefs::common::LatencyListUpdater;
 using ::curvefs::common::LatencyUpdater;
 using ::curvefs::mds::space::SpaceErrCode;
 using ::curvefs::mds::space::SpaceErrCode_Name;
@@ -62,8 +63,11 @@ FSStatusCode MdsClientImpl::MountFs(const std::string& fsName,
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // mount fs metrics information
     mdsClientMetric_.mountFs.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.mountFs.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.mountFs.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     MountFsResponse response;
     mdsbasecli_->MountFs(fsName, mountPt, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -93,8 +97,11 @@ FSStatusCode MdsClientImpl::UmountFs(const std::string& fsName,
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // unmount fs metrics information
     mdsClientMetric_.umountFs.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.umountFs.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.umountFs.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     UmountFsResponse response;
     mdsbasecli_->UmountFs(fsName, mountPt, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -120,8 +127,11 @@ FSStatusCode MdsClientImpl::GetFsInfo(const std::string& fsName,
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // getfsinfo metrics information
     mdsClientMetric_.getFsInfo.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.getFsInfo.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.getFsInfo.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     GetFsInfoResponse response;
     mdsbasecli_->GetFsInfo(fsName, &response, cntl, channel);
 
@@ -150,8 +160,11 @@ FSStatusCode MdsClientImpl::GetFsInfo(uint32_t fsId, FsInfo* fsInfo) {
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // getfsinfo metrics information
     mdsClientMetric_.getFsInfo.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.getFsInfo.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.getFsInfo.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     GetFsInfoResponse response;
     mdsbasecli_->GetFsInfo(fsId, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -211,8 +224,11 @@ bool MdsClientImpl::GetMetaServerInfo(
     (void)addrindex;
     (void)rpctimeoutMS;
     (void)addrindex;
+    // getMetaServerInfo metrics information
     mdsClientMetric_.getMetaServerInfo.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.getMetaServerInfo.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.getMetaServerInfo.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     GetMetaServerInfoResponse response;
     mdsbasecli_->GetMetaServerInfo(port, ip, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -249,9 +265,12 @@ bool MdsClientImpl::GetMetaServerListInCopysets(
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // getMetaServerListInCopysets metrics information
     mdsClientMetric_.getMetaServerListInCopysets.qps.count << 1;
-    LatencyUpdater updater(
-        &mdsClientMetric_.getMetaServerListInCopysets.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList(
+        {&mdsClientMetric_.getMetaServerListInCopysets.latency,
+         &mdsClientMetric_.getAllOperation.latency});
     GetMetaServerListInCopySetsResponse response;
     mdsbasecli_->GetMetaServerListInCopysets(logicalpooid, copysetidvec,
                                              &response, cntl, channel);
@@ -299,8 +318,11 @@ bool MdsClientImpl::CreatePartition(
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // CreatePartition metrics information
     mdsClientMetric_.createPartition.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.createPartition.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.createPartition.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     CreatePartitionResponse response;
     mdsbasecli_->CreatePartition(fsID, count, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -345,8 +367,12 @@ bool MdsClientImpl::GetCopysetOfPartitions(
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // GetCopysetOfPartitions metrics information
     mdsClientMetric_.getCopysetOfPartitions.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.getCopysetOfPartitions.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList(
+        {&mdsClientMetric_.getCopysetOfPartitions.latency,
+         &mdsClientMetric_.getAllOperation.latency});
     GetCopysetOfPartitionResponse response;
     mdsbasecli_->GetCopysetOfPartitions(partitionIDList, &response, cntl,
                                         channel);
@@ -389,8 +415,11 @@ bool MdsClientImpl::ListPartition(uint32_t fsID,
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // listPartition metrics information
     mdsClientMetric_.listPartition.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.listPartition.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.listPartition.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     ListPartitionResponse response;
     mdsbasecli_->ListPartition(fsID, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -426,8 +455,12 @@ bool MdsClientImpl::AllocOrGetMemcacheCluster(uint32_t fsId,
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // AllocOrGetMemcacheCluster metrics information
     mdsClientMetric_.allocOrGetMemcacheCluster.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.allocOrGetMemcacheCluster.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList(
+        {&mdsClientMetric_.allocOrGetMemcacheCluster.latency,
+         &mdsClientMetric_.getAllOperation.latency});
     mds::topology::AllocOrGetMemcacheClusterResponse response;
     mdsbasecli_->AllocOrGetMemcacheCluster(fsId, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -457,8 +490,11 @@ FSStatusCode MdsClientImpl::AllocS3ChunkId(uint32_t fsId, uint32_t idNum,
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // AllocS3ChunkId metrics information
     mdsClientMetric_.allocS3ChunkId.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.allocS3ChunkId.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.allocS3ChunkId.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     AllocateS3ChunkResponse response;
     mdsbasecli_->AllocS3ChunkId(fsId, idNum, &response, cntl, channel);
     if (cntl->Failed()) {
@@ -489,8 +525,11 @@ FSStatusCode MdsClientImpl::RefreshSession(
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
+    // RefreshSession metrics information
     mdsClientMetric_.refreshSession.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.refreshSession.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.refreshSession.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     RefreshSessionRequest request;
     RefreshSessionResponse response;
     *request.mutable_txids() = {txIds.begin(), txIds.end()};
@@ -532,8 +571,11 @@ FSStatusCode MdsClientImpl::GetLatestTxId(const GetLatestTxIdRequest& request,
     (void)addrindex;
     (void)rpctimeoutMS;
     VLOG(3) << "GetLatestTxId [request]: " << request.DebugString();
+    // GetLatestTxId metrics information
     mdsClientMetric_.getLatestTxId.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.getLatestTxId.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.getLatestTxId.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     mdsbasecli_->GetLatestTxId(request, response, cntl, channel);
     if (cntl->Failed()) {
       mdsClientMetric_.getLatestTxId.eps.count << 1;
@@ -568,8 +610,11 @@ FSStatusCode MdsClientImpl::CommitTx(const CommitTxRequest& request) {
     (void)addrindex;
     (void)rpctimeoutMS;
     VLOG(3) << "CommitTx [request]: " << request.DebugString();
+    // CommitTx metrics information
     mdsClientMetric_.commitTx.qps.count << 1;
-    LatencyUpdater updater(&mdsClientMetric_.commitTx.latency);
+    mdsClientMetric_.getAllOperation.qps.count << 1;
+    LatencyListUpdater updaterList({&mdsClientMetric_.commitTx.latency,
+                                    &mdsClientMetric_.getAllOperation.latency});
     CommitTxResponse response;
     mdsbasecli_->CommitTx(request, &response, cntl, channel);
 

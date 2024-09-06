@@ -108,7 +108,8 @@ class DiskCacheManager {
    */
   int TrimStop();
 
-  void InitMetrics(const std::string& fsName);
+  void InitMetrics(const std::string& fsName,
+                   std::shared_ptr<S3Metric> s3Metric);
 
   /**
    * @brief: has got the origin used size or not.

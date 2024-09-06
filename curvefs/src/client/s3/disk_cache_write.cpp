@@ -32,6 +32,8 @@
 
 #include "curvefs/src/common/s3util.h"
 
+using curvefs::client::metric::S3Metric;
+
 namespace curvefs {
 
 namespace client {
@@ -139,10 +141,17 @@ int DiskCacheWrite::UploadFile(const std::string& name,
       [&, buffer, syncTask,
        name](const std::shared_ptr<PutObjectAsyncContext>& context) {
         if (context->retCode == 0) {
-          if (metric_ != nullptr) {
-            metric_->writeS3.bps.count << context->bufferSize;
-            metric_->writeS3.qps.count << 1;
-            metric_->writeS3.latency
+          //   if (metric_ != nullptr) {
+          //     metric_->writeS3.bps.count << context->bufferSize;
+          //     metric_->writeS3.qps.count << 1;
+          //     metric_->writeS3.latency
+          //         << (butil::cpuwide_time_us() - context->startTime);
+          //   }
+          // collect metric when async write data from disk to s3
+          if (s3Metric_ != nullptr) {
+            s3Metric_->adaptorWriteS3.bps.count << context->bufferSize;
+            s3Metric_->adaptorWriteS3.qps.count << 1;
+            s3Metric_->adaptorWriteS3.latency
                 << (butil::cpuwide_time_us() - context->startTime);
           }
           RemoveFile(context->key);
@@ -488,6 +497,10 @@ int DiskCacheWrite::WriteDiskFile(const std::string fileName, const char* buf,
     LOG(ERROR) << "close disk file error. errno = " << errno
                << ", file = " << fileName;
     return -1;
+  }
+
+  if (metric_ != nullptr) {
+    metric_->diskcacheWriteSizeSecond << length;
   }
 
   VLOG(6) << "WriteDiskFile success. name = " << fileName

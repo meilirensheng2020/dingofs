@@ -1,3 +1,4 @@
+
 /*
  *  Copyright (c) 2023 NetEase Inc.
  *
@@ -26,18 +27,18 @@ namespace curvefs {
 namespace client {
 namespace metric {
 
-const std::string MDSClientMetric::prefix = "curvefs_mds_client";  // NOLINT
+const std::string MDSClientMetric::prefix = "dingofs_mds_client";  // NOLINT
 const std::string MetaServerClientMetric::prefix =
-    "curvefs_metaserver_client";                              // NOLINT
-const std::string ClientOpMetric::prefix = "curvefs_client";  // NOLINT
+    "dingofs_metaserver_client";                            // NOLINT
+const std::string ClientOpMetric::prefix = "dingofs_fuse";  // NOLINT
 const std::string S3MultiManagerMetric::prefix =
-    "curvefs_client_manager";                                         // NOLINT
-const std::string FSMetric::prefix = "curvefs_client";                // NOLINT
-const std::string S3Metric::prefix = "curvefs_s3";                    // NOLINT
-const std::string DiskCacheMetric::prefix = "curvefs_disk_cache";     // NOLINT
-const std::string KVClientMetric::prefix = "curvefs_kvclient";        // NOLINT
+    "dingofs_client_manager";                                         // NOLINT
+const std::string FSMetric::prefix = "dingofs_filesystem";            // NOLINT
+const std::string S3Metric::prefix = "dingofs_s3";                    // NOLINT
+const std::string DiskCacheMetric::prefix = "dingofs_diskcache";      // NOLINT
+const std::string KVClientMetric::prefix = "dingofs_kvclient";        // NOLINT
 const std::string S3ChunkInfoMetric::prefix = "inode_s3_chunk_info";  // NOLINT
-const std::string WarmupManagerS3Metric::prefix = "curvefs_warmup";   // NOLINT
+const std::string WarmupManagerS3Metric::prefix = "dingofs_warmup";   // NOLINT
 
 }  // namespace metric
 }  // namespace client

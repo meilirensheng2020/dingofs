@@ -340,7 +340,8 @@ void S3ClientAdaptorImpl::InitMetrics(const std::string& fsName) {
   fsName_ = fsName;
   s3Metric_ = std::make_shared<S3Metric>(fsName);
   if (HasDiskCache()) {
-    diskCacheManagerImpl_->InitMetrics(fsName);
+    // add s3 metrics
+    diskCacheManagerImpl_->InitMetrics(fsName, s3Metric_);
   }
 }
 

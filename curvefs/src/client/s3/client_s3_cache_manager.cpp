@@ -29,6 +29,7 @@
 
 #include "absl/cleanup/cleanup.h"
 #include "absl/synchronization/blocking_counter.h"
+#include "client_s3_cache_manager.h"
 #include "curvefs/src/client/kvclient/kvclient_manager.h"
 #include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
@@ -481,8 +482,9 @@ bool FileCacheManager::ReadKVRequestFromLocalCache(const std::string& name,
   }
 
   if (s3ClientAdaptor_->s3Metric_) {
+    // add disk cache metrics
     s3ClientAdaptor_->CollectMetrics(
-        &s3ClientAdaptor_->s3Metric_->adaptorReadS3, len, start);
+        &s3ClientAdaptor_->s3Metric_->adaptorReadDiskCache, len, start);
   }
   return true;
 }
@@ -1476,6 +1478,7 @@ void ChunkCacheManager::WriteNewDataCache(S3ClientAdaptorImpl* s3ClientAdaptor,
                                   chunkPos, len, data, kvClientManager_);
   VLOG(9) << "WriteNewDataCache chunkPos:" << chunkPos << ", len:" << len
           << ", new len:" << dataCache->GetLen() << ",chunkIndex:" << index_;
+
   WriteLockGuard writeLockGuard(rwLockWrite_);
 
   auto ret = dataWCacheMap_.emplace(chunkPos, dataCache);
@@ -2338,12 +2341,20 @@ void DataCache::FlushTaskExecute(
   PutObjectAsyncCallBack s3cb =
       [&](const std::shared_ptr<PutObjectAsyncContext>& context) {
         if (context->retCode == 0) {
+          // collect metrics
           if (s3ClientAdaptor_->s3Metric_.get() != nullptr) {
-            s3ClientAdaptor_->CollectMetrics(
-                &s3ClientAdaptor_->s3Metric_->adaptorWriteS3,
-                context->bufferSize, context->startTime);
+            // collect write object to s3 metrics
+            if (CachePolicy::NCache == cachePolicy) {
+              s3ClientAdaptor_->CollectMetrics(
+                  &s3ClientAdaptor_->s3Metric_->adaptorWriteS3,
+                  context->bufferSize, context->startTime);
+            } else {
+              // collect write object to disk cache
+              s3ClientAdaptor_->CollectMetrics(
+                  &s3ClientAdaptor_->s3Metric_->adaptorWriteDiskCache,
+                  context->bufferSize, context->startTime);
+            }
           }
-
           if (CachePolicy::RCache == cachePolicy) {
             VLOG(9) << "write to read cache, name = " << context->key;
             s3ClientAdaptor_->GetDiskCacheManager()->Enqueue(context, true);

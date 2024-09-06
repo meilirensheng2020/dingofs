@@ -191,8 +191,9 @@ int DiskCacheManagerImpl::UmountDiskCache() {
   return 0;
 }
 
-void DiskCacheManagerImpl::InitMetrics(std::string fsName) {
-  diskCacheManager_->InitMetrics(fsName);
+void DiskCacheManagerImpl::InitMetrics(
+    std::string fsName, std::shared_ptr<S3Metric> s3Metric) {
+  diskCacheManager_->InitMetrics(fsName, s3Metric);
 }
 
 int DiskCacheManagerImpl::UploadWriteCacheByInode(const std::string& inode) {

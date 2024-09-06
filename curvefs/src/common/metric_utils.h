@@ -26,6 +26,7 @@
 #include <butil/time.h>
 #include <bvar/bvar.h>
 
+#include <vector>
 namespace curvefs {
 namespace common {
 
@@ -42,6 +43,33 @@ struct LatencyUpdater {
 
   bvar::LatencyRecorder* recorder;
   butil::Timer timer;
+};
+
+struct LatencyListUpdater {
+  explicit LatencyListUpdater(std::vector<bvar::LatencyRecorder*> recorderList)
+      : recorderList(recorderList) {
+    timer.start();
+  }
+
+  ~LatencyListUpdater() {
+    timer.stop();
+    int64_t u_elapsed = timer.u_elapsed();
+    for (auto& recorder : recorderList) {
+      (*recorder) << u_elapsed;
+    }
+  }
+  std::vector<bvar::LatencyRecorder*> recorderList;
+  butil::Timer timer;
+};
+
+struct InflightGuard {
+  explicit InflightGuard(bvar::Adder<int64_t>* inflight) : inflight_(inflight) {
+    (*inflight_) << 1;
+  }
+
+  ~InflightGuard() { (*inflight_) << -1; }
+
+  bvar::Adder<int64_t>* inflight_;
 };
 
 }  // namespace common

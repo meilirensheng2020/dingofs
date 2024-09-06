@@ -24,6 +24,7 @@
 #include <gtest/gtest.h>
 
 #include "curvefs/src/client/common/common.h"
+#include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
 #include "curvefs/src/client/s3/disk_cache_manager_impl.h"
 #include "curvefs/test/client/mock_client_s3.h"
@@ -241,12 +242,13 @@ TEST_F(TestDiskCacheManagerImpl, IsCached) {
 
 TEST_F(TestDiskCacheManagerImpl, UmountDiskCache) {
   EXPECT_CALL(*diskCacheWrite_, IsCacheClean()).WillOnce(Return(true));
-  diskCacheManagerImpl_->InitMetrics("test");
+  auto s3Metric_ = std::make_shared<S3Metric>("test");
+  diskCacheManagerImpl_->InitMetrics("test", s3Metric_);
   int ret = diskCacheManagerImpl_->UmountDiskCache();
   ASSERT_EQ(0, ret);
 
   EXPECT_CALL(*diskCacheWrite_, IsCacheClean()).WillOnce(Return(false));
-  diskCacheManagerImpl_->InitMetrics("test");
+  diskCacheManagerImpl_->InitMetrics("test", s3Metric_);
   ret = diskCacheManagerImpl_->UmountDiskCache();
   ASSERT_EQ(0, ret);
 }

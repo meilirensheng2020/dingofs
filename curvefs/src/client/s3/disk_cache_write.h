@@ -49,6 +49,7 @@ namespace client {
 using curve::common::InterruptibleSleeper;
 using curve::common::PutObjectAsyncCallBack;
 using ::curve::common::SglLRUCache;
+using curvefs::client::metric::S3Metric;
 using curvefs::common::PosixWrapper;
 
 class DiskCacheWrite : public DiskCacheBase {
@@ -126,8 +127,10 @@ class DiskCacheWrite : public DiskCacheBase {
    */
   virtual int AsyncUploadStop();
 
-  virtual void InitMetrics(std::shared_ptr<DiskCacheMetric> metric) {
+  virtual void InitMetrics(std::shared_ptr<DiskCacheMetric> metric,
+                           std::shared_ptr<S3Metric> s3Metric) {
     metric_ = metric;
+    s3Metric_ = s3Metric;
   }
 
   /**
@@ -155,6 +158,7 @@ class DiskCacheWrite : public DiskCacheBase {
   // file system operation encapsulation
   std::shared_ptr<PosixWrapper> posixWrapper_;
   std::shared_ptr<DiskCacheMetric> metric_;
+  std::shared_ptr<S3Metric> s3Metric_;
 
   std::shared_ptr<SglLRUCache<std::string>> cachedObjName_;
 };

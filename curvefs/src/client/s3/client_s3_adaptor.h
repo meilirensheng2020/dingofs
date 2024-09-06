@@ -35,6 +35,7 @@
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/filesystem/error.h"
 #include "curvefs/src/client/inode_cache_manager.h"
+#include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/rpcclient/mds_client.h"
 #include "curvefs/src/client/s3/client_s3.h"
 #include "curvefs/src/client/s3/client_s3_cache_manager.h"
@@ -47,6 +48,7 @@ using ::curve::common::TaskThreadPool;
 using ::curve::common::Thread;
 using curvefs::client::common::DiskCacheType;
 using curvefs::client::common::S3ClientAdaptorOption;
+using curvefs::client::metric::InterfaceMetric;
 using curvefs::client::metric::S3Metric;
 using curvefs::metaserver::Inode;
 using curvefs::metaserver::S3ChunkInfo;

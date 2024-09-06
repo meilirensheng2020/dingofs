@@ -66,9 +66,10 @@ using ::curvefs::client::filesystem::StrEntry;
 using ::curvefs::client::filesystem::StrFormat;
 using ::curvefs::client::filesystem::StrMode;
 using ::curvefs::client::metric::ClientOpMetric;
-using ::curvefs::client::metric::InflightGuard;
 using ::curvefs::client::rpcclient::MDSBaseClient;
 using ::curvefs::client::rpcclient::MdsClientImpl;
+using ::curvefs::common::InflightGuard;
+using ::curvefs::common::LatencyListUpdater;
 using ::curvefs::common::LatencyUpdater;
 
 using ::curvefs::common::FLAGS_vlog_level;
@@ -309,7 +310,6 @@ struct CodeGuard {
   CURVEFS_ERROR* rc_;
   bvar::Adder<uint64_t>* ecount_;
 };
-
 FuseClient* Client() { return g_ClientInstance; }
 
 void TriggerWarmup(fuse_req_t req, fuse_ino_t ino, const char* name,
@@ -335,11 +335,11 @@ void QueryWarmup(fuse_req_t req, fuse_ino_t ino, size_t size) {
 void ReadThrottleAdd(size_t size) { Client()->Add(true, size); }
 void WriteThrottleAdd(size_t size) { Client()->Add(false, size); }
 
-#define MetricGuard(REQUEST)                                          \
-  InflightGuard iGuard(&g_clientOpMetric->op##REQUEST.inflightOpNum); \
-  CodeGuard cGuard(&rc, &g_clientOpMetric->op##REQUEST.ecount);       \
-  LatencyUpdater updater(&g_clientOpMetric->op##REQUEST.latency)
-
+#define MetricGuard(REQUEST)                                              \
+  InflightGuard iGuard(&g_clientOpMetric->op##REQUEST.inflightOpNum);     \
+  CodeGuard cGuard(&rc, &g_clientOpMetric->op##REQUEST.ecount);           \
+  LatencyListUpdater listupdater({&g_clientOpMetric->op##REQUEST.latency, \
+                                  &g_clientOpMetric->opAll.latency});
 }  // namespace
 
 void FuseOpInit(void* userdata, struct fuse_conn_info* conn) {

@@ -78,6 +78,10 @@ int DiskCacheRead::ReadDiskFile(const std::string name, char* buf,
     return readLen;
   }
   posixWrapper_->close(fd);
+
+  if (metric_ != nullptr) {
+    metric_->diskcacheReadSizeSecond << length;
+  }
   VLOG(6) << "ReadDiskFile success. name = " << name << ", offset = " << offset
           << ", length = " << length;
   return readLen;

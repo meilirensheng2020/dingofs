@@ -28,13 +28,33 @@
 #include <cstdint>
 #include <string>
 
-#include "src/client/client_metric.h"
-
-using curve::client::InterfaceMetric;
+#include "src/common/string_util.h"
 
 namespace curvefs {
 namespace client {
 namespace metric {
+
+// metric stats per second
+struct PerSecondMetric {
+  bvar::Adder<uint64_t> count;                   // total count
+  bvar::PerSecond<bvar::Adder<uint64_t>> value;  // average count persecond
+  PerSecondMetric(const std::string& prefix, const std::string& name)
+      : count(prefix, name + "_total_count"), value(prefix, name, &count, 1) {}
+};
+
+// interface metric statistics
+struct InterfaceMetric {
+  PerSecondMetric qps;            // processed per second
+  PerSecondMetric eps;            // error request per second
+  PerSecondMetric bps;            // throughput with byte per second
+  bvar::LatencyRecorder latency;  // latency
+
+  InterfaceMetric(const std::string& prefix, const std::string& name)
+      : qps(prefix, name + "_qps"),
+        eps(prefix, name + "_eps"),
+        bps(prefix, name + "_bps"),
+        latency(prefix, name + "_lat", 1) {}
+};
 
 struct MDSClientMetric {
   static const std::string prefix;
@@ -52,6 +72,8 @@ struct MDSClientMetric {
   InterfaceMetric getLatestTxId;
   InterfaceMetric commitTx;
   InterfaceMetric allocOrGetMemcacheCluster;
+  // all
+  InterfaceMetric getAllOperation;
 
   MDSClientMetric()
       : mountFs(prefix, "mountFs"),
@@ -66,7 +88,8 @@ struct MDSClientMetric {
         refreshSession(prefix, "refreshSession"),
         getLatestTxId(prefix, "getLatestTxId"),
         commitTx(prefix, "commitTx"),
-        allocOrGetMemcacheCluster(prefix, "allocOrGetMemcacheCluster") {}
+        allocOrGetMemcacheCluster(prefix, "allocOrGetMemcacheCluster"),
+        getAllOperation(prefix, "getAllopt") {}
 };
 
 struct MetaServerClientMetric {
@@ -87,12 +110,17 @@ struct MetaServerClientMetric {
   InterfaceMetric deleteInode;
   InterfaceMetric appendS3ChunkInfo;
 
-  // tnx
+  // txn
   InterfaceMetric prepareRenameTx;
 
   // volume extent
   InterfaceMetric updateVolumeExtent;
   InterfaceMetric getVolumeExtent;
+
+  // write operation
+  InterfaceMetric getTxnOperation;
+  // all
+  InterfaceMetric getAllOperation;
 
   MetaServerClientMetric()
       : getDentry(prefix, "getDentry"),
@@ -108,17 +136,9 @@ struct MetaServerClientMetric {
         appendS3ChunkInfo(prefix, "appendS3ChunkInfo"),
         prepareRenameTx(prefix, "prepareRenameTx"),
         updateVolumeExtent(prefix, "updateVolumeExtent"),
-        getVolumeExtent(prefix, "getVolumeExtent") {}
-};
-
-struct InflightGuard {
-  explicit InflightGuard(bvar::Adder<int64_t>* inflight) : inflight_(inflight) {
-    (*inflight_) << 1;
-  }
-
-  ~InflightGuard() { (*inflight_) << -1; }
-
-  bvar::Adder<int64_t>* inflight_;
+        getVolumeExtent(prefix, "getVolumeExtent"),
+        getTxnOperation(prefix, "getTxnopt"),
+        getAllOperation(prefix, "getAllopt") {}
 };
 
 struct OpMetric {
@@ -127,7 +147,7 @@ struct OpMetric {
   bvar::Adder<uint64_t> ecount;
 
   explicit OpMetric(const std::string& prefix, const std::string& name)
-      : latency(prefix, name + "_lat"),
+      : latency(prefix, name + "_lat", 1),
         inflightOpNum(prefix, name + "_inflight_num"),
         ecount(prefix, name + "_error_num") {}
 };
@@ -158,31 +178,33 @@ struct ClientOpMetric {
   OpMetric opFlush;
   OpMetric opRead;
   OpMetric opWrite;
+  OpMetric opAll;
 
   ClientOpMetric()
       : opLookup(prefix, "opLookup"),
         opOpen(prefix, "opOpen"),
         opCreate(prefix, "opCreate"),
-        opMkNod(prefix, "opMkNod"),
-        opMkDir(prefix, "opMkDir"),
+        opMkNod(prefix, "opMknod"),
+        opMkDir(prefix, "opMkdir"),
         opLink(prefix, "opLink"),
         opUnlink(prefix, "opUnlink"),
-        opRmDir(prefix, "opRmDir"),
-        opOpenDir(prefix, "opOpenDir"),
-        opReleaseDir(prefix, "opReleaseDir"),
-        opReadDir(prefix, "opReadDir"),
+        opRmDir(prefix, "opRmdir"),
+        opOpenDir(prefix, "opOpendir"),
+        opReleaseDir(prefix, "opReleasedir"),
+        opReadDir(prefix, "opReaddir"),
         opRename(prefix, "opRename"),
-        opGetAttr(prefix, "opGetAttr"),
-        opSetAttr(prefix, "opSetAttr"),
-        opGetXattr(prefix, "opGetXattr"),
-        opListXattr(prefix, "opListXattr"),
+        opGetAttr(prefix, "opGetattr"),
+        opSetAttr(prefix, "opSetattr"),
+        opGetXattr(prefix, "opGetxattr"),
+        opListXattr(prefix, "opListxattr"),
         opSymlink(prefix, "opSymlink"),
-        opReadLink(prefix, "opReadLink"),
+        opReadLink(prefix, "opReadlink"),
         opRelease(prefix, "opRelease"),
         opFsync(prefix, "opFsync"),
         opFlush(prefix, "opFlush"),
         opRead(prefix, "opRead"),
-        opWrite(prefix, "opWrite") {}
+        opWrite(prefix, "opWrite"),
+        opAll(prefix, "opAll") {}
 };
 
 struct S3MultiManagerMetric {
@@ -212,16 +234,16 @@ struct FSMetric {
 
   InterfaceMetric userWrite;
   InterfaceMetric userRead;
-  bvar::Status<uint32_t> userWriteIoSize;
-  bvar::Status<uint32_t> userReadIoSize;
+  bvar::Status<uint32_t> userWriteIoSize;  // last write io size
+  bvar::Status<uint32_t> userReadIoSize;   // last read io size
 
   explicit FSMetric(const std::string& name = "")
-      : fsName(!name.empty() ? name
-                             : prefix + curve::common::ToHexString(this)),
-        userWrite(prefix, fsName + "_userWrite"),
-        userRead(prefix, fsName + "_userRead"),
-        userWriteIoSize(prefix, fsName + "_userWriteIoSize", 0),
-        userReadIoSize(prefix, fsName + "_userReadIoSize", 0) {}
+      : userWrite(prefix, "_userWrite"),
+        userRead(prefix, "_userRead"),
+        userWriteIoSize(prefix, "_userWriteIoSizeLast", 0),
+        userReadIoSize(prefix, "_userReadIoSizeLast", 0) {
+    (void)name;
+  }
 };
 
 struct S3Metric {
@@ -231,37 +253,44 @@ struct S3Metric {
   InterfaceMetric adaptorWrite;
   InterfaceMetric adaptorRead;
   InterfaceMetric adaptorWriteS3;
-  InterfaceMetric adaptorWriteDiskCache;
   InterfaceMetric adaptorReadS3;
+  InterfaceMetric adaptorWriteDiskCache;
   InterfaceMetric adaptorReadDiskCache;
-  bvar::Status<uint32_t> readSize;
   bvar::Status<uint32_t> writeSize;
+  bvar::Status<uint32_t> readSize;
+  // bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> writeSizeSecond;
+  // bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> readSizeSecond;
 
   explicit S3Metric(const std::string& name = "")
-      : fsName(!name.empty() ? name
-                             : prefix + curve::common::ToHexString(this)),
-        adaptorWrite(prefix, fsName + "_adaptor_write"),
-        adaptorRead(prefix, fsName + "_adaptor_read"),
-        adaptorWriteS3(prefix, fsName + "_adaptor_write_s3"),
-        adaptorWriteDiskCache(prefix, fsName + "_adaptor_write_disk_cache"),
-        adaptorReadS3(prefix, fsName + "_adaptor_read_s3"),
-        adaptorReadDiskCache(prefix, fsName + "_adaptor_read_disk_cache"),
-        readSize(prefix, fsName + "_adaptor_read_size", 0),
-        writeSize(prefix, fsName + "_adaptor_write_size", 0) {}
+      : adaptorWrite(prefix, "_adaptor_write"),
+        adaptorRead(prefix, "_adaptor_read"),
+        adaptorWriteS3(prefix, "_adaptor_write_s3"),
+        adaptorReadS3(prefix, "_adaptor_read_s3"),
+        adaptorWriteDiskCache(prefix, "_adaptor_write_diskcache"),
+        adaptorReadDiskCache(prefix, "_adaptor_read_diskcache"),
+        writeSize(prefix, "_adaptor_write_size_last", 0),
+        readSize(prefix, "_adaptor_read_size_last", 0) {
+    (void)name;
+  }
 };
 
 struct DiskCacheMetric {
   static const std::string prefix;
 
   std::string fsName;
-  InterfaceMetric writeS3;
+  // move to S3Metric adaptorWriteS3
+  // InterfaceMetric writeS3;
   bvar::Status<uint64_t> diskUsedBytes;
+  bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> diskcacheWriteSizeSecond;
+  bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> diskcacheReadSizeSecond;
 
   explicit DiskCacheMetric(const std::string& name = "")
-      : fsName(!name.empty() ? name
-                             : prefix + curve::common::ToHexString(this)),
-        writeS3(prefix, fsName + "_write_s3"),
-        diskUsedBytes(prefix, fsName + "_diskcache_usedbytes", 0) {}
+      :  // writeS3(prefix, fsName + "_write_s3"),
+        diskUsedBytes(prefix, "_diskcache_usedbytes", 0),
+        diskcacheWriteSizeSecond(prefix + "_write_size_second"),
+        diskcacheReadSizeSecond(prefix + "_read_size_second") {
+    (void)name;
+  }
 };
 
 struct KVClientMetric {
