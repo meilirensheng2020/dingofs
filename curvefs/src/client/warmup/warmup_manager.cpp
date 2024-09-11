@@ -38,6 +38,7 @@
 #include "curvefs/src/client/common/common.h"
 #include "curvefs/src/client/inode_wrapper.h"
 #include "curvefs/src/client/kvclient/kvclient_manager.h"
+#include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/s3/client_s3_cache_manager.h"
 #include "curvefs/src/common/s3util.h"
 #include "src/common/concurrent/concurrent.h"
@@ -53,6 +54,8 @@ using ::curvefs::client::blockcache::BCACHE_ERROR;
 using ::curvefs::client::blockcache::Block;
 using ::curvefs::client::blockcache::CacheStore;
 using ::curvefs::client::blockcache::S3ClientImpl;
+using ::curvefs::client::metric::MetricGuard;
+using ::curvefs::client::metric::S3Metric;
 
 #define WARMUP_CHECKINTERVAL_US (1000 * 1000)
 
@@ -459,6 +462,9 @@ void WarmupManagerS3Impl::WarmUpAllObjs(
       [&](const S3Adapter* adapter,
           const std::shared_ptr<GetObjectAsyncContext>& context) {
         (void)adapter;
+        // metrics for async get data from s3
+        MetricGuard guard(&context->retCode, &S3Metric::GetInstance().read_s3,
+                          context->len, start);
         if (bgFetchStop_.load(std::memory_order_acquire)) {
           VLOG(9) << "need stop warmup";
           cond.Signal();

@@ -24,9 +24,14 @@
 
 #include <ostream>
 
+#include "curvefs/src/client/metric/client_metric.h"
+
 namespace curvefs {
 namespace client {
 namespace blockcache {
+
+using ::curvefs::client::metric::MetricGuard;
+using ::curvefs::client::metric::S3Metric;
 
 void S3ClientImpl::Init(const S3AdapterOption& option) {
   client_ = std::make_unique<S3Adapter>();
@@ -37,7 +42,12 @@ void S3ClientImpl::Destroy() { client_->Deinit(); }
 
 BCACHE_ERROR S3ClientImpl::Put(const std::string& key, const char* buffer,
                                size_t length) {
-  int rc = client_->PutObject(S3Key(key), buffer, length);
+  int rc;
+  // write s3 metrics
+  auto start = butil::cpuwide_time_us();
+  MetricGuard guard(&rc, &S3Metric::GetInstance().write_s3, length, start);
+
+  rc = client_->PutObject(S3Key(key), buffer, length);
   if (rc < 0) {
     LOG(ERROR) << "Put object(" << key << ") failed, retCode=" << rc;
     return BCACHE_ERROR::IO_ERROR;
@@ -47,7 +57,12 @@ BCACHE_ERROR S3ClientImpl::Put(const std::string& key, const char* buffer,
 
 BCACHE_ERROR S3ClientImpl::Range(const std::string& key, off_t offset,
                                  size_t length, char* buffer) {
-  int rc = client_->GetObject(S3Key(key), buffer, offset, length);
+  int rc;
+  // read s3 metrics
+  auto start = butil::cpuwide_time_us();
+  MetricGuard guard(&rc, &S3Metric::GetInstance().read_s3, length, start);
+
+  rc = client_->GetObject(S3Key(key), buffer, offset, length);
   if (rc < 0) {
     if (!client_->ObjectExist(S3Key(key))) {  // TODO: more efficient
       LOG(WARNING) << "Object(" << key << ") not found.";
@@ -68,6 +83,8 @@ void S3ClientImpl::AsyncPut(const std::string& key, const char* buffer,
   context->startTime = butil::cpuwide_time_us();
   context->cb = [&,
                  retry](const std::shared_ptr<PutObjectAsyncContext>& context) {
+    MetricGuard guard(&context->retCode, &S3Metric::GetInstance().write_s3,
+                      context->bufferSize, context->startTime);
     if (retry(context->retCode)) {  // retry
       client_->PutObjectAsync(context);
     }

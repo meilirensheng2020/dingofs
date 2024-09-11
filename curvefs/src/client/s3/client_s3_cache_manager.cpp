@@ -492,12 +492,6 @@ bool FileCacheManager::ReadKVRequestFromLocalCache(const BlockKey& key,
       return false;
     }
   }
-
-  if (s3ClientAdaptor_->s3Metric_) {
-    // add disk cache metrics
-    s3ClientAdaptor_->CollectMetrics(
-        &s3ClientAdaptor_->s3Metric_->adaptorReadDiskCache, len, start);
-  }
   return true;
 }
 
@@ -533,11 +527,6 @@ bool FileCacheManager::ReadKVRequestFromS3(const std::string& name,
                  << ", rc=" << StrErr(*rc);
       return false;
     }
-  }
-
-  if (s3ClientAdaptor_->s3Metric_) {
-    s3ClientAdaptor_->CollectMetrics(
-        &s3ClientAdaptor_->s3Metric_->adaptorReadS3, length, start);
   }
 
   return true;
@@ -2343,11 +2332,7 @@ void DataCache::FlushTaskExecute(
   // success callback
   PutObjectAsyncCallBack callback =
       [&](const std::shared_ptr<PutObjectAsyncContext>& context) {
-        if (s3ClientAdaptor_->s3Metric_.get() != nullptr) {
-          s3ClientAdaptor_->CollectMetrics(
-              &s3ClientAdaptor_->s3Metric_->adaptorWriteS3, context->bufferSize,
-              context->startTime);
-        }
+        // move metrics collection to block_cache.cpp
 
         // Don't move the if sentence to the front
         // it will cause core dumped because s3Metric_

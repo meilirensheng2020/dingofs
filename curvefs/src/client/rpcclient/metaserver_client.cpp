@@ -43,6 +43,7 @@
 
 using ::curve::common::StringToUl;
 using ::curve::common::StringToUll;
+using curvefs::client::metric::MetricListGuard;
 using curvefs::metaserver::BatchGetInodeAttrRequest;
 using curvefs::metaserver::BatchGetInodeAttrResponse;
 using curvefs::metaserver::BatchGetXAttrRequest;
@@ -67,8 +68,6 @@ using GetOrModifyS3ChunkInfoExcutor = TaskExecutor;
 using UpdateVolumeExtentExecutor = TaskExecutor;
 using GetVolumeExtentExecutor = TaskExecutor;
 
-using ::curvefs::common::LatencyListUpdater;
-using ::curvefs::common::LatencyUpdater;
 using ::curvefs::common::StreamConnection;
 using ::curvefs::common::StreamOptions;
 using ::curvefs::metaserver::MetaServerService_Stub;
@@ -128,11 +127,10 @@ MetaStatusCode MetaServerClientImpl::GetDentry(uint32_t fsId, uint64_t inodeid,
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.getDentry.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updater(
-        {&metric_.getDentry.latency, &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(
+        &is_ok, {&metric_.getDentry, &metric_.getAllOperation}, start);
 
     GetDentryResponse response;
     GetDentryRequest request;
@@ -149,10 +147,10 @@ MetaStatusCode MetaServerClientImpl::GetDentry(uint32_t fsId, uint64_t inodeid,
     stub.GetDentry(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.getDentry.eps.count << 1;
       LOG(WARNING) << "GetDentry Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
     MetaStatusCode ret = response.statuscode();
@@ -197,11 +195,10 @@ MetaStatusCode MetaServerClientImpl::ListDentry(uint32_t fsId, uint64_t inodeid,
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.listDentry.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updater(
-        {&metric_.listDentry.latency, &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(
+        &is_ok, {&metric_.listDentry, &metric_.getAllOperation}, start);
 
     ListDentryRequest request;
     ListDentryResponse response;
@@ -220,10 +217,10 @@ MetaStatusCode MetaServerClientImpl::ListDentry(uint32_t fsId, uint64_t inodeid,
     stub.ListDentry(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.listDentry.eps.count << 1;
       LOG(WARNING) << "ListDentry Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -268,13 +265,12 @@ MetaStatusCode MetaServerClientImpl::CreateDentry(const Dentry& dentry) {
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.createDentry.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.createDentry.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(&is_ok,
+                              {&metric_.createDentry, &metric_.getTxnOperation,
+                               &metric_.getAllOperation},
+                              start);
 
     CreateDentryResponse response;
     CreateDentryRequest request;
@@ -299,10 +295,10 @@ MetaStatusCode MetaServerClientImpl::CreateDentry(const Dentry& dentry) {
             << oss.str();
 
     if (cntl->Failed()) {
-      metric_.createDentry.eps.count << 1;
       LOG(WARNING) << "CreateDentry Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -347,13 +343,12 @@ MetaStatusCode MetaServerClientImpl::DeleteDentry(uint32_t fsId,
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.deleteDentry.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.deleteDentry.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(&is_ok,
+                              {&metric_.deleteDentry, &metric_.getTxnOperation,
+                               &metric_.getAllOperation},
+                              start);
 
     DeleteDentryResponse response;
     DeleteDentryRequest request;
@@ -370,10 +365,10 @@ MetaStatusCode MetaServerClientImpl::DeleteDentry(uint32_t fsId,
     stub.DeleteDentry(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.deleteDentry.eps.count << 1;
       LOG(WARNING) << "DeleteDentry Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -415,13 +410,13 @@ MetaStatusCode MetaServerClientImpl::PrepareRenameTx(
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.prepareRenameTx.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.prepareRenameTx.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(
+        &is_ok,
+        {&metric_.prepareRenameTx, &metric_.getTxnOperation,
+         &metric_.getAllOperation},
+        start);
 
     PrepareRenameTxRequest request;
     PrepareRenameTxResponse response;
@@ -434,11 +429,11 @@ MetaStatusCode MetaServerClientImpl::PrepareRenameTx(
     stub.PrepareRenameTx(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.prepareRenameTx.eps.count << 1;
       LOG(WARNING) << "PrepareRenameTx failed"
                    << ", errorCode = " << cntl->ErrorCode()
                    << ", errorText = " << cntl->ErrorText()
                    << ", logId = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -477,11 +472,10 @@ MetaStatusCode MetaServerClientImpl::GetInode(uint32_t fsId, uint64_t inodeid,
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.getInode.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updater(
-        {&metric_.getInode.latency, &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(
+        &is_ok, {&metric_.getInode, &metric_.getAllOperation}, start);
 
     GetInodeRequest request;
     GetInodeResponse response;
@@ -497,10 +491,10 @@ MetaStatusCode MetaServerClientImpl::GetInode(uint32_t fsId, uint64_t inodeid,
     stub.GetInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.getInode.eps.count << 1;
       LOG(WARNING) << "GetInode Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -593,16 +587,23 @@ class BatchGetInodeAttrRpcDone : public MetaServerClientRpcDoneBase {
 };
 
 void BatchGetInodeAttrRpcDone::Run() {
+  // update metaserver operation metrics stats
+  auto start = butil::cpuwide_time_us();
+  bool is_ok = true;
+  MetricListGuard metaGuard(
+      &is_ok, {&(metric_->batchGetInodeAttr), &(metric_->getAllOperation)},
+      start);
+
   std::unique_ptr<BatchGetInodeAttrRpcDone> self_guard(this);
   brpc::ClosureGuard done_guard(done_);
   auto taskCtx = done_->GetTaskExcutor()->GetTaskCxt();
   auto& cntl = taskCtx->cntl_;
   auto metaCache = done_->GetTaskExcutor()->GetMetaCache();
   if (cntl.Failed()) {
-    metric_->batchGetInodeAttr.eps.count << 1;
     LOG(WARNING) << "batchGetInodeAttr Failed, errorcode = " << cntl.ErrorCode()
                  << ", error content: " << cntl.ErrorText()
                  << ", log id: " << cntl.log_id();
+    is_ok = false;
     done_->SetRetCode(-cntl.ErrorCode());
     return;
   }
@@ -651,11 +652,11 @@ MetaStatusCode MetaServerClientImpl::BatchGetInodeAttr(
       (void)taskExecutorDone;
 
       // update metaserver operation metrics stats
-      // recorderLists store the bvar::LatencyRecorder list
-      metric_.batchGetInodeAttr.qps.count << 1;
-      metric_.getAllOperation.qps.count << 1;
-      LatencyListUpdater updater({&metric_.batchGetInodeAttr.latency,
-                                  &metric_.getAllOperation.latency});
+      auto start = butil::cpuwide_time_us();
+      bool is_ok = true;
+      MetricListGuard metaGuard(
+          &is_ok, {&metric_.batchGetInodeAttr, &metric_.getAllOperation},
+          start);
 
       BatchGetInodeAttrRequest request;
       BatchGetInodeAttrResponse response;
@@ -670,11 +671,11 @@ MetaStatusCode MetaServerClientImpl::BatchGetInodeAttr(
       stub.BatchGetInodeAttr(cntl, &request, &response, nullptr);
 
       if (cntl->Failed()) {
-        metric_.batchGetInodeAttr.eps.count << 1;
         LOG(WARNING) << "BatchGetInodeAttr Failed, errorcode = "
                      << cntl->ErrorCode()
                      << ", error content:" << cntl->ErrorText()
                      << ", log id = " << cntl->log_id();
+        is_ok = false;
         return -cntl->ErrorCode();
       }
 
@@ -719,13 +720,6 @@ MetaStatusCode MetaServerClientImpl::BatchGetInodeAttrAsync(
 
   auto task = AsyncRPCTask {
     (void)txId;
-
-    // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.batchGetInodeAttr.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updater(
-        {&metric_.batchGetInodeAttr.latency, &metric_.getAllOperation.latency});
 
     BatchGetInodeAttrRequest request;
     BatchGetInodeAttrResponse response;
@@ -772,11 +766,10 @@ MetaStatusCode MetaServerClientImpl::BatchGetXAttr(
       (void)taskExecutorDone;
 
       // update metaserver operation metrics stats
-      // recorderLists store the bvar::LatencyRecorder list
-      metric_.batchGetXattr.qps.count << 1;
-      metric_.getAllOperation.qps.count << 1;
-      LatencyListUpdater updater(
-          {&metric_.batchGetXattr.latency, &metric_.getAllOperation.latency});
+      auto start = butil::cpuwide_time_us();
+      bool is_ok = true;
+      MetricListGuard(
+          &is_ok, {&metric_.batchGetXattr, &metric_.getAllOperation}, start);
 
       BatchGetXAttrRequest request;
       BatchGetXAttrResponse response;
@@ -791,11 +784,11 @@ MetaStatusCode MetaServerClientImpl::BatchGetXAttr(
       stub.BatchGetXAttr(cntl, &request, &response, nullptr);
 
       if (cntl->Failed()) {
-        metric_.batchGetXattr.eps.count << 1;
         LOG(WARNING) << "BatchGetXAttr Failed, errorcode = "
                      << cntl->ErrorCode()
                      << ", error content:" << cntl->ErrorText()
                      << ", log id = " << cntl->log_id();
+        is_ok = false;
         return -cntl->ErrorCode();
       }
 
@@ -838,13 +831,12 @@ MetaStatusCode MetaServerClientImpl::UpdateInode(
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.updateInode.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.updateInode.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(&is_ok,
+                              {&metric_.updateInode, &metric_.getTxnOperation,
+                               &metric_.getAllOperation},
+                              start);
 
     UpdateInodeRequest req = request;
     req.set_poolid(poolID);
@@ -856,10 +848,10 @@ MetaStatusCode MetaServerClientImpl::UpdateInode(
     stub.UpdateInode(cntl, &req, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.updateInode.eps.count << 1;
       LOG(WARNING) << "UpdateInode Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -977,16 +969,25 @@ class UpdateInodeRpcDone : public MetaServerClientRpcDoneBase {
 };
 
 void UpdateInodeRpcDone::Run() {
+  // update metaserver operation metrics stats
+  auto start = butil::cpuwide_time_us();
+  bool is_ok = true;
+  MetricListGuard metaGuard(
+      &is_ok,
+      {&(metric_->updateInode), &(metric_->getTxnOperation),
+       &(metric_->getAllOperation)},
+      start);
+
   std::unique_ptr<UpdateInodeRpcDone> self_guard(this);
   brpc::ClosureGuard done_guard(done_);
   auto taskCtx = done_->GetTaskExcutor()->GetTaskCxt();
   auto& cntl = taskCtx->cntl_;
   auto metaCache = done_->GetTaskExcutor()->GetMetaCache();
   if (cntl.Failed()) {
-    metric_->updateInode.eps.count << 1;
     LOG(WARNING) << "UpdateInode Failed, errorcode = " << cntl.ErrorCode()
                  << ", error content: " << cntl.ErrorText()
                  << ", log id: " << cntl.log_id();
+    is_ok = false;
     done_->SetRetCode(-cntl.ErrorCode());
     return;
   }
@@ -1016,15 +1017,6 @@ void MetaServerClientImpl::UpdateInodeAsync(const UpdateInodeRequest& request,
   auto task = AsyncRPCTask {
     (void)txId;
     (void)applyIndex;
-
-    // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.updateInode.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.updateInode.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
 
     UpdateInodeRequest req = request;
     req.set_poolid(poolID);
@@ -1108,13 +1100,13 @@ MetaStatusCode MetaServerClientImpl::GetOrModifyS3ChunkInfo(
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.appendS3ChunkInfo.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.appendS3ChunkInfo.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(
+        &is_ok,
+        {&metric_.appendS3ChunkInfo, &metric_.getTxnOperation,
+         &metric_.getAllOperation},
+        start);
 
     GetOrModifyS3ChunkInfoRequest request;
     GetOrModifyS3ChunkInfoResponse response;
@@ -1151,11 +1143,11 @@ MetaStatusCode MetaServerClientImpl::GetOrModifyS3ChunkInfo(
     stub.GetOrModifyS3ChunkInfo(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.appendS3ChunkInfo.eps.count << 1;
       LOG(WARNING) << "GetOrModifyS3ChunkInfo Failed, errorcode: "
                    << cntl->ErrorCode()
                    << ", error content: " << cntl->ErrorText()
                    << ", log id: " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -1211,16 +1203,25 @@ class GetOrModifyS3ChunkInfoRpcDone : public MetaServerClientRpcDoneBase {
 };
 
 void GetOrModifyS3ChunkInfoRpcDone::Run() {
+  // update metaserver operation metrics stats async
+  auto start = butil::cpuwide_time_us();
+  bool is_ok = true;
+  MetricListGuard metaGuard(
+      &is_ok,
+      {&(metric_->appendS3ChunkInfo), &(metric_->getTxnOperation),
+       &(metric_->getAllOperation)},
+      start);
+
   std::unique_ptr<GetOrModifyS3ChunkInfoRpcDone> self_guard(this);
   brpc::ClosureGuard done_guard(done_);
   auto taskCtx = done_->GetTaskExcutor()->GetTaskCxt();
   auto& cntl = taskCtx->cntl_;
   auto metaCache = done_->GetTaskExcutor()->GetMetaCache();
   if (cntl.Failed()) {
-    metric_->appendS3ChunkInfo.eps.count << 1;
     LOG(WARNING) << "GetOrModifyS3ChunkInfo Failed, errorcode: "
                  << cntl.ErrorCode() << ", error content: " << cntl.ErrorText()
                  << ", log id: " << cntl.log_id();
+    is_ok = false;
     done_->SetRetCode(-cntl.ErrorCode());
     return;
   }
@@ -1257,15 +1258,6 @@ void MetaServerClientImpl::GetOrModifyS3ChunkInfoAsync(
     (void)txId;
     (void)applyIndex;
 
-    // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.appendS3ChunkInfo.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.appendS3ChunkInfo.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
-
     GetOrModifyS3ChunkInfoRequest request;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
@@ -1299,13 +1291,12 @@ MetaStatusCode MetaServerClientImpl::CreateInode(const InodeParam& param,
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.createInode.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.createInode.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(&is_ok,
+                              {&metric_.createInode, &metric_.getTxnOperation,
+                               &metric_.getAllOperation},
+                              start);
 
     CreateInodeResponse response;
     CreateInodeRequest request;
@@ -1331,10 +1322,10 @@ MetaStatusCode MetaServerClientImpl::CreateInode(const InodeParam& param,
     stub.CreateInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.createInode.eps.count << 1;
       LOG(WARNING) << "CreateInode Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -1379,13 +1370,12 @@ MetaStatusCode MetaServerClientImpl::CreateManageInode(const InodeParam& param,
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.createInode.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.createInode.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(&is_ok,
+                              {&metric_.createInode, &metric_.getTxnOperation,
+                               &metric_.getAllOperation},
+                              start);
 
     CreateManageInodeResponse response;
     CreateManageInodeRequest request;
@@ -1403,11 +1393,11 @@ MetaStatusCode MetaServerClientImpl::CreateManageInode(const InodeParam& param,
     stub.CreateManageInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.createInode.eps.count << 1;
       LOG(WARNING) << "CreateManageInode Failed, errorcode = "
                    << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -1453,13 +1443,12 @@ MetaStatusCode MetaServerClientImpl::DeleteInode(uint32_t fsId,
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.deleteInode.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.deleteInode.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard metaGuard(&is_ok,
+                              {&metric_.deleteInode, &metric_.getTxnOperation,
+                               &metric_.getAllOperation},
+                              start);
 
     DeleteInodeResponse response;
     DeleteInodeRequest request;
@@ -1472,10 +1461,10 @@ MetaStatusCode MetaServerClientImpl::DeleteInode(uint32_t fsId,
     stub.DeleteInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.deleteInode.eps.count << 1;
       LOG(WARNING) << "DeleteInode Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -1516,6 +1505,15 @@ struct UpdateVolumeExtentRpcDone : MetaServerClientRpcDoneBase {
 };
 
 void UpdateVolumeExtentRpcDone::Run() {
+  // update metaserver operation metrics stats
+  auto start = butil::cpuwide_time_us();
+  bool is_ok = true;
+  MetricListGuard metaGuard(
+      &is_ok,
+      {&(metric_->updateVolumeExtent), &(metric_->getTxnOperation),
+       &(metric_->getAllOperation)},
+      start);
+
   std::unique_ptr<UpdateVolumeExtentRpcDone> guard(this);
   brpc::ClosureGuard doneGuard(done_);
 
@@ -1524,18 +1522,18 @@ void UpdateVolumeExtentRpcDone::Run() {
   auto& cntl = taskCtx->cntl_;
 
   if (cntl.Failed()) {
-    metric_->updateVolumeExtent.eps.count << 1;
     LOG(WARNING) << "UpdateVolumeExtent failed, error: " << cntl.ErrorText()
                  << ", log id: " << cntl.log_id();
+    is_ok = false;
     done_->SetRetCode(-cntl.ErrorCode());
     return;
   }
 
   auto st = response.statuscode();
   if (st != MetaStatusCode::OK) {
-    metric_->updateVolumeExtent.eps.count << 1;
     LOG(WARNING) << "UpdateVolumeExtent failed, error: "
                  << MetaStatusCode_Name(st) << ", inode: " << taskCtx->inodeID;
+    is_ok = false;
   } else if (response.has_appliedindex()) {
     metaCache->UpdateApplyIndex(taskCtx->target.groupID,
                                 response.appliedindex());
@@ -1561,15 +1559,6 @@ void MetaServerClientImpl::AsyncUpdateVolumeExtent(
   auto task = AsyncRPCTask {
     (void)txId;
     (void)applyIndex;
-
-    // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.updateVolumeExtent.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater({&metric_.updateVolumeExtent.latency,
-                                &metric_.getTxnOperation.latency,
-                                &metric_.getAllOperation.latency});
 
     metaserver::UpdateVolumeExtentRequest request;
     SET_COMMON_FIELDS;
@@ -1619,12 +1608,10 @@ MetaStatusCode MetaServerClientImpl::GetVolumeExtent(
     (void)taskExecutorDone;
 
     // update metaserver operation metrics stats
-    // recorderLists store the bvar::LatencyRecorder list
-    metric_.getVolumeExtent.qps.count << 1;
-    metric_.getAllOperation.qps.count << 1;
-    metric_.getTxnOperation.qps.count << 1;
-    LatencyListUpdater updater(
-        {&metric_.getVolumeExtent.latency, &metric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard(
+        &is_ok, {&metric_.getVolumeExtent, &metric_.getAllOperation}, start);
 
     metaserver::GetVolumeExtentRequest request;
     metaserver::GetVolumeExtentResponse response;
@@ -1652,6 +1639,7 @@ MetaStatusCode MetaServerClientImpl::GetVolumeExtent(
         LOG(ERROR) << "Failed to connection remote side, ino: " << inodeId
                    << ", poolid: " << poolID << ", copysetid: " << copysetID
                    << ", remote side: " << cntl->remote_side();
+        is_ok = false;
         return MetaStatusCode::RPC_STREAM_ERROR;
       }
     }
@@ -1660,17 +1648,17 @@ MetaStatusCode MetaServerClientImpl::GetVolumeExtent(
     stub.GetVolumeExtent(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
-      metric_.getVolumeExtent.eps.count << 1;
       LOG(WARNING) << "GetVolumeExtent failed, error: " << cntl->ErrorText()
                    << ", log id: " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
     auto st = response.statuscode();
     if (st != MetaStatusCode::OK) {
-      metric_.getVolumeExtent.eps.count << 1;
       LOG(WARNING) << "GetVolumeExtent failed, inodeid: " << inodeId
                    << ", error: " << MetaStatusCode_Name(st);
+      is_ok = false;
       return st;
     } else if (response.has_appliedindex()) {
       metaCache_->UpdateApplyIndex(CopysetGroupID(poolID, copysetID),

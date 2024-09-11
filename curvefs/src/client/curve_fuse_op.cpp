@@ -64,10 +64,9 @@ using ::curvefs::client::filesystem::StrEntry;
 using ::curvefs::client::filesystem::StrFormat;
 using ::curvefs::client::filesystem::StrMode;
 using ::curvefs::client::metric::ClientOpMetric;
+using ::curvefs::client::metric::OpMetric;
 using ::curvefs::client::rpcclient::MDSBaseClient;
 using ::curvefs::client::rpcclient::MdsClientImpl;
-using ::curvefs::common::InflightGuard;
-using ::curvefs::common::LatencyListUpdater;
 
 using ::curvefs::common::FLAGS_vlog_level;
 
@@ -295,18 +294,33 @@ int Warmup(fuse_ino_t key, const std::string& name, const std::string& value) {
 
 namespace {
 
-struct CodeGuard {
-  explicit CodeGuard(CURVEFS_ERROR* rc, bvar::Adder<uint64_t>* ecount)
-      : rc(rc), ecount(ecount) {}
-
-  ~CodeGuard() {
-    if (*rc != CURVEFS_ERROR::OK) {
-      (*ecount) << 1;
+// client metric guard for one metric collection, fuse operation
+struct ClientOpMetricGuard {
+  explicit ClientOpMetricGuard(CURVEFS_ERROR* rc,
+                               std::list<OpMetric*> metricList)
+      : rc_(rc), metricList_(metricList) {
+    start_ = butil::cpuwide_time_us();
+    for (auto& metric_ : metricList_) {
+      metric_->inflightOpNum << 1;
+    }
+  }
+  ~ClientOpMetricGuard() {
+    for (auto& metric_ : metricList_) {
+      metric_->inflightOpNum << -1;
+      if (*rc_ == CURVEFS_ERROR::OK) {
+        metric_->qpsTotal << 1;
+        auto duration = butil::cpuwide_time_us() - start_;
+        metric_->latency << duration;
+        metric_->latTotal << duration;
+      } else {
+        metric_->ecount << 1;
+      }
     }
   }
 
-  CURVEFS_ERROR* rc;
-  bvar::Adder<uint64_t>* ecount;
+  CURVEFS_ERROR* rc_;
+  std::list<OpMetric*> metricList_;
+  uint64_t start_;
 };
 
 FuseClient* Client() { return g_client_instance; }
@@ -334,11 +348,9 @@ void QueryWarmup(fuse_req_t req, fuse_ino_t ino, size_t size) {
 void ReadThrottleAdd(size_t size) { Client()->Add(true, size); }
 void WriteThrottleAdd(size_t size) { Client()->Add(false, size); }
 
-#define METRIC_GUARD(REQUEST)                                             \
-  InflightGuard iGuard(&g_clientOpMetric->op##REQUEST.inflightOpNum);     \
-  CodeGuard cGuard(&rc, &g_clientOpMetric->op##REQUEST.ecount);           \
-  LatencyListUpdater listupdater({&g_clientOpMetric->op##REQUEST.latency, \
-                                  &g_clientOpMetric->opAll.latency});
+#define METRIC_GUARD(REQUEST)              \
+  ClientOpMetricGuard clientOpMetricGuard( \
+      &rc, {&g_clientOpMetric->op##REQUEST, &g_clientOpMetric->opAll});
 }  // namespace
 
 void FuseOpInit(void* userdata, struct fuse_conn_info* conn) {

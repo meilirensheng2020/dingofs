@@ -27,6 +27,7 @@
 
 #include "curvefs/src/base/hash/ketama_con_hash.h"
 #include "curvefs/src/base/math/math.h"
+#include "curvefs/src/client/blockcache/disk_cache_metric.h"
 
 namespace curvefs {
 namespace client {
@@ -34,6 +35,7 @@ namespace blockcache {
 
 using ::curvefs::base::hash::ConNode;
 using ::curvefs::base::hash::KetamaConHash;
+using DiskCacheTotalMetric = ::curvefs::client::metric::DiskCacheMetric;
 
 DiskCacheGroup::DiskCacheGroup(std::vector<DiskCacheOption> options)
     : options_(options), chash_(std::make_unique<KetamaConHash>()) {}
@@ -68,7 +70,11 @@ BCACHE_ERROR DiskCacheGroup::Shutdown() {
 }
 
 BCACHE_ERROR DiskCacheGroup::Stage(const BlockKey& key, const Block& block) {
-  return GetStore(key)->Stage(key, block);
+  BCACHE_ERROR rc;
+  DiskCacheMetricGuard guard(
+      &rc, &DiskCacheTotalMetric::GetInstance().write_disk, block.size);
+  rc = GetStore(key)->Stage(key, block);
+  return rc;
 }
 
 BCACHE_ERROR DiskCacheGroup::RemoveStage(const BlockKey& key) {
@@ -76,7 +82,11 @@ BCACHE_ERROR DiskCacheGroup::RemoveStage(const BlockKey& key) {
 }
 
 BCACHE_ERROR DiskCacheGroup::Cache(const BlockKey& key, const Block& block) {
-  return GetStore(key)->Cache(key, block);
+  BCACHE_ERROR rc;
+  DiskCacheMetricGuard guard(
+      &rc, &DiskCacheTotalMetric::GetInstance().write_disk, block.size);
+  rc = GetStore(key)->Cache(key, block);
+  return rc;
 }
 
 BCACHE_ERROR DiskCacheGroup::Load(const BlockKey& key,

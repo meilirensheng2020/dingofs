@@ -34,6 +34,7 @@
 #include "curvefs/src/client/blockcache/error.h"
 #include "curvefs/src/client/blockcache/log.h"
 #include "curvefs/src/client/blockcache/phase_timer.h"
+#include "curvefs/src/client/metric/client_metric.h"
 
 namespace curvefs {
 namespace client {
@@ -42,13 +43,20 @@ namespace blockcache {
 using ::curvefs::base::string::GenUuid;
 using ::curvefs::base::time::TimeNow;
 
+using DiskCacheTotalMetric = ::curvefs::client::metric::DiskCacheMetric;
+using DiskCacheMetricGuard =
+    ::curvefs::client::blockcache::DiskCacheMetricGuard;
+
 BlockReaderImpl::BlockReaderImpl(int fd, std::shared_ptr<LocalFileSystem> fs)
     : fd_(fd), fs_(fs) {}
 
 BCACHE_ERROR BlockReaderImpl::ReadAt(off_t offset, size_t length,
                                      char* buffer) {
   return fs_->Do([&](const std::shared_ptr<PosixFileSystem> posix) {
-    auto rc = posix->LSeek(fd_, offset, SEEK_SET);
+    BCACHE_ERROR rc;
+    DiskCacheMetricGuard guard(
+        &rc, &DiskCacheTotalMetric::GetInstance().read_disk, length);
+    rc = posix->LSeek(fd_, offset, SEEK_SET);
     if (rc == BCACHE_ERROR::OK) {
       rc = posix->Read(fd_, buffer, length);
     }

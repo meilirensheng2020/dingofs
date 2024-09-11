@@ -33,6 +33,7 @@
 #include "curvefs/src/client/blockcache/error.h"
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/common/dynamic_config.h"
+#include "curvefs/src/client/metric/client_metric.h"
 
 namespace curvefs {
 namespace client {
@@ -42,6 +43,7 @@ USING_FLAG(disk_cache_free_space_ratio);
 
 using ::curvefs::base::string::StrFormat;
 using ::curvefs::client::common::DiskCacheOption;
+using ::curvefs::client::metric::InterfaceMetric;
 
 constexpr const char* kStopped = "stopped";  // load status
 constexpr const char* kOnLoading = "loading";
@@ -135,12 +137,36 @@ using MetricHandler = std::function<void(DiskCacheMetric* metric)>;
 
 struct MetricGuard {
   MetricGuard(std::shared_ptr<DiskCacheMetric> metric, MetricHandler handler)
-      : metric(metric), handler(handler){};
+      : metric(metric), handler(handler) {};
 
   ~MetricGuard() { handler(metric.get()); }
 
   std::shared_ptr<DiskCacheMetric> metric;
   MetricHandler handler;
+};
+struct DiskCacheMetricGuard {
+  explicit DiskCacheMetricGuard(BCACHE_ERROR* rc, InterfaceMetric* metric,
+                                size_t count)
+      : rc_(rc), metric_(metric), count_(count) {
+    start_ = butil::cpuwide_time_us();
+  }
+
+  ~DiskCacheMetricGuard() {
+    if (*rc_ == BCACHE_ERROR::OK) {
+      metric_->bps.count << count_;
+      metric_->qps.count << 1;
+      auto duration = butil::cpuwide_time_us() - start_;
+      metric_->latency << duration;
+      metric_->latTotal << duration;
+    } else {
+      metric_->eps.count << 1;
+    }
+  }
+
+  BCACHE_ERROR* rc_;
+  InterfaceMetric* metric_;
+  size_t count_;
+  uint64_t start_;
 };
 
 }  // namespace blockcache

@@ -147,7 +147,6 @@ CURVEFS_ERROR FuseS3Client::FuseOpInit(void* userdata,
   CURVEFS_ERROR ret = FuseClient::FuseOpInit(userdata, conn);
   if (init_) {
     s3Adaptor_->SetFsId(fsInfo_->fsid());
-    s3Adaptor_->InitMetrics(fsInfo_->fsname());
   }
   return ret;
 }

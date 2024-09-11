@@ -26,6 +26,8 @@
 #include <bvar/bvar.h>
 
 #include <cstdint>
+#include <iostream>
+#include <mutex>
 #include <string>
 
 #include "src/common/string_util.h"
@@ -44,16 +46,18 @@ struct PerSecondMetric {
 
 // interface metric statistics
 struct InterfaceMetric {
-  PerSecondMetric qps;            // processed per second
-  PerSecondMetric eps;            // error request per second
-  PerSecondMetric bps;            // throughput with byte per second
-  bvar::LatencyRecorder latency;  // latency
+  PerSecondMetric qps;             // processed per second
+  PerSecondMetric eps;             // error request per second
+  PerSecondMetric bps;             // throughput with byte per second
+  bvar::LatencyRecorder latency;   // latency
+  bvar::Adder<uint64_t> latTotal;  // latency total value
 
   InterfaceMetric(const std::string& prefix, const std::string& name)
       : qps(prefix, name + "_qps"),
         eps(prefix, name + "_eps"),
         bps(prefix, name + "_bps"),
-        latency(prefix, name + "_lat", 1) {}
+        latency(prefix, name + "_lat", 1),
+        latTotal(prefix, name + "_lat_total_value") {}
 };
 
 struct MDSClientMetric {
@@ -145,11 +149,15 @@ struct OpMetric {
   bvar::LatencyRecorder latency;
   bvar::Adder<int64_t> inflightOpNum;
   bvar::Adder<uint64_t> ecount;
+  bvar::Adder<uint64_t> qpsTotal;  // qps total count
+  bvar::Adder<uint64_t> latTotal;  // latency total count
 
   explicit OpMetric(const std::string& prefix, const std::string& name)
       : latency(prefix, name + "_lat", 1),
         inflightOpNum(prefix, name + "_inflight_num"),
-        ecount(prefix, name + "_error_num") {}
+        ecount(prefix, name + "_error_num"),
+        qpsTotal(prefix, name + "_qps_total_count"),
+        latTotal(prefix, name + "_lat_total_value") {}
 };
 
 struct ClientOpMetric {
@@ -249,47 +257,38 @@ struct FSMetric {
 struct S3Metric {
   static const std::string prefix;
 
-  std::string fsName;
-  InterfaceMetric adaptorWrite;
-  InterfaceMetric adaptorRead;
-  InterfaceMetric adaptorWriteS3;
-  InterfaceMetric adaptorReadS3;
-  InterfaceMetric adaptorWriteDiskCache;
-  InterfaceMetric adaptorReadDiskCache;
-  bvar::Status<uint32_t> writeSize;
-  bvar::Status<uint32_t> readSize;
-  // bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> writeSizeSecond;
-  // bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> readSizeSecond;
+  InterfaceMetric write_s3;
+  InterfaceMetric read_s3;
 
-  explicit S3Metric(const std::string& name = "")
-      : adaptorWrite(prefix, "_adaptor_write"),
-        adaptorRead(prefix, "_adaptor_read"),
-        adaptorWriteS3(prefix, "_adaptor_write_s3"),
-        adaptorReadS3(prefix, "_adaptor_read_s3"),
-        adaptorWriteDiskCache(prefix, "_adaptor_write_diskcache"),
-        adaptorReadDiskCache(prefix, "_adaptor_read_diskcache"),
-        writeSize(prefix, "_adaptor_write_size_last", 0),
-        readSize(prefix, "_adaptor_read_size_last", 0) {
-    (void)name;
+ private:
+  explicit S3Metric()
+      : write_s3(prefix, "_write_s3"), read_s3(prefix, "_read_s3") {}
+  S3Metric(const S3Metric&) = delete;
+  S3Metric& operator=(const S3Metric&) = delete;
+
+ public:
+  static S3Metric& GetInstance() {
+    static S3Metric instance_;
+    return instance_;
   }
 };
 
 struct DiskCacheMetric {
   static const std::string prefix;
 
-  std::string fsName;
-  // move to S3Metric adaptorWriteS3
-  // InterfaceMetric writeS3;
-  bvar::Status<uint64_t> diskUsedBytes;
-  bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> diskcacheWriteSizeSecond;
-  bvar::PerSecondEx<bvar::Adder<uint32_t>, 1> diskcacheReadSizeSecond;
+  InterfaceMetric write_disk;
+  InterfaceMetric read_disk;
 
-  explicit DiskCacheMetric(const std::string& name = "")
-      :  // writeS3(prefix, fsName + "_write_s3"),
-        diskUsedBytes(prefix, "_diskcache_usedbytes", 0),
-        diskcacheWriteSizeSecond(prefix + "_write_size_second"),
-        diskcacheReadSizeSecond(prefix + "_read_size_second") {
-    (void)name;
+ private:
+  explicit DiskCacheMetric()
+      : write_disk(prefix, "_write_disk"), read_disk(prefix, "_read_disk") {}
+  DiskCacheMetric(const DiskCacheMetric&) = delete;
+  DiskCacheMetric& operator=(const DiskCacheMetric&) = delete;
+
+ public:
+  static DiskCacheMetric& GetInstance() {
+    static DiskCacheMetric instance_;
+    return instance_;
   }
 };
 
@@ -320,6 +319,47 @@ struct WarmupManagerS3Metric {
         warmupS3CacheSize(prefix, "s3_cache_size") {}
 };
 
+struct MetricGuard {
+  explicit MetricGuard(int* rc, InterfaceMetric* metric, size_t count,
+                       uint64_t start)
+      : rc_(rc), metric_(metric), count_(count), start_(start) {}
+  ~MetricGuard() {
+    if (*rc_ == 0) {
+      metric_->bps.count << count_;
+      metric_->qps.count << 1;
+      auto duration = butil::cpuwide_time_us() - start_;
+      metric_->latency << duration;
+      metric_->latTotal << duration;
+    } else {
+      metric_->eps.count << 1;
+    }
+  }
+  int* rc_;
+  InterfaceMetric* metric_;
+  size_t count_;
+  uint64_t start_;
+};
+// metric guard for one or more metrics collection
+struct MetricListGuard {
+  explicit MetricListGuard(bool* rc, std::list<InterfaceMetric*> metricList,
+                           uint64_t start)
+      : rc_(rc), metricList_(metricList), start_(start) {}
+  ~MetricListGuard() {
+    for (auto& metric_ : metricList_) {
+      auto duration = butil::cpuwide_time_us() - start_;
+      if (*rc_) {
+        metric_->qps.count << 1;
+        metric_->latency << duration;
+        metric_->latTotal << duration;
+      } else {
+        metric_->eps.count << 1;
+      }
+    }
+  }
+  bool* rc_;
+  std::list<InterfaceMetric*> metricList_;
+  uint64_t start_;
+};
 }  // namespace metric
 }  // namespace client
 }  // namespace curvefs

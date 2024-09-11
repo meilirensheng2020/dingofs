@@ -33,8 +33,7 @@ namespace curvefs {
 namespace client {
 namespace rpcclient {
 
-using ::curvefs::common::LatencyListUpdater;
-using ::curvefs::common::LatencyUpdater;
+using ::curvefs::client::metric::MetricListGuard;
 using ::curvefs::mds::space::SpaceErrCode;
 using ::curvefs::mds::space::SpaceErrCode_Name;
 
@@ -64,17 +63,19 @@ FSStatusCode MdsClientImpl::MountFs(const std::string& fsName,
     (void)addrindex;
     (void)rpctimeoutMS;
     // mount fs metrics information
-    mdsClientMetric_.mountFs.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.mountFs.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok, {&mdsClientMetric_.mountFs, &mdsClientMetric_.getAllOperation},
+        start);
+
     MountFsResponse response;
     mdsbasecli_->MountFs(fsName, mountPt, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.mountFs.eps.count << 1;
       LOG(WARNING) << "MountFs Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -98,17 +99,19 @@ FSStatusCode MdsClientImpl::UmountFs(const std::string& fsName,
     (void)addrindex;
     (void)rpctimeoutMS;
     // unmount fs metrics information
-    mdsClientMetric_.umountFs.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.umountFs.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok, {&mdsClientMetric_.umountFs, &mdsClientMetric_.getAllOperation},
+        start);
+
     UmountFsResponse response;
     mdsbasecli_->UmountFs(fsName, mountPt, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.umountFs.eps.count << 1;
       LOG(WARNING) << "UmountFs Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -128,18 +131,21 @@ FSStatusCode MdsClientImpl::GetFsInfo(const std::string& fsName,
     (void)addrindex;
     (void)rpctimeoutMS;
     // getfsinfo metrics information
-    mdsClientMetric_.getFsInfo.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.getFsInfo.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok,
+        {&mdsClientMetric_.getFsInfo, &mdsClientMetric_.getAllOperation},
+        start);
+
     GetFsInfoResponse response;
     mdsbasecli_->GetFsInfo(fsName, &response, cntl, channel);
 
     if (cntl->Failed()) {
-      mdsClientMetric_.getFsInfo.eps.count << 1;
       LOG(WARNING) << "GetFsInfo Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -161,17 +167,20 @@ FSStatusCode MdsClientImpl::GetFsInfo(uint32_t fsId, FsInfo* fsInfo) {
     (void)addrindex;
     (void)rpctimeoutMS;
     // getfsinfo metrics information
-    mdsClientMetric_.getFsInfo.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.getFsInfo.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok,
+        {&mdsClientMetric_.getFsInfo, &mdsClientMetric_.getAllOperation},
+        start);
+
     GetFsInfoResponse response;
     mdsbasecli_->GetFsInfo(fsId, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.getFsInfo.eps.count << 1;
       LOG(WARNING) << "GetFsInfo Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -225,18 +234,21 @@ bool MdsClientImpl::GetMetaServerInfo(
     (void)rpctimeoutMS;
     (void)addrindex;
     // getMetaServerInfo metrics information
-    mdsClientMetric_.getMetaServerInfo.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.getMetaServerInfo.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(&is_ok,
+                             {&mdsClientMetric_.getMetaServerInfo,
+                              &mdsClientMetric_.getAllOperation},
+                             start);
+
     GetMetaServerInfoResponse response;
     mdsbasecli_->GetMetaServerInfo(port, ip, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.getMetaServerInfo.eps.count << 1;
       LOG(WARNING) << "GetMetaServerInfo Failed, errorcode = "
                    << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -266,18 +278,20 @@ bool MdsClientImpl::GetMetaServerListInCopysets(
     (void)addrindex;
     (void)rpctimeoutMS;
     // getMetaServerListInCopysets metrics information
-    mdsClientMetric_.getMetaServerListInCopysets.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList(
-        {&mdsClientMetric_.getMetaServerListInCopysets.latency,
-         &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(&is_ok,
+                             {&mdsClientMetric_.getMetaServerListInCopysets,
+                              &mdsClientMetric_.getAllOperation},
+                             start);
+
     GetMetaServerListInCopySetsResponse response;
     mdsbasecli_->GetMetaServerListInCopysets(logicalpooid, copysetidvec,
                                              &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.getMetaServerListInCopysets.eps.count << 1;
       LOG(WARNING) << "get metaserver list from mds failed, error is "
                    << cntl->ErrorText() << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -319,16 +333,19 @@ bool MdsClientImpl::CreatePartition(
     (void)addrindex;
     (void)rpctimeoutMS;
     // CreatePartition metrics information
-    mdsClientMetric_.createPartition.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.createPartition.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok,
+        {&mdsClientMetric_.createPartition, &mdsClientMetric_.getAllOperation},
+        start);
+
     CreatePartitionResponse response;
     mdsbasecli_->CreatePartition(fsID, count, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.createPartition.eps.count << 1;
       LOG(WARNING) << "CreatePartition from mds failed, error is "
                    << cntl->ErrorText() << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -368,18 +385,20 @@ bool MdsClientImpl::GetCopysetOfPartitions(
     (void)addrindex;
     (void)rpctimeoutMS;
     // GetCopysetOfPartitions metrics information
-    mdsClientMetric_.getCopysetOfPartitions.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList(
-        {&mdsClientMetric_.getCopysetOfPartitions.latency,
-         &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(&is_ok,
+                             {&mdsClientMetric_.getCopysetOfPartitions,
+                              &mdsClientMetric_.getAllOperation},
+                             start);
+
     GetCopysetOfPartitionResponse response;
     mdsbasecli_->GetCopysetOfPartitions(partitionIDList, &response, cntl,
                                         channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.getCopysetOfPartitions.eps.count << 1;
       LOG(WARNING) << "GetCopysetOfPartition from mds failed, error is "
                    << cntl->ErrorText() << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -416,16 +435,19 @@ bool MdsClientImpl::ListPartition(uint32_t fsID,
     (void)addrindex;
     (void)rpctimeoutMS;
     // listPartition metrics information
-    mdsClientMetric_.listPartition.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.listPartition.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok,
+        {&mdsClientMetric_.listPartition, &mdsClientMetric_.getAllOperation},
+        start);
+
     ListPartitionResponse response;
     mdsbasecli_->ListPartition(fsID, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.listPartition.eps.count << 1;
       LOG(WARNING) << "ListPartition from mds failed, error is "
                    << cntl->ErrorText() << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -456,17 +478,19 @@ bool MdsClientImpl::AllocOrGetMemcacheCluster(uint32_t fsId,
     (void)addrindex;
     (void)rpctimeoutMS;
     // AllocOrGetMemcacheCluster metrics information
-    mdsClientMetric_.allocOrGetMemcacheCluster.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList(
-        {&mdsClientMetric_.allocOrGetMemcacheCluster.latency,
-         &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(&is_ok,
+                             {&mdsClientMetric_.allocOrGetMemcacheCluster,
+                              &mdsClientMetric_.getAllOperation},
+                             start);
+
     mds::topology::AllocOrGetMemcacheClusterResponse response;
     mdsbasecli_->AllocOrGetMemcacheCluster(fsId, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.allocOrGetMemcacheCluster.eps.count << 1;
       LOG(WARNING) << "AllocOrGetMemcacheCluster from mds failed, error is "
                    << cntl->ErrorText() << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -491,17 +515,20 @@ FSStatusCode MdsClientImpl::AllocS3ChunkId(uint32_t fsId, uint32_t idNum,
     (void)addrindex;
     (void)rpctimeoutMS;
     // AllocS3ChunkId metrics information
-    mdsClientMetric_.allocS3ChunkId.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.allocS3ChunkId.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok,
+        {&mdsClientMetric_.allocS3ChunkId, &mdsClientMetric_.getAllOperation},
+        start);
+
     AllocateS3ChunkResponse response;
     mdsbasecli_->AllocS3ChunkId(fsId, idNum, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.allocS3ChunkId.eps.count << 1;
       LOG(WARNING) << "AllocS3ChunkId Failed, errorcode = " << cntl->ErrorCode()
                    << ", error content:" << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -526,10 +553,13 @@ FSStatusCode MdsClientImpl::RefreshSession(
     (void)addrindex;
     (void)rpctimeoutMS;
     // RefreshSession metrics information
-    mdsClientMetric_.refreshSession.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.refreshSession.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok,
+        {&mdsClientMetric_.refreshSession, &mdsClientMetric_.getAllOperation},
+        start);
+
     RefreshSessionRequest request;
     RefreshSessionResponse response;
     *request.mutable_txids() = {txIds.begin(), txIds.end()};
@@ -537,10 +567,10 @@ FSStatusCode MdsClientImpl::RefreshSession(
     *request.mutable_mountpoint() = mountpoint;
     mdsbasecli_->RefreshSession(request, &response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.refreshSession.eps.count << 1;
       LOG(WARNING) << "RefreshSession fail, errcode = " << cntl->ErrorCode()
                    << ", error content: " << cntl->ErrorText()
                    << ", log id = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -572,16 +602,19 @@ FSStatusCode MdsClientImpl::GetLatestTxId(const GetLatestTxIdRequest& request,
     (void)rpctimeoutMS;
     VLOG(3) << "GetLatestTxId [request]: " << request.DebugString();
     // GetLatestTxId metrics information
-    mdsClientMetric_.getLatestTxId.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.getLatestTxId.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok,
+        {&mdsClientMetric_.getLatestTxId, &mdsClientMetric_.getAllOperation},
+        start);
+
     mdsbasecli_->GetLatestTxId(request, response, cntl, channel);
     if (cntl->Failed()) {
-      mdsClientMetric_.getLatestTxId.eps.count << 1;
       LOG(WARNING) << "GetLatestTxId fail, errCode = " << cntl->ErrorCode()
                    << ", errorText = " << cntl->ErrorText()
                    << ", logId = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 
@@ -611,18 +644,20 @@ FSStatusCode MdsClientImpl::CommitTx(const CommitTxRequest& request) {
     (void)rpctimeoutMS;
     VLOG(3) << "CommitTx [request]: " << request.DebugString();
     // CommitTx metrics information
-    mdsClientMetric_.commitTx.qps.count << 1;
-    mdsClientMetric_.getAllOperation.qps.count << 1;
-    LatencyListUpdater updaterList({&mdsClientMetric_.commitTx.latency,
-                                    &mdsClientMetric_.getAllOperation.latency});
+    auto start = butil::cpuwide_time_us();
+    bool is_ok = true;
+    MetricListGuard mdsGuard(
+        &is_ok, {&mdsClientMetric_.commitTx, &mdsClientMetric_.getAllOperation},
+        start);
+
     CommitTxResponse response;
     mdsbasecli_->CommitTx(request, &response, cntl, channel);
 
     if (cntl->Failed()) {
-      mdsClientMetric_.commitTx.eps.count << 1;
       LOG(WARNING) << "CommitTx failed, errorCode = " << cntl->ErrorCode()
                    << ", errorText =" << cntl->ErrorText()
                    << ", logId = " << cntl->log_id();
+      is_ok = false;
       return -cntl->ErrorCode();
     }
 

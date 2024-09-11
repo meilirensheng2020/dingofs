@@ -273,7 +273,8 @@ void FuseClient::FuseOpDestroy(void* userdata) {
 CURVEFS_ERROR FuseClient::FuseOpLookup(fuse_req_t req, fuse_ino_t parent,
                                        const char* name, EntryOut* entryOut) {
   // check if parent is root inode and file name is .stats name
-  if (parent == ROOTINODEID && strcmp(name, STATSNAME) == 0) {  // stats node
+  if (BAIDU_UNLIKELY(parent == ROOTINODEID &&
+                     strcmp(name, STATSNAME) == 0)) {  // stats node
     InodeAttr attr = GenerateVirtualInodeAttr(STATSINODEID, fsInfo_->fsid());
     *entryOut = EntryOut(attr);
     return CURVEFS_ERROR::OK;
@@ -356,7 +357,7 @@ CURVEFS_ERROR FuseClient::FuseOpOpen(fuse_req_t req, fuse_ino_t ino,
                                      FileOut* fileOut) {
   // check if ino is .stats inode,if true ,get metric data and generate
   // inodeattr information
-  if (ino == STATSINODEID) {
+  if (BAIDU_UNLIKELY(ino == STATSINODEID)) {
     fi->direct_io = 1;
     auto handler = fs_->NewHandler();
     fi->fh = handler->fh;
@@ -881,7 +882,7 @@ CURVEFS_ERROR FuseClient::FuseOpReadDir(fuse_req_t req, fuse_ino_t ino,
       return rc;
     }
 
-    if (ino == ROOTINODEID) {  // root dir(add .stats file)
+    if (BAIDU_UNLIKELY(ino == ROOTINODEID)) {  // root dir(add .stats file)
       DirEntry dirEntry;
       if (!entries->Get(STATSINODEID,
                         &dirEntry)) {  // dirEntry not in dircache
@@ -988,7 +989,7 @@ CURVEFS_ERROR FuseClient::FuseOpRename(fuse_req_t req, fuse_ino_t parent,
 CURVEFS_ERROR FuseClient::FuseOpGetAttr(fuse_req_t req, fuse_ino_t ino,
                                         struct fuse_file_info* fi,
                                         AttrOut* attrOut) {
-  if (ino == STATSINODEID) {
+  if BAIDU_UNLIKELY ((ino == STATSINODEID)) {
     InodeAttr attr = GenerateVirtualInodeAttr(STATSINODEID, fsInfo_->fsid());
     *attrOut = AttrOut(attr);
     return CURVEFS_ERROR::OK;
