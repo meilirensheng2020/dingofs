@@ -29,6 +29,7 @@ import (
 	"github.com/opencurve/curve/tools-v2/pkg/cli/command/curvefs/delete"
 	list "github.com/opencurve/curve/tools-v2/pkg/cli/command/curvefs/list"
 	"github.com/opencurve/curve/tools-v2/pkg/cli/command/curvefs/query"
+	stats "github.com/opencurve/curve/tools-v2/pkg/cli/command/curvefs/stats"
 	status "github.com/opencurve/curve/tools-v2/pkg/cli/command/curvefs/status"
 	umount "github.com/opencurve/curve/tools-v2/pkg/cli/command/curvefs/umount"
 	usage "github.com/opencurve/curve/tools-v2/pkg/cli/command/curvefs/usage"
@@ -53,6 +54,7 @@ func (fsCmd *CurveFsCommand) AddSubCommands() {
 		create.NewCreateCommand(),
 		check.NewCheckCommand(),
 		warmup.NewWarmupCommand(),
+		stats.NewStatsCommand(),
 	)
 }
 
