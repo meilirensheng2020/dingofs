@@ -37,7 +37,7 @@ import (
 )
 
 func addSubCommands(cmd *cobra.Command) {
-	cmd.AddCommand(curvefs.NewCurveFsCommand(), curvebs.NewCurveBsCommand())
+	cmd.AddCommand(curvefs.NewCurveFsCommand(), curvebs.NewCurveBsCommand(), version.NewVersionCommand())
 }
 
 func setupRootCommand(cmd *cobra.Command) {

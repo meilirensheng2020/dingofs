@@ -22,6 +22,59 @@
 
 package version
 
-var (
-	Version = ""
+import (
+	"fmt"
+
+	basecmd "github.com/opencurve/curve/tools-v2/pkg/cli/command"
+	"github.com/spf13/cobra"
 )
+
+type VersionCommand struct {
+	basecmd.FinalCurveCmd
+}
+
+var _ basecmd.FinalCurveCmdFunc = (*VersionCommand)(nil) // check interface
+
+const (
+	versionExample = `$ curve version`
+)
+
+func NewVersionCommand() *cobra.Command {
+	return NewStatusVersionCommand().Cmd
+}
+
+func (cCmd *VersionCommand) AddFlags() {
+}
+
+func (cCmd *VersionCommand) Init(cmd *cobra.Command, args []string) error {
+	return nil
+}
+
+func (cCmd *VersionCommand) Print(cmd *cobra.Command, args []string) error {
+	return nil
+}
+
+func (cCmd *VersionCommand) RunCommand(cmd *cobra.Command, args []string) error {
+	fmt.Println("Version:", Version)
+	fmt.Println("Build Date:", BuildDate)
+	fmt.Println("Git Commit:", GitCommit)
+	fmt.Println("Go Version:", GoVersion)
+	fmt.Println("OS / Arch:", OsArch)
+	return nil
+}
+
+func (cCmd *VersionCommand) ResultPlainOutput() error {
+	return nil
+}
+
+func NewStatusVersionCommand() *VersionCommand {
+	versionCmd := &VersionCommand{
+		FinalCurveCmd: basecmd.FinalCurveCmd{
+			Use:     "version",
+			Short:   "Show the curve version information",
+			Example: versionExample,
+		},
+	}
+	basecmd.NewFinalCurveCli(&versionCmd.FinalCurveCmd, versionCmd)
+	return versionCmd
+}

@@ -1,7 +1,7 @@
 # Copyright (C) 2022 Jingli Chen (Wine93), NetEase Inc.
 .PHONY: build debug init proto clean install_grpc_protobuf
 
-version?=unknown
+version=2.0.1
 GITHUB_PROXY="https://ghproxy.com/"
 PROTOC_VERSION= 21.8
 PROTOC_GEN_GO_VERSION= "v1.28"
@@ -28,7 +28,12 @@ OUTPUT := sbin/curve
 DAEMON_OUTPUT := sbin/daemon
 
 # version
+GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_DIRTY=$(shell test -n "`git status -s | grep -v third-party`" && echo "+CHANGES" || true)
+BUILD_DATE=$(shell date '+%Y-%m-%dT%H:%M:%SZ')
 VERSION_FLAG := -X github.com/opencurve/curve/tools-v2/pkg/cli/command/version.Version=$(version)
+VERSION_FLAG += -X github.com/opencurve/curve/tools-v2/pkg/cli/command/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY}
+VERSION_FLAG += -X github.com/opencurve/curve/tools-v2/pkg/cli/command/version.BuildDate=${BUILD_DATE} 
 
 # build flags
 CGO_BUILD_LDFLAGS := -s -w -linkmode external
