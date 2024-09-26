@@ -102,6 +102,7 @@ type statsWatcher struct {
 	mountPoint string
 	header     string
 	sections   []*section
+	cpuUsage   float64
 }
 
 var _ basecmd.FinalCurveCmdFunc = (*StatsCommand)(nil) // check interface
@@ -197,7 +198,9 @@ func (w *statsWatcher) buildSchema(schema string, verbose bool) {
 			s.name = "usage"
 			s.items = append(s.items, &item{"cpu", "process_cpu_usage", metricCPU | metricCounter})
 			s.items = append(s.items, &item{"mem", "process_memory_resident", metricGauge})
-			s.items = append(s.items, &item{"rbuf", "read_data_cache_byte", metricGauge})
+			if verbose {
+				s.items = append(s.items, &item{"rbuf", "read_data_cache_byte", metricGauge})
+			}
 			s.items = append(s.items, &item{"wbuf", "write_data_cache_byte", metricGauge})
 		case 'f':
 			s.name = "fuse"
@@ -215,7 +218,7 @@ func (w *statsWatcher) buildSchema(schema string, verbose bool) {
 			s.items = append(s.items, &item{"ops", "dingofs_mds_client_get_allopt", metricTime | metricHist})
 		case 'b':
 			s.name = "blockcache"
-			s.items = append(s.items, &item{"read", "dingofs_diskcache_write_disk_bps_total_count ", metricByte | metricCounter})
+			s.items = append(s.items, &item{"read", "dingofs_diskcache_read_disk_bps_total_count", metricByte | metricCounter})
 			s.items = append(s.items, &item{"write", "dingofs_diskcache_write_disk_bps_total_count", metricByte | metricCounter})
 		case 'o':
 			s.name = "object"
@@ -399,7 +402,13 @@ func (w *statsWatcher) printDiff(left, right map[string]float64, dark bool) {
 				if it.typ&metricByte != 0 {
 					vals = append(vals, w.formatU64(v, dark, true))
 				} else if it.typ&metricCPU != 0 {
-					v := right[it.name]
+					v = right[it.name] //reset value to current for cpu
+					w.cpuUsage += v
+					if !dark {
+						v = w.cpuUsage
+						v /= float64(w.interval)
+						w.cpuUsage = 0.0
+					}
 					vals = append(vals, w.formatCPU(v, dark))
 				} else if it.typ&metricTime != 0 {
 					vals = append(vals, w.formatTime(v, dark))
@@ -445,6 +454,7 @@ func realTimeStats(mountPoint string, schema string, verbose bool, duration time
 		duration:   duration,
 		mountPoint: mountPoint,
 		interval:   int64(duration) / 1000000000,
+		cpuUsage:   0.0,
 	}
 	watcher.buildSchema(schema, verbose)
 	watcher.formatHeader()
