@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	peerExample = `$ curve bs update peer 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1`
+	peerExample = `$ dingo bs update peer 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1`
 )
 
 type ResetRpc struct {

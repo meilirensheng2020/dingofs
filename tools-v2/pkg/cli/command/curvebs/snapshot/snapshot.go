@@ -44,7 +44,7 @@ func NewSnapshotCommand() *cobra.Command {
 	statusCmd := &SnapshotCommand{
 		basecmd.MidCurveCmd{
 			Use:   "snapshot",
-			Short: "take snapshot for curvebs resource",
+			Short: "take snapshot for dingobs resource",
 		},
 	}
 	return basecmd.NewMidCurveCli(&statusCmd.MidCurveCmd, statusCmd)

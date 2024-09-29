@@ -42,8 +42,8 @@ import (
 )
 
 const (
-	copysetExample = `$ curve fs query copyset --copysetid 1,2 --poolid 1,1
-$ curve fs query copyset --copysetid 1,2 --poolid 1,1 --detail`
+	copysetExample = `$ dingo fs query copyset --copysetid 1,2 --poolid 1,1
+$ dingo fs query copyset --copysetid 1,2 --poolid 1,1 --detail`
 )
 
 type QueryCopysetRpc struct {
@@ -75,7 +75,7 @@ func NewCopysetCommand() *cobra.Command {
 	copysetCmd := &CopysetCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "copyset",
-			Short:   "query copysets in curvefs",
+			Short:   "query copysets in dingofs",
 			Example: copysetExample,
 		},
 	}

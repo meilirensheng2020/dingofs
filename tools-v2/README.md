@@ -1,9 +1,9 @@
-# curve tool usage
+# dingo tool usage
 
-A tool for CurveFS & CurveBs.
+A tool for DingoFS & DingoBs.
 
-- [curve tool usage](#curve-tool-usage)
-  - [How to use curve tool](#how-to-use-curve-tool)
+- [dingo tool usage](#dingo-tool-usage)
+  - [How to use dingo tool](#how-to-use-dingo-tool)
     - [Install](#install)
     - [Introduction](#introduction)
   - [Command](#command)
@@ -76,41 +76,35 @@ A tool for CurveFS & CurveBs.
     - [snapshot](#snapshot)
       - [snapshot copyset](#snapshot-copyset)
   - [Comparison of old and new commands](#comparison-of-old-and-new-commands)
-    - [curve fs](#curve-fs)
-    - [curve bs](#curve-bs)
+    - [dingo fs](#dingo-fs)
+    - [dingo bs](#dingo-bs)
 
-## How to use curve tool
+## How to use dingo tool
 
 ### Install
 
-install curve tool
+install dingo tool
 
 ```bash
-wget https://curve-tool.nos-eastchina1.126.net/release/curve-latest
-chmod +x curve-latest
-mv curve-latest /usr/bin/curve
+wget https://github.com/dingodb/dingofs/releases/dingo-latest
+chmod +x dingo-latest
+mv dingo-latest /usr/bin/dingo
 ```
 
 set configure file
 
 ```bash
-wget https://raw.githubusercontent.com/opencurve/curve/master/tools-v2/pkg/config/curve.yaml
+wget https://github.com/dingodb/dingofs/tree/master/tools-v2/pkg/config/dingo.yaml
 ```
 
-or
-
-```
-wget https://curve-tool.nos-eastchina1.126.net/config/curve.yaml
-```
-
-Please modify the `mdsAddr, mdsDummyAddr, etcdAddr` under `curvefs/bs` in the template.yaml file as required
+Please modify the `mdsAddr, mdsDummyAddr, etcdAddr` under `dingofs/bs` in the template.yaml file as required
 
 configure file priority
-environment variables(CONF=/opt/curve.yaml) > default (~/.curve/curve.yaml)
+environment variables(CONF=/opt/dingo.yaml) > default (~/.dingo/dingo.yaml)
 ```bash
-mv curve.yaml ~/.curve/curve.yaml
+mv dingo.yaml ~/.dingo/dingo.yaml
 or
-export CONF=/opt/curve.yaml
+export CONF=/opt/dingo.yaml
 ```
 
 ### Introduction
@@ -118,25 +112,25 @@ export CONF=/opt/curve.yaml
 Here's how to use the tool
 
 ```bash
-curve COMMAND [options]
+dingo COMMAND [options]
 ```
 
 When you are not sure how to use a command, --help can give you an example of use:
 
 ```bash
-curve COMMAND --help
+dingo COMMAND --help
 ```
 
 For example:
 
 ```bash
-curve fs status mds --help
-Usage:  curve fs status mds [flags]
+dingo fs status mds --help
+Usage:  dingo fs status mds [flags]
 
-get the inode usage of curvefs
+get the inode usage of dingofs
 
 Flags:
-  -c, --conf string            config file (default is $HOME/.curve/curve.yaml or /etc/curve/curve.yaml)
+  -c, --conf string            config file (default is $HOME/.dingo/dingo.yaml)
   -f, --format string          Output format (json|plain) (default "plain")
   -h, --help                   Print usage
       --httptimeout duration   http timeout (default 500ms)
@@ -145,28 +139,32 @@ Flags:
       --showerror              display all errors in command
 
 Examples:
-$ curve fs status mds
+$ dingo fs status mds
 ```
 
-In addition, this tool reads the configuration from `$HOME/.curve/curve.yaml` or `/etc/curve/curve.yaml` by default,
+In addition, this tool reads the configuration from `$HOME/.dingo/dingo.yaml` by default,
 and can be specified by `--conf` or `-c`.
 
 ## Command
 
 ### version
 
-show the version of curve tool
+show the version of dingo tool
 
 Usage:
 
 ```shell
-curve --version
+dingo version
 ```
 
 Output:
 
 ```shell
-curve v1.2
+Version: 2.0.1
+Build Date: 2024-09-29T17:45:44Z
+Git Commit: f72284dbd2512727a48d425bf64091875c4cde67
+Go Version: go1.21.11
+OS / Arch: linux amd64
 ```
 
 ### fs
@@ -175,12 +173,12 @@ curve v1.2
 
 ##### check copyset
 
-check copysets health in curvefs
+check copysets health in dingofs
 
 Usage:
 
 ```shell
-curve fs check copyset --copysetid 1 --poolid 1
+dingo fs check copyset --copysetid 1 --poolid 1
 ```
 
 Output:
@@ -197,12 +195,12 @@ Output:
 
 ##### create fs
 
-create a fs in curvefs
+create a fs in dingofs
 
 Usage:
 
 ```shell
-curve fs create fs --fsname test3
+dingo fs create fs --fsname test3
 ```
 
 Output:
@@ -217,12 +215,12 @@ Output:
 
 ##### create topology
 
-create curvefs topology
+create dingofs topology
 
 Usage:
 
 ```shell
-curve fs create topology --clustermap topology.json
+dingo fs create topology --clustermap topology.json
 ```
 
 Output:
@@ -243,12 +241,12 @@ Output:
 
 ##### delete fs
 
-delete a fs from curvefs
+delete a fs from dingofs
 
 Usage:
 
 ```shell
-curve fs delete fs --fsname test1
+dingo fs delete fs --fsname test1
 WARNING:Are you sure to delete fs test1?
 please input [test1] to confirm: test1
 ```
@@ -267,12 +265,12 @@ Output:
 
 ##### list copyset
 
-list all copyset info of the curvefs
+list all copyset info of the dingofs
 
 Usage:
 
 ```shell
-curve fs list copyset
+dingo fs list copyset
 ```
 
 Output:
@@ -321,12 +319,12 @@ Output:
 
 ##### list fs
 
-list all fs info in the curvefs
+list all fs info in the dingofs
 
 Usage:
 
 ```shell
-curve fs list fs
+dingo fs list fs
 ```
 
 Output:
@@ -343,12 +341,12 @@ Output:
 
 ##### list mountpoint
 
-list all mountpoint of the curvefs
+list all mountpoint of the dingofs
 
 Usage:
 
 ```shell
-curve fs list mountpoint
+dingo fs list mountpoint
 ```
 
 Output:
@@ -357,20 +355,20 @@ Output:
 +------+--------+-------------------------------------------------------------------+
 | FSID | FSNAME |                            MOUNTPOINT                             |
 +------+--------+-------------------------------------------------------------------+
-| 2    | test1  | siku-QiTianM420-N000:9002:/curvefs/client/mnt/home/siku/temp/mnt1 |
+| 2    | test1  | siku-QiTianM420-N000:9002:/dingofs/client/mnt/home/siku/temp/mnt1 |
 +      +        +-------------------------------------------------------------------+
-|      |        | siku-QiTianM420-N000:9003:/curvefs/client/mnt/home/siku/temp/mnt2 |
+|      |        | siku-QiTianM420-N000:9003:/dingofs/client/mnt/home/siku/temp/mnt2 |
 +------+--------+-------------------------------------------------------------------+
 ```
 
 ##### list partition
 
-list partition in curvefs by fsid
+list partition in dingofs by fsid
 
 Usage:
 
 ```shell
-curve fs list partition
+dingo fs list partition
 ```
 
 Output:
@@ -431,12 +429,12 @@ Output:
 
 ##### list topology
 
-list the topology of the curvefs
+list the topology of the dingofs
 
 Usage:
 
 ```shell
-curve fs list topology
+dingo fs list topology
 ```
 
 Output:
@@ -453,17 +451,17 @@ Output:
 +----+            +--------------------+            +-----------------------+
 | 1  |            | zone1              |            | **.***.***.**_0_0     |
 +----+------------+--------------------+------------+-----------------------+
-| 3  | server     | **.***.***.**_2_0  | metaserver | curvefs-metaserver.2  |
+| 3  | server     | **.***.***.**_2_0  | metaserver | dingofs-metaserver.2  |
 +----+            +--------------------+            +-----------------------+
-| 2  |            | **.***.***.**_1_0  |            | curvefs-metaserver.1  |
+| 2  |            | **.***.***.**_1_0  |            | dingofs-metaserver.1  |
 +----+            +--------------------+            +-----------------------+
-| 1  |            | **.***.***.**_0_0  |            | curvefs-metaserver.3  |
+| 1  |            | **.***.***.**_0_0  |            | dingofs-metaserver.3  |
 +----+------------+--------------------+------------+-----------------------+
-| 3  | metaserver | curvefs-metaserver |            |                       |
+| 3  | metaserver | dingofs-metaserver |            |                       |
 +----+            +--------------------+------------+-----------------------+
-| 2  |            | curvefs-metaserver |            |                       |
+| 2  |            | dingofs-metaserver |            |                       |
 +----+            +--------------------+------------+-----------------------+
-| 1  |            | curvefs-metaserver |            |                       |
+| 1  |            | dingofs-metaserver |            |                       |
 +----+------------+--------------------+------------+-----------------------+
 ```
 
@@ -471,12 +469,12 @@ Output:
 
 ##### query copyset
 
-query copysets in curvefs
+query copysets in dingofs
 
 Usage:
 
 ```shell
-curve fs query copyset --copysetid 1 --poolid 1
+dingo fs query copyset --copysetid 1 --poolid 1
 ```
 
 Output:
@@ -491,12 +489,12 @@ Output:
 
 ##### query fs
 
-query fs in curvefs by fsname or fsid
+query fs in dingofs by fsname or fsid
 
 Usage:
 
 ```shell
-curve fs query fs --fsname test1
+dingo fs query fs --fsname test1
 ```
 
 Output:
@@ -516,7 +514,7 @@ query the inode of fs
 Usage:
 
 ```shell
-curve fs query inode --fsid 2 --inodeid 5243380
+dingo fs query inode --fsid 2 --inodeid 5243380
 ```
 
 Output:
@@ -531,12 +529,12 @@ Output:
 
 ##### query metaserver
 
-query metaserver in curvefs by metaserverid or metaserveraddr
+query metaserver in dingofs by metaserverid or metaserveraddr
 
 Usage:
 
 ```shell
-curve fs query metaserver --metaserveraddr **.***.***.**:6801,**.***.***.**:6802
+dingo fs query metaserver --metaserveraddr **.***.***.**:6801,**.***.***.**:6802
 ```
 
 Output:
@@ -545,8 +543,8 @@ Output:
 +----+--------------------+--------------------+--------------------+-------------+
 | id |      hostname      |    internalAddr    |    externalAddr    | onlineState |
 +----+--------------------+--------------------+--------------------+-------------+
-| 1  | curvefs-metaserver | **.***.***.**:6801 | **.***.***.**:6801 |   ONLINE    |
-| 2  | curvefs-metaserver | **.***.***.**:6802 | **.***.***.**:6802 |   ONLINE    |
+| 1  | dingofs-metaserver | **.***.***.**:6801 | **.***.***.**:6801 |   ONLINE    |
+| 2  | dingofs-metaserver | **.***.***.**:6802 | **.***.***.**:6802 |   ONLINE    |
 +----+--------------------+--------------------+--------------------+-------------+
 ```
 
@@ -557,7 +555,7 @@ query the copyset of partition
 Usage:
 
 ```shell
-curve fs query partition --partitionid 14
+dingo fs query partition --partitionid 14
 ```
 
 Output:
@@ -581,7 +579,7 @@ get status of mds
 Usage:
 
 ```shell
-curve fs status mds
+dingo fs status mds
 ```
 
 Output:
@@ -603,7 +601,7 @@ get status of metaserver
 Usage:
 
 ```shell
-curve fs status metaserver
+dingo fs status metaserver
 ```
 
 Output:
@@ -625,7 +623,7 @@ get status of etcd
 Usage:
 
 ```shell
-curve fs status etcd
+dingo fs status etcd
 ```
 
 Output:
@@ -647,7 +645,7 @@ get status of copyset
 Usage:
 
 ```shell
-curve fs status copyset
+dingo fs status copyset
 ```
 
 Output:
@@ -678,7 +676,7 @@ get status of cluster
 Usage:
 
 ```shell
-curve fs status cluster
+dingo fs status cluster
 ```
 
 Output:
@@ -736,12 +734,12 @@ Cluster health is:  ok
 
 ##### umount fs
 
-umount fs from the curvefs cluster
+umount fs from the dingofs cluster
 
 Usage:
 
 ```shell
-curve fs umount fs --fsname test1 --mountpoint siku-QiTianM420-N000:9002:/curvefs/client/mnt/home/siku/temp/mnt1
+dingo fs umount fs --fsname test1 --mountpoint siku-QiTianM420-N000:9002:/dingofs/client/mnt/home/siku/temp/mnt1
 ```
 
 Output:
@@ -750,7 +748,7 @@ Output:
 +--------+-------------------------------------------------------------------+---------+
 | fsName |                            mountpoint                             | result  |
 +--------+-------------------------------------------------------------------+---------+
-| test1  | siku-QiTianM420-N000:9003:/curvefs/client/mnt/home/siku/temp/mnt2 | success |
+| test1  | siku-QiTianM420-N000:9003:/dingofs/client/mnt/home/siku/temp/mnt2 | success |
 +--------+-------------------------------------------------------------------+---------+
 ```
 
@@ -758,12 +756,12 @@ Output:
 
 ##### usage inode
 
-get the inode usage of curvefs
+get the inode usage of dingofs
 
 Usage:
 
 ```shell
-curve fs usage inode
+dingo fs usage inode
 ```
 
 Output:
@@ -787,12 +785,12 @@ Output:
 
 ##### usage metadata
 
-get the usage of metadata in curvefs
+get the usage of metadata in dingofs
 
 Usage:
 
 ```shell
-curve fs usage metadata
+dingo fs usage metadata
 ```
 
 Output:
@@ -816,12 +814,12 @@ warmup a file(directory), or given a list file contains a list of files(director
 Usage:
 
 ```shell
-curve fs warmup add /mnt/curvefs/warmup
-curve fs warmup add --filelist /mnt/curvefs/warmup.list
+dingo fs warmup add /mnt/dingofs/warmup
+dingo fs warmup add --filelist /mnt/dingofs/warmup.list
 ```
 
-> `curve fs warmup add /mnt/curvefs/warmup` will warmup a file(directory).
-> /mnt/curvefs/warmup.list
+> `dingo fs warmup add /mnt/dingofs/warmup` will warmup a file(directory).
+> /mnt/dingofs/warmup.list
 
 ## bs
 
@@ -834,7 +832,7 @@ list all logical pool information
 Usage:
 
 ```bash
-curve bs list logical-pool
+dingo bs list logical-pool
 ```
 
 Output:
@@ -849,12 +847,12 @@ Output:
 
 ##### list server
 
-list all server information in curvebs
+list all server information in dingobs
 
 Usage:
 
 ```bash
-curve bs list server
+dingo bs list server
 ```
 
 Output:
@@ -873,10 +871,10 @@ Output:
 
 ##### list client
 
-list all client information in curvebs
+list all client information in dingobs
 
 ```bash
-curve bs list client
+dingo bs list client
 ```
 
 Output:
@@ -891,10 +889,10 @@ Output:
 
 ##### list dir
 
-list dir information in curvebs
+list dir information in dingobs
 
 ```bash
-curve bs list dir --dir /
+dingo bs list dir --dir /
 ```
 
 Output:
@@ -909,10 +907,10 @@ Output:
 
 ##### list space
 
-show curvebs all disk type space, include total space and used space
+show dingobs all disk type space, include total space and used space
 
 ```bash
-curve bs list space
+dingo bs list space
 ```
 
 Output:
@@ -929,10 +927,10 @@ Output:
 
 ##### list chunkserver
 
-list chunkserver information in curvebs
+list chunkserver information in dingobs
 
 ```bash
-curve bs list chunkserver
+dingo bs list chunkserver
 ```
 
 Output:
@@ -941,11 +939,11 @@ Output:
 +----+------+-----------+------+-----------+------------+------------+-----------------------------------------------+--------------+-------------+------------------+-----------+
 | ID | TYPE |    IP     | PORT | RWSTATUS  | DISKSTATE  | COPYSETNUM |                  MOUNTPOINT                   | DISKCAPACITY |  DISKUSED   | UNHEALTHYCOPYSET |  EXTADDR  |
 +----+------+-----------+------+-----------+------------+------------+-----------------------------------------------+--------------+-------------+------------------+-----------+
-| 1  | nvme | 127.0.0.1 | 8201 | READWRITE | DISKNORMAL | 100        | local:///curvebs/playground/chunkserver1/data | 39 GiB       | 42140479488 | 0 %              | 127.0.0.1 |
+| 1  | nvme | 127.0.0.1 | 8201 | READWRITE | DISKNORMAL | 100        | local:///dingobs/playground/chunkserver1/data | 39 GiB       | 42140479488 | 0 %              | 127.0.0.1 |
 +----+      +           +------+           +            +------------+-----------------------------------------------+--------------+-------------+------------------+           +
-| 2  |      |           | 8202 |           |            | 100        | local:///curvebs/playground/chunkserver2/data | 39 GiB       | 42140479488 | 0 %              |           |
+| 2  |      |           | 8202 |           |            | 100        | local:///dingobs/playground/chunkserver2/data | 39 GiB       | 42140479488 | 0 %              |           |
 +----+      +           +------+           +            +------------+-----------------------------------------------+--------------+-------------+------------------+           +
-| 3  |      |           | 8200 |           |            | 100        | local:///curvebs/playground/chunkserver0/data | 39 GiB       | 42140479488 | 0 %              |           |
+| 3  |      |           | 8200 |           |            | 100        | local:///dingobs/playground/chunkserver0/data | 39 GiB       | 42140479488 | 0 %              |           |
 +----+------+-----------+------+-----------+------------+------------+-----------------------------------------------+--------------+-------------+------------------+-----------+
 ```
 
@@ -956,7 +954,7 @@ clean the recycle bin
 Usage:
 
 ```bash
-curve bs clean-recycle --recycleprefix=/test --expiredtime=1h
+dingo bs clean-recycle --recycleprefix=/test --expiredtime=1h
 ```
 
 Output:
@@ -978,7 +976,7 @@ query the file info and actual space
 Usage:
 
 ```bash
-curve bs query file --path=/test
+dingo bs query file --path=/test
 ```
 
 Output:
@@ -1001,7 +999,7 @@ query the location of the chunk corresponding to the offset
 Usage:
 
 ```bash
-curve bs query chunk --path /test1 --offset 1008600000 
+dingo bs query chunk --path /test1 --offset 1008600000 
 ```
 
 Output:
@@ -1023,7 +1021,7 @@ query the segments info of the file
 Usage:
 
 ```bash
-curve bs query seginfo --path /test1 
+dingo bs query seginfo --path /test1 
 ```
 
 Output:
@@ -1048,12 +1046,12 @@ Output:
 
 #### status etcd
 
-get the etcd status of curvebs
+get the etcd status of dingobs
 
 Usage:
 
 ```bash
-curve bs status etcd
+dingo bs status etcd
 ```
 
 Output:
@@ -1072,12 +1070,12 @@ Output:
 
 #### status mds
 
-get the mds status of curvebs
+get the mds status of dingobs
 
 Usage:
 
 ```bash
-curve bs status mds
+dingo bs status mds
 ```
 
 Output:
@@ -1097,12 +1095,12 @@ Output:
 
 #### status client
 
-get the client status of curvebs
+get the client status of dingobs
 
 Usage:
 
 ```bash
-curve bs status client
+dingo bs status client
 ```
 
 Output:
@@ -1119,12 +1117,12 @@ Output:
 
 #### status snapshotserver
 
-get the mds status of curvebs
+get the mds status of dingobs
 
 Usage:
 
 ```bash
-curve bs status snapshotserver
+dingo bs status snapshotserver
 ```
 
 Output:
@@ -1143,12 +1141,12 @@ Output:
 
 #### status chunkserver
 
-get the chunkserver status of curvebs
+get the chunkserver status of dingobs
 
 Usage:
 
 ```bash
-curve bs status chunkserver
+dingo bs status chunkserver
 ```
 
 Output:
@@ -1174,7 +1172,7 @@ delete the peer from the copyset
 Usage:
 
 ```bash
-curve bs delete peer
+dingo bs delete peer
 ```
 
 Output:
@@ -1195,7 +1193,7 @@ reset peer
 
 Usage:
 ```bash
-curve bs update peer 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1
+dingo bs update peer 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1
 ```
 
 Output:
@@ -1213,7 +1211,7 @@ transfer leader
 
 Usage:
 ```bash
-curve bs update leader 127.0.0.1:8202:0 --logicalpoolid=1 --copysetid=1 --peers=127.0.0.1:8200:0,127.0.0.1:8201:0,127.0.0.1:8202:0
+dingo bs update leader 127.0.0.1:8202:0 --logicalpoolid=1 --copysetid=1 --peers=127.0.0.1:8200:0,127.0.0.1:8201:0,127.0.0.1:8202:0
 ```
 
 Output:
@@ -1231,7 +1229,7 @@ expand pagefile
 
 Usage:
 ```bash
-curve bs update file --path /test2/test1 --size 10
+dingo bs update file --path /test2/test1 --size 10
 ```
 
 Output:
@@ -1249,7 +1247,7 @@ update file throttle params
 
 Usage:
 ```bash
-curve bs update throttle --path /test1 --type=bps_total --limit 20000
+dingo bs update throttle --path /test1 --type=bps_total --limit 20000
 ```
 
 Output:
@@ -1267,7 +1265,7 @@ enable/disable scan for logical pool
 
 Usage:
 ```bash
-curve bs update scan-state --logicalpoolid 1 [--scan=true/false]
+dingo bs update scan-state --logicalpoolid 1 [--scan=true/false]
 ```
 
 Output:
@@ -1287,7 +1285,7 @@ create pagefile
 
 Usage:
 ```bash
-curve bs create file --path /test2/test4  --size 10GiB
+dingo bs create file --path /test2/test4  --size 10GiB
 ```
 
 Output:
@@ -1305,7 +1303,7 @@ create directory
 
 Usage:
 ```bash
-curve bs create dir --path /test2/test5 
+dingo bs create dir --path /test2/test5 
 ```
 
 Output:
@@ -1321,12 +1319,12 @@ Output:
 
 #### check copyset
 
-check copysets health in curvebs
+check copysets health in dingobs
 
 Usage:
 
 ```shell
-curve bs check copyset --copysetid 1 --logicalpoolid 1
+dingo bs check copyset --copysetid 1 --logicalpoolid 1
 ```
 
 Output:
@@ -1347,7 +1345,7 @@ take snapshot for copyset
 
 Usage:
 ```bash
-curve bs snapshot copyset 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1
+dingo bs snapshot copyset 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1
 ```
 
 Output:
@@ -1361,68 +1359,68 @@ Output:
 
 ## Comparison of old and new commands
 
-### curve fs
+### dingo fs
 
 | old                            | new                        |
 | ------------------------------ | -------------------------- |
-| curvefs_tool check-copyset     | curve fs check copyset     |
-| curvefs_tool create-fs         | curve fs create fs         |
-| curvefs_tool create-topology   | curve fs create topology   |
-| curvefs_tool delete-fs         | curve fs delete fs         |
-| curvefs_tool list-copyset      | curve fs list copyset      |
-| curvefs_tool list-fs           | curve fs list fs           |
-| curvefs_tool list-fs           | curve fs list mountpoint   |
-| curvefs_tool list-partition    | curve fs list partition    |
-| curvefs_tool query-copyset     | curve fs query copyset     |
-| curvefs_tool query-fs          | curve fs query fs          |
-| curvefs_tool query-inode       | curve fs query inode       |
-| curvefs_tool query-metaserver  | curve fs query metaserver  |
-| curvefs_tool query-partition   | curve fs query partition   |
-| curvefs_tool status-mds        | curve fs status mds        |
-| curvefs_tool status-metaserver | curve fs status metaserver |
-| curvefs_tool status-etcd       | curve fs status etcd       |
-| curvefs_tool status-copyset    | curve fs status copyset    |
-| curvefs_tool status-cluster    | curve fs status cluster    |
-| curvefs_tool umount-fs         | curve fs umount fs         |
-| curvefs_tool usage-inode       | curve fs usage inode       |
-| curvefs_tool usage-metadata    | curve fs usage metadata    |
+| dingofs_tool check-copyset     | dingo fs check copyset     |
+| dingofs_tool create-fs         | dingo fs create fs         |
+| dingofs_tool create-topology   | dingo fs create topology   |
+| dingofs_tool delete-fs         | dingo fs delete fs         |
+| dingofs_tool list-copyset      | dingo fs list copyset      |
+| dingofs_tool list-fs           | dingo fs list fs           |
+| dingofs_tool list-fs           | dingo fs list mountpoint   |
+| dingofs_tool list-partition    | dingo fs list partition    |
+| dingofs_tool query-copyset     | dingo fs query copyset     |
+| dingofs_tool query-fs          | dingo fs query fs          |
+| dingofs_tool query-inode       | dingo fs query inode       |
+| dingofs_tool query-metaserver  | dingo fs query metaserver  |
+| dingofs_tool query-partition   | dingo fs query partition   |
+| dingofs_tool status-mds        | dingo fs status mds        |
+| dingofs_tool status-metaserver | dingo fs status metaserver |
+| dingofs_tool status-etcd       | dingo fs status etcd       |
+| dingofs_tool status-copyset    | dingo fs status copyset    |
+| dingofs_tool status-cluster    | dingo fs status cluster    |
+| dingofs_tool umount-fs         | dingo fs umount fs         |
+| dingofs_tool usage-inode       | dingo fs usage inode       |
+| dingofs_tool usage-metadata    | dingo fs usage metadata    |
 
-### curve bs
+### dingo bs
 
 | old                                  | new                            |
 | ------------------------------------ | ------------------------------ |
-| curve_ops_tool logical-pool-list     | curve bs list logical-pool     |
-| curve_ops_tool get -fileName=        | curve bs query file -path      |
-| curve_ops_tool etcd-status           | curve bs status etcd           |
-| curve_ops_tool mds-status            | curve bs status mds            |
-| curve_ops_tool server-list           | curve bs list server           |
-| curve_ops_tool client-list           | curve bs list client           |
-| curve_ops_tool delete                | curve bs delete file           |
-| curve_ops_tool list                  | curve bs list dir              |
-| curve_ops_tool create                | curve bs create file/dir       |
-| curve_ops_tool seginfo               | curve bs query seginfo         |
-| curve_ops_tool chunk-location        | curve bs query chunk           |
-| curve_ops_tool remove-peer           | curve bs delete peer           |
-| curve_ops_tool reset-peer            | curve bs update peer           |
-| curve_ops_tool space                 | curve bs list space            |
-| curve_ops_tool update-throttle       | curve bs update throttle       |
-| curve_ops_tool check-copyset         | curve bs check copyset         |
-| curve_ops_tool client-status         | curve bs status client         |
-| curve_ops_tool check-operator        | curve bs check operator        |
-| curve_ops_tool snapshot-clone-status | curve bs status snapshotserver |
-| curve_ops_tool transfer-leader       | curve bs update leader         |
-| curve_ops_tool do-snapshot           | curve bs snapshot copyset      |
-| curve_ops_tool set-scan-state        | curve bs update scan-state     |
-| curve_ops_tool chunkserver-status    | curve bs status chunkserver    |
-| curve_ops_tool status                |                                |
-| curve_ops_tool copysets-status       |                                |
-| curve_ops_tool chunkserver-list      | curve bs list chunkserver      |
-| curve_ops_tool clean-recycle         |                                |
-| curve_ops_tool check-consistency     |                                |
-| curve_ops_tool do-snapshot-all       |                                |
-| curve_ops_tool check-chunkserver     |                                |
-| curve_ops_tool check-server          |                                |
-| curve_ops_tool list-may-broken-vol   |                                |
-| curve_ops_tool set-copyset-availflag |                                |
-| curve_ops_tool rapid-leader-schedule |                                |
-| curve_ops_tool scan-status           |                                |
+| dingo_ops_tool logical-pool-list     | dingo bs list logical-pool     |
+| dingo_ops_tool get -fileName=        | dingo bs query file -path      |
+| dingo_ops_tool etcd-status           | dingo bs status etcd           |
+| dingo_ops_tool mds-status            | dingo bs status mds            |
+| dingo_ops_tool server-list           | dingo bs list server           |
+| dingo_ops_tool client-list           | dingo bs list client           |
+| dingo_ops_tool delete                | dingo bs delete file           |
+| dingo_ops_tool list                  | dingo bs list dir              |
+| dingo_ops_tool create                | dingo bs create file/dir       |
+| dingo_ops_tool seginfo               | dingo bs query seginfo         |
+| dingo_ops_tool chunk-location        | dingo bs query chunk           |
+| dingo_ops_tool remove-peer           | dingo bs delete peer           |
+| dingo_ops_tool reset-peer            | dingo bs update peer           |
+| dingo_ops_tool space                 | dingo bs list space            |
+| dingo_ops_tool update-throttle       | dingo bs update throttle       |
+| dingo_ops_tool check-copyset         | dingo bs check copyset         |
+| dingo_ops_tool client-status         | dingo bs status client         |
+| dingo_ops_tool check-operator        | dingo bs check operator        |
+| dingo_ops_tool snapshot-clone-status | dingo bs status snapshotserver |
+| dingo_ops_tool transfer-leader       | dingo bs update leader         |
+| dingo_ops_tool do-snapshot           | dingo bs snapshot copyset      |
+| dingo_ops_tool set-scan-state        | dingo bs update scan-state     |
+| dingo_ops_tool chunkserver-status    | dingo bs status chunkserver    |
+| dingo_ops_tool status                |                                |
+| dingo_ops_tool copysets-status       |                                |
+| dingo_ops_tool chunkserver-list      | dingo bs list chunkserver      |
+| dingo_ops_tool clean-recycle         |                                |
+| dingo_ops_tool check-consistency     |                                |
+| dingo_ops_tool do-snapshot-all       |                                |
+| dingo_ops_tool check-chunkserver     |                                |
+| dingo_ops_tool check-server          |                                |
+| dingo_ops_tool list-may-broken-vol   |                                |
+| dingo_ops_tool set-copyset-availflag |                                |
+| dingo_ops_tool rapid-leader-schedule |                                |
+| dingo_ops_tool scan-status           |                                |

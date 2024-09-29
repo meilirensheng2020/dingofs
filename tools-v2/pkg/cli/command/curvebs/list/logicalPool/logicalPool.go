@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	logicalPoolExample = `$ curve bs list logical-pool`
+	logicalPoolExample = `$ dingo bs list logical-pool`
 )
 
 type ListLogicalPoolRpc struct {

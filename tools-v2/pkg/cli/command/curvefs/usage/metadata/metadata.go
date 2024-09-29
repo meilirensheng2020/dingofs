@@ -26,13 +26,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dustin/go-humanize"
 	cmderror "github.com/dingodb/dingofs/tools-v2/internal/error"
 	cobrautil "github.com/dingodb/dingofs/tools-v2/internal/utils"
 	basecmd "github.com/dingodb/dingofs/tools-v2/pkg/cli/command"
 	"github.com/dingodb/dingofs/tools-v2/pkg/config"
 	"github.com/dingodb/dingofs/tools-v2/pkg/output"
 	"github.com/dingodb/dingofs/tools-v2/proto/curvefs/proto/topology"
+	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -63,14 +63,14 @@ func (mRpc *MetadataRpc) Stub_Func(ctx context.Context) (interface{}, error) {
 }
 
 const (
-	metadataExample = `$ curvefs fs usage metadata`
+	metadataExample = `$ dingofs fs usage metadata`
 )
 
 func NewMetadataCommand() *cobra.Command {
 	fsCmd := &MetadataCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "metadata",
-			Short:   "get the usage of metadata in curvefs",
+			Short:   "get the usage of metadata in dingofs",
 			Example: metadataExample,
 		},
 	}

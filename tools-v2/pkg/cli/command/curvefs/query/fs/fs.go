@@ -39,8 +39,8 @@ import (
 )
 
 const (
-	fsExample = `$ curve fs query fs --fsid 1,2,3
-$ curve fs query fs --fsname test1,test2,test3`
+	fsExample = `$ dingo fs query fs --fsid 1,2,3
+$ dingo fs query fs --fsname test1,test2,test3`
 )
 
 type QueryFsRpc struct {
@@ -71,7 +71,7 @@ func NewFsCommand() *cobra.Command {
 	fsCmd := &FsCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "fs",
-			Short:   "query fs in curvefs by fsname or fsid",
+			Short:   "query fs in dingofs by fsname or fsid",
 			Long:    "when both fsname and fsid exist, query only by fsid",
 			Example: fsExample,
 		},

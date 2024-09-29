@@ -40,7 +40,7 @@ import (
 )
 
 const (
-	queryExample = `$ curve fs warmup query /mnt/warmup `
+	queryExample = `$ dingo fs warmup query /mnt/warmup `
 
 	CURVEFS_WARMUP_OP_XATTR = "curvefs.warmup.op"
 )

@@ -42,8 +42,8 @@ import (
 )
 
 const (
-	addExample = `$ curve fs warmup add --filelist /mnt/warmup/0809.list # warmup the file(dir) saved in /mnt/warmup/0809.list
-$ curve fs warmup add /mnt/warmup # warmup all files in /mnt/warmup`
+	addExample = `$ dingo fs warmup add --filelist /mnt/warmup/0809.list # warmup the file(dir) saved in /mnt/warmup/0809.list
+$ dingo fs warmup add /mnt/warmup # warmup all files in /mnt/warmup`
 )
 
 const (
@@ -61,7 +61,7 @@ type AddCommand struct {
 	basecmd.FinalCurveCmd
 	Mountpoint   *mountinfo.MountInfo
 	Path         string // path in user system
-	CurvefsPath  string // path in curvefs
+	CurvefsPath  string // path in dingofs
 	Single       bool   // warmup a single file or directory
 	StorageType  string // warmup storage type
 	ConvertFails []string
@@ -92,13 +92,13 @@ func (aCmd *AddCommand) AddFlags() {
 }
 
 func (aCmd *AddCommand) Init(cmd *cobra.Command, args []string) error {
-	// check has curvefs mountpoint
+	// check has dingofs mountpoint
 	mountpoints, err := cobrautil.GetCurveFSMountPoints()
 	if err.TypeCode() != cmderror.CODE_SUCCESS {
 		aCmd.Error = err
 		return err.ToError()
 	} else if len(mountpoints) == 0 {
-		return errors.New("no curvefs mountpoint found")
+		return errors.New("no dingofs mountpoint found")
 	}
 
 	// check args
@@ -135,7 +135,7 @@ func (aCmd *AddCommand) Init(cmd *cobra.Command, args []string) error {
 			// found the mountpoint
 			if aCmd.Mountpoint == nil ||
 				len(aCmd.Mountpoint.MountPoint) < len(mountpoint.MountPoint) {
-				// Prevent the curvefs directory from being mounted under the curvefs directory
+				// Prevent the dingofs directory from being mounted under the dingofs directory
 				// /a/b/c:
 				// test-1 mount in /a
 				// test-1 mount in /a/b
@@ -146,7 +146,7 @@ func (aCmd *AddCommand) Init(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if aCmd.Mountpoint == nil {
-		return fmt.Errorf("[%s] is not saved in curvefs", aCmd.Path)
+		return fmt.Errorf("[%s] is not saved in dingofs", aCmd.Path)
 	}
 
 	// check storage type
@@ -175,11 +175,11 @@ func (aCmd *AddCommand) convertFilelist() *cmderror.CmdError {
 	for _, line := range lines {
 		rel, err := filepath.Rel(aCmd.Mountpoint.MountPoint, line)
 		if err == nil && !strings.HasPrefix(rel, "..") {
-			// convert to curvefs path
+			// convert to dingofs path
 			curvefsAbspath := cobrautil.Path2CurvefsPath(line, aCmd.Mountpoint)
 			validPath += (curvefsAbspath + "\n")
 		} else {
-			convertFail := fmt.Sprintf("[%s] is not saved in curvefs", line)
+			convertFail := fmt.Sprintf("[%s] is not saved in dingofs", line)
 			aCmd.ConvertFails = append(aCmd.ConvertFails, convertFail)
 		}
 	}

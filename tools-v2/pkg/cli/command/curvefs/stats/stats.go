@@ -104,17 +104,17 @@ func NewStatsCommand() *cobra.Command {
 	statsCmd := &StatsCommand{
 		basecmd.FinalCurveCmd{
 			Use:   "stats mountPoint",
-			Short: "show real time performance statistics of curvefs",
-			Example: `curve fs stats /mnt/dingofs
+			Short: "show real time performance statistics of dingofs",
+			Example: `dingo fs stats /mnt/dingofs
 			
 # fuse metrics
-curve fs stats /mnt/dingofs --schema f
+dingo fs stats /mnt/dingofs --schema f
 
 # s3 metrics
-curve fs stats /mnt/dingofs --schema o
+dingo fs stats /mnt/dingofs --schema o
 
 # More metrics
-curve fs stats /mnt/dingofs --verbose
+dingo fs stats /mnt/dingofs --verbose
 
 warning: --format、--conf、--showerror is ignored for stats command`,
 		},
@@ -133,7 +133,7 @@ func (statsCmd *StatsCommand) Init(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New(`ERROR: This command requires mountPoint
 USAGE:
-   curve fs stats mountPoint [Flags]`)
+   dingo fs stats mountPoint [Flags]`)
 	}
 	return nil
 }

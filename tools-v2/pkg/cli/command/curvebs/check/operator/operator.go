@@ -14,7 +14,7 @@
 *  limitations under the License.
  */
 /*
-* Project: curve
+* Project: dingo
 * Created Date: 2023-05-05
 * Author: chengyi01
  */
@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	operatorExample = `$ curve bs check operator --op=operator|change_peer|add_peer|remove_peer|transfer_leader`
+	operatorExample = `$ dingo bs check operator --op=operator|change_peer|add_peer|remove_peer|transfer_leader`
 )
 
 const (

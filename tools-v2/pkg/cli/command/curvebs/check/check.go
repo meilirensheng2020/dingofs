@@ -46,7 +46,7 @@ func NewCheckCommand() *cobra.Command {
 	checkCmd := &CheckCommand{
 		basecmd.MidCurveCmd{
 			Use:   "check",
-			Short: "checkout the health of resources in curvebs",
+			Short: "checkout the health of resources in dingobs",
 		},
 	}
 	return basecmd.NewMidCurveCli(&checkCmd.MidCurveCmd, checkCmd)

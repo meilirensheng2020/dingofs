@@ -14,7 +14,7 @@
 *  limitations under the License.
  */
 /*
-* Project: curve
+* Project: dingo
 * Created Date: 2023-04-24
 * Author: chengyi01
  */

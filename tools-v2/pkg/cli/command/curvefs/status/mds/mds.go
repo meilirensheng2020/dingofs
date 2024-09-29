@@ -25,19 +25,19 @@ package mds
 import (
 	"fmt"
 
-	"github.com/olekukonko/tablewriter"
 	cmderror "github.com/dingodb/dingofs/tools-v2/internal/error"
 	cobrautil "github.com/dingodb/dingofs/tools-v2/internal/utils"
 	basecmd "github.com/dingodb/dingofs/tools-v2/pkg/cli/command"
 	config "github.com/dingodb/dingofs/tools-v2/pkg/config"
 	"github.com/dingodb/dingofs/tools-v2/pkg/output"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )
 
 const (
-	mdsExample = `$ curve fs status mds`
+	mdsExample = `$ dingo fs status mds`
 )
 
 type MdsCommand struct {

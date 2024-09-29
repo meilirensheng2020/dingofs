@@ -59,7 +59,7 @@ var (
 var _ basecmd.FinalCurveCmdFunc = (*EtcdCommand)(nil) // check interface
 
 const (
-	etcdExample = `$ curve bs status etcd`
+	etcdExample = `$ dingo bs status etcd`
 )
 
 func NewEtcdCommand() *cobra.Command {
@@ -196,7 +196,7 @@ func NewStatusEtcdCommand() *EtcdCommand {
 	etcdCmd := &EtcdCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "etcd",
-			Short:   "get the etcd status of curvebs",
+			Short:   "get the etcd status of dingobs",
 			Example: etcdExample,
 		},
 	}

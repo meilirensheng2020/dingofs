@@ -44,7 +44,7 @@ import (
 )
 
 const (
-	copysetExample = `$ curve bs check copyset --copysetid 1 --logicalpoolid 1`
+	copysetExample = `$ dingo bs check copyset --copysetid 1 --logicalpoolid 1`
 )
 
 type CopysetCommand struct {
@@ -65,7 +65,7 @@ func NewCheckCopysetCommand() *CopysetCommand {
 	copysetCmd := &CopysetCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "copyset",
-			Short:   "check copysets health in curvebs",
+			Short:   "check copysets health in dingobs",
 			Example: copysetExample,
 		},
 	}

@@ -14,7 +14,7 @@
 *  limitations under the License.
  */
 /*
-* Project: curve
+* Project: dingo
 * Created Date: 2023-04-14
 * Author: chengyi01
  */
@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	dirExample = `$ curve bs create dir --path /test`
+	dirExample = `$ dingo bs create dir --path /test`
 )
 
 type DirectoryCommand struct {
@@ -83,7 +83,7 @@ func NewCreateDirectoryCommand() *DirectoryCommand {
 	dCmd := &DirectoryCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "dir",
-			Short:   "create directory in curvebs cluster",
+			Short:   "create directory in dingobs cluster",
 			Example: dirExample,
 		},
 	}

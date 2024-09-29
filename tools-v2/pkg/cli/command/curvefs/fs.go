@@ -62,7 +62,7 @@ func NewCurveFsCommand() *cobra.Command {
 	fsCmd := &CurveFsCommand{
 		basecmd.MidCurveCmd{
 			Use:   "fs",
-			Short: "Manage curvefs cluster",
+			Short: "Manage dingofs cluster",
 		},
 	}
 	return basecmd.NewMidCurveCli(&fsCmd.MidCurveCmd, fsCmd)

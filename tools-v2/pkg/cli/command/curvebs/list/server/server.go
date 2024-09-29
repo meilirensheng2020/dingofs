@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	serverExample = `$ curve bs list server`
+	serverExample = `$ dingo bs list server`
 )
 
 type ListServerRpc struct {
@@ -73,7 +73,7 @@ func NewListServerCommand() *ServerCommand {
 	lsCmd := &ServerCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "server",
-			Short:   "list all server information in curvebs",
+			Short:   "list all server information in dingobs",
 			Example: serverExample,
 		},
 	}

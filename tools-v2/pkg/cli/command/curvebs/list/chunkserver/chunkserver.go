@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	chunkServerExample = `$ curve bs list chunkserver`
+	chunkServerExample = `$ dingo bs list chunkserver`
 )
 
 type ListChunkServerRpc struct {
@@ -75,7 +75,7 @@ func NewListChunkServerCommand() *ChunkServerCommand {
 	lsCmd := &ChunkServerCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "chunkserver",
-			Short:   "list chunk server in curvebs",
+			Short:   "list chunk server in dingobs",
 			Example: chunkServerExample,
 		},
 	}

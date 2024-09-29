@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	deleteExample = `$ curve bs delete peer 127.0.0.1:8200:0 --logicalpoolid=1 --copysetid=10001
+	deleteExample = `$ dingo bs delete peer 127.0.0.1:8200:0 --logicalpoolid=1 --copysetid=10001
  --peers=127.0.0.1:8200:0,127.0.0.1:8201:1,127.0.0.1:8202:2 --rpcretrytimes=1 --rpctimeout=10s`
 )
 

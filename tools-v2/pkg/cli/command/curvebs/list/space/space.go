@@ -14,7 +14,7 @@
 *  limitations under the License.
  */
 /*
-* Project: curve
+* Project: dingo
 * Created Date: 2023-04-17
 * Author: chengyi01
  */
@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	serverExample = `$ curve bs list space`
+	serverExample = `$ dingo bs list space`
 )
 
 type SpaceCommand struct {
@@ -61,7 +61,7 @@ func NewListSpaceCommand() *SpaceCommand {
 	lsCmd := &SpaceCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "space",
-			Short:   "show curvebs all disk type space, include total space and used space",
+			Short:   "show dingobs all disk type space, include total space and used space",
 			Example: serverExample,
 		},
 	}

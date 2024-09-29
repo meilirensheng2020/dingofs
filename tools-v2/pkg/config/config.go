@@ -66,19 +66,18 @@ var (
 
 func InitConfig() {
 	// configure file priority
-	// command line (--conf curve.yaml) > environment variables(CONF=/opt/curve.yaml) > default (~/.curve/curve.yaml)
+	// command line (--conf dingo.yaml) > environment variables(CONF=/opt/dingo.yaml) > default (~/.dingo/dingo.yaml)
 	if ConfPath != "" {
 		viper.SetConfigFile(ConfPath)
 	} else if ConfPath = os.Getenv("CONF"); ConfPath != "" {
 		viper.SetConfigFile(ConfPath)
 	} else {
-		// using home directory and /etc/curve as default configuration file path
+		// using home directory as default configuration file path
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
-		viper.AddConfigPath(home + "/.curve")
-		viper.AddConfigPath("/etc/curve")
+		viper.AddConfigPath(home + "/.dingo")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName("curve")
+		viper.SetConfigName("dingo")
 	}
 
 	// viper.SetDefault("format", "plain")

@@ -40,10 +40,10 @@ import (
 )
 
 const (
-	fsExample = `$ curve fs create fs --fsname test1
-$ curve fs create fs --fsname test1 --fstype s3 --s3.ak AK --s3.sk SK --s3.endpoint http://localhost:9000 --s3.bucketname test1 --s3.blocksize 4MiB --s3.chunksize 4MiB
-$ curve fs create fs --fsname test1 --fstype volume --volume.bitmaplocation AtStart --volume.blockgroupsize 128MiB --volume.blocksize 4KiB --volume.name volume --volume.password password --volume.size 1MiB --volume.slicesize 1MiB --volume.user user
-$ curve fs create fs --fsname test1 --fstype hybrid  --s3.ak AK --s3.sk SK --s3.endpoint http://localhost:9000 --s3.bucketname test1 --s3.blocksize 4MiB --s3.chunksize 4MiB  --volume.bitmaplocation AtStart --volume.blockgroupsize 128MiB --volume.blocksize 4KiB --volume.name volume --volume.password password --volume.size 1MiB --volume.slicesize 1MiB --volume.user user`
+	fsExample = `$ dingo fs create fs --fsname test1
+$ dingo fs create fs --fsname test1 --fstype s3 --s3.ak AK --s3.sk SK --s3.endpoint http://localhost:9000 --s3.bucketname test1 --s3.blocksize 4MiB --s3.chunksize 4MiB
+$ dingo fs create fs --fsname test1 --fstype volume --volume.bitmaplocation AtStart --volume.blockgroupsize 128MiB --volume.blocksize 4KiB --volume.name volume --volume.password password --volume.size 1MiB --volume.slicesize 1MiB --volume.user user
+$ dingo fs create fs --fsname test1 --fstype hybrid  --s3.ak AK --s3.sk SK --s3.endpoint http://localhost:9000 --s3.bucketname test1 --s3.blocksize 4MiB --s3.chunksize 4MiB  --volume.bitmaplocation AtStart --volume.blockgroupsize 128MiB --volume.blocksize 4KiB --volume.name volume --volume.password password --volume.size 1MiB --volume.slicesize 1MiB --volume.user user`
 )
 
 type CreateFsRpc struct {
@@ -73,7 +73,7 @@ func NewFsCommand() *cobra.Command {
 	fsCmd := &FsCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "fs",
-			Short:   "create a fs in curvefs",
+			Short:   "create a fs in dingofs",
 			Example: fsExample,
 		},
 	}

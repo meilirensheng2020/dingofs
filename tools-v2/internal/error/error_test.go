@@ -15,7 +15,7 @@
  */
 
 /*
- * Project: CurveCli
+ * Project: DingoCli
  * Created Date: 2022-05-11
  * Author: chengyi (Cyber-SiKu)
  */

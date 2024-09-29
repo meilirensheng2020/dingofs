@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	deployExample = `$ curve bs create topology --clustermap /path/to/clustermap.json`
+	deployExample = `$ dingo bs create topology --clustermap /path/to/clustermap.json`
 )
 
 type Topology struct {
@@ -87,7 +87,7 @@ func NewClusterTopoCmd() *cobra.Command {
 	cluCmd := &ClusterTopoCmd{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "topology",
-			Short:   "create phyicalpools, zones and servers by given curvebs cluster map",
+			Short:   "create phyicalpools, zones and servers by given dingobs cluster map",
 			Example: deployExample,
 		},
 	}

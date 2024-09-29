@@ -54,7 +54,7 @@ func NewListCommand() *cobra.Command {
 	listCmd := &ListCommand{
 		basecmd.MidCurveCmd{
 			Use:   "list",
-			Short: "list resources in the curvebs",
+			Short: "list resources in the dingobs",
 		},
 	}
 	return basecmd.NewMidCurveCli(&listCmd.MidCurveCmd, listCmd)

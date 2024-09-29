@@ -14,7 +14,7 @@
 *  limitations under the License.
  */
 /*
-* Project: curve
+* Project: dingo
 * Created Date: 2023-04-12
 * Author: chengyi01
  */
@@ -48,7 +48,7 @@ type ChunkCommand struct {
 var _ basecmd.FinalCurveCmdFunc = (*ChunkCommand)(nil) // check interface
 
 const (
-	chunkExample = `$ curve bs query chunk --path /pagefile --offset 1024`
+	chunkExample = `$ dingo bs query chunk --path /pagefile --offset 1024`
 )
 
 func NewQueryChunkCommand() *ChunkCommand {

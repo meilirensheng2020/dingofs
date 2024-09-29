@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	updateExample = `$ curve bs snapshot copyset 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1`
+	updateExample = `$ dingo bs snapshot copyset 127.0.0.0:8200:0 --logicalpoolid=1 --copysetid=1`
 )
 
 type SnapshotRpc struct {

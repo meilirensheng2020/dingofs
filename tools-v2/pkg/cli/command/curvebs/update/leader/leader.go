@@ -40,7 +40,7 @@ import (
 )
 
 const (
-	leaderExample = `$ curve bs update leader 127.0.0.1:8200:0 --logicalpoolid=1 --copysetid=10001
+	leaderExample = `$ dingo bs update leader 127.0.0.1:8200:0 --logicalpoolid=1 --copysetid=10001
 	--peers=127.0.0.1:8200:0,127.0.0.1:8201:0,127.0.0.1:8202:0`
 )
 

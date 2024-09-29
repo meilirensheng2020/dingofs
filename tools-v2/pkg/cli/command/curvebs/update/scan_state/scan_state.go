@@ -15,7 +15,7 @@
  */
 
 /*
-* Project: curvecli
+* Project: dingocli
 * Created Date: 2023-05-08
 * Author: montaguelhz
  */
@@ -65,7 +65,7 @@ type ScanStateCommand struct {
 var _ basecmd.FinalCurveCmdFunc = (*ScanStateCommand)(nil) // check interface
 
 const (
-	scanStateExample = `$ curve bs update scan-state --logicalpoolid 1 [--scan=true/false]`
+	scanStateExample = `$ dingo bs update scan-state --logicalpoolid 1 [--scan=true/false]`
 )
 
 func NewScanStateCommand() *cobra.Command {

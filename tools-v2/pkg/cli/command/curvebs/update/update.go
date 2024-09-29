@@ -53,7 +53,7 @@ func NewUpdateCommand() *cobra.Command {
 	updateCmd := &UpdateCommand{
 		basecmd.MidCurveCmd{
 			Use:   "update",
-			Short: "update resources in the curvebs",
+			Short: "update resources in the dingobs",
 		},
 	}
 	return basecmd.NewMidCurveCli(&updateCmd.MidCurveCmd, updateCmd)

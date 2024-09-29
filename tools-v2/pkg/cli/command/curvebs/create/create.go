@@ -48,7 +48,7 @@ func NewCreateCmd() *cobra.Command {
 	createCmd := &CreateCmd{
 		basecmd.MidCurveCmd{
 			Use:   "create",
-			Short: "create resources in curvebs cluster",
+			Short: "create resources in dingobs cluster",
 		},
 	}
 	return basecmd.NewMidCurveCli(&createCmd.MidCurveCmd, createCmd)

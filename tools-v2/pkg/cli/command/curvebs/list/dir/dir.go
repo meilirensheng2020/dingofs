@@ -41,7 +41,7 @@ import (
 )
 
 const (
-	dirExample = `$ curve bs list dir --path /`
+	dirExample = `$ dingo bs list dir --path /`
 )
 
 type ListDirRpc struct {
@@ -76,7 +76,7 @@ func NewListDirCommand() *DirCommand {
 	lsCmd := &DirCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "dir",
-			Short:   "list directory information in curvebs",
+			Short:   "list directory information in dingobs",
 			Example: dirExample,
 		},
 	}

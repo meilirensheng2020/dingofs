@@ -52,7 +52,7 @@ func NewStatusCommand() *cobra.Command {
 	statusCmd := &StatusCommand{
 		basecmd.MidCurveCmd{
 			Use:   "status",
-			Short: "get the status of curvebs",
+			Short: "get the status of dingobs",
 		},
 	}
 	return basecmd.NewMidCurveCli(&statusCmd.MidCurveCmd, statusCmd)

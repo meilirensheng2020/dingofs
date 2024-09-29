@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	clientExample = `$ curve bs status client`
+	clientExample = `$ dingo bs status client`
 )
 
 type ClientCommand struct {

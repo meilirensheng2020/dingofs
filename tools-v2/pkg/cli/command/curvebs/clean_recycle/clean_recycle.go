@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	cleanRecycleBinExample = `$ curve bs clean-recycle --expiredtime=1h --recycleprefix=/test`
+	cleanRecycleBinExample = `$ dingo bs clean-recycle --expiredtime=1h --recycleprefix=/test`
 	RECYCLEBINDIR          = "/RecycleBin"
 )
 

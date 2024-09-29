@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	partitionExample = `$ curve fs query partition --partitionid 1,2,3`
+	partitionExample = `$ dingo fs query partition --partitionid 1,2,3`
 )
 
 type QueryPartitionRpc struct {
@@ -96,8 +96,8 @@ func (pCmd *PartitionCommand) Init(cmd *cobra.Command, args []string) error {
 	pCmd.SetHeader(header)
 	pCmd.TableNew.SetAutoMergeCellsByColumnIndex(cobrautil.GetIndexSlice(
 		pCmd.Header, []string{
-			cobrautil.ROW_POOL_ID,cobrautil.ROW_COPYSET_ID, cobrautil.ROW_ID,
-	}))
+			cobrautil.ROW_POOL_ID, cobrautil.ROW_COPYSET_ID, cobrautil.ROW_ID,
+		}))
 
 	partitionIds := viper.GetStringSlice(config.VIPER_CURVEFS_PARTITIONID)
 

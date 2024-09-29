@@ -15,7 +15,7 @@
  */
 
 /*
- * Project: CurveCli
+ * Project: DingoCli
  * Created Date: 2022-05-11
  * Author: chengyi (Cyber-SiKu)
  */
@@ -630,7 +630,7 @@ var (
 		case topology.TopoStatusCode_TOPO_OK:
 			message = "success"
 		case topology.TopoStatusCode_TOPO_MEMCACHECLUSTER_NOT_FOUND:
-			message = "no memcacheCluster in the curvefs"
+			message = "no memcacheCluster in the dingofs"
 		default:
 			message = "unknown error"
 		}

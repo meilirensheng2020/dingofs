@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	fileExample = `$ curve bs query file --path=/RecycleBin`
+	fileExample = `$ dingo bs query file --path=/RecycleBin`
 )
 
 type FileCommand struct {

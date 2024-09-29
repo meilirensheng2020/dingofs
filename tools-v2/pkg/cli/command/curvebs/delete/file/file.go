@@ -128,7 +128,7 @@ func NewDeleteFileCommand() *DeleteCommand {
 	deleteCommand := &DeleteCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "file",
-			Short:   "delete certain file in curvebs",
+			Short:   "delete certain file in dingobs",
 			Example: deleteCliExample,
 		},
 	}

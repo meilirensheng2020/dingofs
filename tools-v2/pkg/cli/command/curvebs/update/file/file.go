@@ -14,7 +14,7 @@
 *  limitations under the License.
  */
 /*
-* Project: curve
+* Project: dingo
 * Created Date: 2023-04-13
 * Author: chengyi01
  */
@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	fileExample = `$ curve bs update file`
+	fileExample = `$ dingo bs update file`
 )
 
 type ExtendFileRpc struct {

@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	snapshotExample = `$ curve bs status snapshotserver`
+	snapshotExample = `$ dingo bs status snapshotserver`
 )
 
 type SnapshotCommand struct {
@@ -197,7 +197,7 @@ func NewStatusSnapshotCommand() *SnapshotCommand {
 	snapshotCmd := &SnapshotCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "snapshotserver",
-			Short:   "get the snapshot clone status of curvebs",
+			Short:   "get the snapshot clone status of dingobs",
 			Example: snapshotExample,
 		},
 	}

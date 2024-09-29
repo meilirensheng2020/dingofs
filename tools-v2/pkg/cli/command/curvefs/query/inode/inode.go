@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	inodeExample = `$ curve fs query inode --fsid 1 --inodeid 1`
+	inodeExample = `$ dingo fs query inode --fsid 1 --inodeid 1`
 )
 
 type QueryInodeRpc struct {

@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	clientExample = `$ curve bs list client`
+	clientExample = `$ dingo bs list client`
 )
 
 type ListClientRpc struct {
@@ -71,7 +71,7 @@ func NewListCLientCommand() *ClientCommand {
 	lsCmd := &ClientCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "client",
-			Short:   "list all client information in curvebs",
+			Short:   "list all client information in dingobs",
 			Example: clientExample,
 		},
 	}

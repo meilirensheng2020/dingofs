@@ -14,7 +14,7 @@
 *  limitations under the License.
  */
 /*
-* Project: curve
+* Project: dingo
 * Created Date: 2023-04-14
 * Author: chengyi01
  */
@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	dirExample = `$ curve bs create file --path /test`
+	dirExample = `$ dingo bs create file --path /test`
 	TYOE_DIR
 )
 
@@ -85,7 +85,7 @@ func NewCreateFileCommand() *fileCommand {
 	fCmd := &fileCommand{
 		FinalCurveCmd: basecmd.FinalCurveCmd{
 			Use:     "file",
-			Short:   "create page file in curvebs cluster",
+			Short:   "create page file in dingobs cluster",
 			Example: dirExample,
 		},
 	}
