@@ -67,6 +67,8 @@ using ::curvefs::client::blockcache::GetObjectAsyncContext;
 using ::curvefs::client::blockcache::StrErr;
 using ::curvefs::client::datastream::DataStream;
 using ::curvefs::client::filesystem::Ino;
+using ::curvefs::client::metric::MetricGuard;
+using ::curvefs::client::metric::S3Metric;
 
 void FsCacheManager::DataCacheNumInc() {
   g_s3MultiManagerMetric->writeDataCacheNum << 1;
@@ -705,14 +707,17 @@ void FileCacheManager::PrefetchForBlock(const S3ReadRequest& req,
 class AsyncPrefetchCallback {
  public:
   AsyncPrefetchCallback(BlockKey key, uint64_t inode,
-                        S3ClientAdaptorImpl* s3Client)
-      : key(key), inode_(inode), s3Client_(s3Client) {}
+                        S3ClientAdaptorImpl* s3Client, int64_t startTime)
+      : key(key), inode_(inode), s3Client_(s3Client), startTime_(startTime) {}
 
   void operator()(const S3Adapter*,
                   const std::shared_ptr<GetObjectAsyncContext>& context) {
     VLOG(9) << "prefetch end: " << context->key << ", len " << context->len
             << "actual len: " << context->actualLen;
     std::unique_ptr<char[]> guard(context->buf);
+    // prefetch s3 data metrics
+    MetricGuard metricGuard(&context->retCode, &S3Metric::GetInstance().read_s3,
+                            context->actualLen, startTime_);
     auto fileCache =
         s3Client_->GetFsCacheManager()->FindFileCacheManager(inode_);
 
@@ -745,6 +750,7 @@ class AsyncPrefetchCallback {
   BlockKey key;
   const uint64_t inode_;
   S3ClientAdaptorImpl* s3Client_;
+  int64_t startTime_;
 };
 
 void FileCacheManager::PrefetchS3Objs(
@@ -780,7 +786,8 @@ void FileCacheManager::PrefetchS3Objs(
       context->buf = data_cache_s3;
       context->offset = 0;
       context->len = read_len;
-      context->cb = AsyncPrefetchCallback{key, inodeid, s3_client_adaptor};
+      context->cb = AsyncPrefetchCallback{key, inodeid, s3_client_adaptor,
+                                          butil::cpuwide_time_ms()};
       VLOG(9) << "inodeId=" << key.ino << "prefetch start: " << context->key
               << ", len: " << context->len;
       s3_client_adaptor->GetS3Client()->AsyncGet(context);
