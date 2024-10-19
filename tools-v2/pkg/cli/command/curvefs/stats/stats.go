@@ -31,6 +31,7 @@ import (
 	basecmd "github.com/dingodb/dingofs/tools-v2/pkg/cli/command"
 	"github.com/dingodb/dingofs/tools-v2/pkg/config"
 	"github.com/dingodb/dingofs/tools-v2/pkg/output"
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
 
@@ -438,7 +439,7 @@ func realTimeStats(mountPoint string, schema string, verbose bool, duration time
 		log.Fatalf("path %s is not a mount point", mountPoint)
 	}
 	watcher := &statsWatcher{
-		colorful:   true,
+		colorful:   isatty.IsTerminal(os.Stdout.Fd()),
 		duration:   duration,
 		mountPoint: mountPoint,
 		interval:   int64(duration) / 1000000000,
