@@ -26,7 +26,7 @@
 #include "curvefs/src/client/filesystem/dir_quota.h"
 #include "curvefs/src/client/filesystem/meta.h"
 #include "curvefs/src/client/rpcclient/metaserver_client.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace client {

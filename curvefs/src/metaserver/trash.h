@@ -31,9 +31,9 @@
 #include "curvefs/src/client/rpcclient/mds_client.h"
 #include "curvefs/src/metaserver/inode_storage.h"
 #include "curvefs/src/metaserver/s3/metaserver_s3_adaptor.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/configuration.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/configuration.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 namespace curvefs {
 namespace metaserver {

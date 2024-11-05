@@ -36,8 +36,8 @@
 #include "curvefs/src/client/common/common.h"
 #include "curvefs/src/client/rpcclient/channel_manager.h"
 #include "curvefs/src/client/rpcclient/metacache.h"
-#include "src/common/concurrent/rw_lock.h"
-#include "src/common/math_util.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
+#include "curvefs/src/utils/math_util.h"
 
 using ::curve::client::CopysetID;
 using ::curve::client::LogicPoolID;

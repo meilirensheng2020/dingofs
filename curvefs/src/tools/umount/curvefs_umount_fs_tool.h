@@ -39,7 +39,7 @@
 #include "curvefs/proto/mds.pb.h"
 #include "curvefs/src/tools/curvefs_tool.h"
 #include "curvefs/src/tools/curvefs_tool_define.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace tools {

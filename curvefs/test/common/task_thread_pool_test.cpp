@@ -31,8 +31,8 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/concurrent/rw_lock.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
 
 namespace curvefs {
 namespace common {

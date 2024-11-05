@@ -26,8 +26,8 @@
 #include <memory>
 
 #include "curvefs/src/base/timer/timer_impl.h"
-#include "src/common/leaky_bucket.h"
-#include "src/common/throttle.h"
+#include "curvefs/src/utils/leaky_bucket.h"
+#include "curvefs/src/utils/throttle.h"
 
 namespace curvefs {
 namespace client {

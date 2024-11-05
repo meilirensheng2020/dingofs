@@ -75,7 +75,6 @@ cc_test(
         "//curvefs/proto:space_cc_proto",
         "//curvefs/test/client/rpcclient:rpcclient_test_mock",
         "//curvefs/test/client/blockcache/mock:blockcache_mock_lib",
-        "//test/client/mock:client_mock_lib",
     ],
     linkopts = [
                 "-L/usr/local/lib/x86_64-linux-gnu"],
@@ -102,14 +101,12 @@ cc_test(
    copts = CURVE_TEST_COPTS + ["-I/usr/local/include/fuse3"],
    deps = [
         "@gtest//:gtest",
-        "//include/client:include_client",
+        "//curvefs/include/client:include_client",
         "//curvefs/src/client:fuse_client_lib",
-        "//test/client/mock:client_mock_lib",
         "//curvefs/test/client/rpcclient:rpcclient_test_mock",
         "//curvefs/proto:metaserver_cc_proto",
         "//curvefs/proto:mds_cc_proto",
         "//curvefs/proto:space_cc_proto",
-        "//curvefs/test/volume/mock",
    ],
    linkopts = ["-lfuse3",
                "-L/usr/local/lib/x86_64-linux-gnu"],

@@ -27,8 +27,8 @@
 #include <gtest/gtest.h>
 
 #include "curvefs/src/metaserver/common/types.h"
-#include "src/fs/local_filesystem.h"
-#include "test/fs/mock_local_filesystem.h"
+#include "curvefs/src/fs/local_filesystem.h"
+#include "curvefs/test/fs/mock_local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

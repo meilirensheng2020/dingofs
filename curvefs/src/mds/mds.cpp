@@ -29,9 +29,7 @@
 #include <utility>
 
 #include "curvefs/src/mds/mds_service.h"
-#include "curvefs/src/mds/space/mds_proxy_manager.h"
-#include "curvefs/src/mds/space/service.h"
-#include "src/common/curve_version.h"
+#include "curvefs/src/utils/curve_version.h"
 
 namespace brpc {
 DECLARE_bool(graceful_quit_on_sigterm);
@@ -42,8 +40,6 @@ namespace mds {
 
 using ::curve::election::LeaderElection;
 using ::curve::kvstorage::EtcdClientImp;
-using ::curvefs::mds::space::SpaceManagerImpl;
-using ::curvefs::mds::space::SpaceServiceImpl;
 
 MDS::MDS()
     : conf_(),
@@ -71,7 +67,6 @@ void MDS::InitOptions(std::shared_ptr<Configuration> conf) {
   InitTopologyOption(&options_.topologyOptions);
   InitScheduleOption(&options_.scheduleOption);
   InitDLockOptions(&options_.dLockOptions);
-  InitMdsProxyManagerOptions(&options_.bsMdsProxyOptions);
 }
 
 void MDS::InitMetaServerOption(MetaserverOptions* metaserver_option) {
@@ -165,10 +160,7 @@ void MDS::Init() {
 
   InitEtcdClient();
 
-  space::MdsProxyManager::SetProxyOptions(options_.bsMdsProxyOptions);
-
   fsStorage_ = std::make_shared<PersisKVStorage>(etcdClient_);
-  spaceManager_ = std::make_shared<SpaceManagerImpl>(etcdClient_, fsStorage_);
   metaserverClient_ =
       std::make_shared<MetaserverClient>(options_.metaserverOptions);
   auto dlock = std::make_shared<DLock>(options_.dLockOptions, etcdClient_);
@@ -183,9 +175,9 @@ void MDS::Init() {
   InitFsManagerOptions(&fs_manager_option);
 
   s3Adapter_ = std::make_shared<S3Adapter>();
-  fsManager_ = std::make_shared<FsManager>(
-      fsStorage_, spaceManager_, metaserverClient_, topologyManager_,
-      s3Adapter_, dlock, fs_manager_option);
+  fsManager_ = std::make_shared<FsManager>(fsStorage_, metaserverClient_,
+                                           topologyManager_, s3Adapter_, dlock,
+                                           fs_manager_option);
   LOG_IF(FATAL, !fsManager_->Init()) << "fsManager Init fail";
 
   chunkIdAllocator_ = std::make_shared<ChunkIdAllocatorImpl>(etcdClient_);
@@ -265,11 +257,6 @@ void MDS::Run() {
   LOG_IF(FATAL, server.AddService(&topology_service,
                                   brpc::SERVER_DOESNT_OWN_SERVICE) != 0)
       << "add topologyService error";
-
-  SpaceServiceImpl space_service(spaceManager_.get());
-  LOG_IF(FATAL, server.AddService(&space_service,
-                                  brpc::SERVER_DOESNT_OWN_SERVICE) != 0)
-      << "add space service error";
 
   // start rpc server
   brpc::ServerOptions option;
@@ -417,25 +404,6 @@ void MDS::InitHeartbeatManager() {
   heartbeatManager_ = std::make_shared<HeartbeatManager>(
       heartbeat_option, topology_, coordinator_);
   heartbeatManager_->Init();
-}
-
-void MDS::InitMdsProxyManagerOptions(MdsProxyOptions* options) {
-  conf_->GetValueFatalIfFail("bs.mds.maxRetryMs",
-                             &options->option.mdsMaxRetryMS);
-  conf_->GetValueFatalIfFail("bs.mds.rpcTimeoutMs",
-                             &options->option.rpcRetryOpt.rpcTimeoutMs);
-  conf_->GetValueFatalIfFail("bs.mds.maxRPCTimeoutMs",
-                             &options->option.rpcRetryOpt.maxRPCTimeoutMS);
-  conf_->GetValueFatalIfFail("bs.mds.rpcRetryIntervalUs",
-                             &options->option.rpcRetryOpt.rpcRetryIntervalUS);
-  conf_->GetValueFatalIfFail(
-      "bs.mds.maxFailedTimesBeforeChangeMDS",
-      &options->option.rpcRetryOpt.maxFailedTimesBeforeChangeAddr);
-  conf_->GetValueFatalIfFail(
-      "bs.mds.normalRetryTimesBeforeTriggerWait",
-      &options->option.rpcRetryOpt.normalRetryTimesBeforeTriggerWait);
-  conf_->GetValueFatalIfFail("bs.mds.waitSleepMs",
-                             &options->option.rpcRetryOpt.waitSleepMs);
 }
 
 }  // namespace mds

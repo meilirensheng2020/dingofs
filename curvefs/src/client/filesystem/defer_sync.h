@@ -31,7 +31,7 @@
 
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/filesystem/meta.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 namespace curvefs {
 namespace client {

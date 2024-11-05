@@ -31,8 +31,8 @@
 
 #include "curvefs/proto/mds.pb.h"
 #include "curvefs/src/mds/common/storage_key.h"
-#include "src/common/encode.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/encode.h"
+#include "curvefs/src/utils/timeutility.h"
 
 namespace curvefs {
 namespace mds {

@@ -43,8 +43,8 @@ cc_library(
     copts = CURVE_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//src/common:curve_common",
-        "//src/common/concurrent:curve_concurrent",
+        "//curvefs/src/utils:curve_common",
+        "//curvefs/src/utils/concurrent:curve_concurrent",
         "//curvefs/src/common:threading",
         "@glog//:glog",
         "@gflags//:gflags",

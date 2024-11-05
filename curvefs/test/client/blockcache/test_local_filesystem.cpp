@@ -26,7 +26,7 @@
 #include "curvefs/src/client/blockcache/local_filesystem.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
-#include "src/common/uuid.h"
+#include "curvefs/src/utils/uuid.h"
 
 namespace curvefs {
 namespace client {

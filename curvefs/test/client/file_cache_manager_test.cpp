@@ -29,7 +29,7 @@
 #include "curvefs/test/client/mock_client_s3.h"
 #include "curvefs/test/client/mock_client_s3_cache_manager.h"
 #include "curvefs/test/client/mock_inode_cache_manager.h"
-#include "src/common/concurrent/task_thread_pool.h"
+#include "curvefs/src/utils/concurrent/task_thread_pool.h"
 
 namespace curvefs {
 namespace client {

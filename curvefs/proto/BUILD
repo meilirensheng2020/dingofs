@@ -112,8 +112,7 @@ cc_proto_library(
 proto_library(
     name = "curvefs_heartbeat_proto",
     srcs = ["heartbeat.proto"],
-    deps = [":curvefs_common_proto",
-            "//proto:heartbeat_proto"],
+    deps = [":curvefs_common_proto"],
 )
 
 cc_proto_library(

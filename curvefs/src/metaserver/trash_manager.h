@@ -28,7 +28,7 @@
 #include <memory>
 
 #include "curvefs/src/metaserver/trash.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace metaserver {

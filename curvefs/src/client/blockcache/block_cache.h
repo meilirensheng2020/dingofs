@@ -37,7 +37,7 @@
 #include "curvefs/src/client/blockcache/error.h"
 #include "curvefs/src/client/blockcache/s3_client.h"
 #include "curvefs/src/client/common/config.h"
-#include "src/common/concurrent/task_thread_pool.h"
+#include "curvefs/src/utils/concurrent/task_thread_pool.h"
 
 namespace curvefs {
 namespace client {

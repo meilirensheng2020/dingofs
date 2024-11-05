@@ -23,7 +23,7 @@ cc_library(
     copts = CURVE_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//src/client:curve_client",
+        "//curvefs/src/utils:curve_common",
         "@gflags//:gflags",
         "@brpc//:brpc",
     ],

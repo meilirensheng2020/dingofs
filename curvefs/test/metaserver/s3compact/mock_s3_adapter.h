@@ -31,7 +31,7 @@
 #include <utility>
 
 #include "curvefs/src/metaserver/s3compact_manager.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 using ::curve::common::S3Adapter;
 using ::testing::Return;

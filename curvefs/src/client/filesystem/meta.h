@@ -33,7 +33,7 @@
 #include "curvefs/src/client/dir_buffer.h"
 #include "curvefs/src/client/fuse_common.h"
 #include "curvefs/src/client/inode_wrapper.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace client {

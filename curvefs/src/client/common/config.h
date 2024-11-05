@@ -28,9 +28,9 @@
 
 #include "curvefs/proto/common.pb.h"
 #include "curvefs/src/client/common/common.h"
-#include "src/client/config_info.h"
-#include "src/common/configuration.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/others/config_info.h"
+#include "curvefs/src/utils/configuration.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 namespace curvefs {
 namespace client {

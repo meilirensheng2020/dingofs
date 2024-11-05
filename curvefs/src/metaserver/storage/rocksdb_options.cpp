@@ -33,7 +33,7 @@
 #include "rocksdb/statistics.h"
 #include "rocksdb/table.h"
 #include "rocksdb/utilities/table_properties_collectors.h"
-#include "src/common/gflags_helper.h"
+#include "curvefs/src/utils/gflags_helper.h"
 
 namespace curvefs {
 namespace metaserver {

@@ -34,8 +34,8 @@
 #include "curvefs/proto/heartbeat.pb.h"
 #include "curvefs/src/metaserver/common/types.h"
 #include "curvefs/src/metaserver/copyset/copyset_node_manager.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/wait_interval.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/wait_interval.h"
 
 using ::curve::common::Thread;
 using ::curvefs::metaserver::copyset::CopysetNode;

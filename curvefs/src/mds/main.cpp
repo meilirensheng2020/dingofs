@@ -25,7 +25,7 @@
 
 #include "curvefs/src/common/dynamic_vlog.h"
 #include "curvefs/src/mds/mds.h"
-#include "src/common/configuration.h"
+#include "curvefs/src/utils/configuration.h"
 
 using ::curve::common::Configuration;
 using ::curvefs::common::FLAGS_vlog_level;

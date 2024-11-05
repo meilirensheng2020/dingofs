@@ -27,7 +27,7 @@
 #include <vector>
 
 #include "curvefs/src/client/filesystem/meta.h"
-#include "src/common/lru_cache.h"
+#include "curvefs/src/utils/lru_cache.h"
 
 namespace curvefs {
 namespace client {

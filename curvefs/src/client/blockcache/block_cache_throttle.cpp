@@ -27,7 +27,7 @@
 
 #include "curvefs/src/base/math/math.h"
 #include "curvefs/src/client/common/dynamic_config.h"
-#include "src/common/leaky_bucket.h"
+#include "curvefs/src/utils/leaky_bucket.h"
 
 namespace curvefs {
 namespace client {

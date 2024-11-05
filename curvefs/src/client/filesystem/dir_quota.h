@@ -21,7 +21,7 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/src/client/filesystem/dir_parent_watcher.h"
 #include "curvefs/src/client/filesystem/meta.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace client {

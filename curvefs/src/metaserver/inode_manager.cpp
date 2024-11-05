@@ -33,8 +33,8 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/src/client/filesystem/xattr.h"
 #include "curvefs/src/common/define.h"
-#include "src/common/concurrent/name_lock.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/concurrent/name_lock.h"
+#include "curvefs/src/utils/timeutility.h"
 
 using ::curve::common::NameLockGuard;
 using ::curve::common::TimeUtility;

@@ -25,7 +25,7 @@
 
 #include <gmock/gmock.h>
 
-#include "curvefs/src/common/wrap_posix.h"
+#include "curvefs/src/utils/wrap_posix.h"
 
 namespace curvefs {
 namespace client {

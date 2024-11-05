@@ -32,7 +32,7 @@
 #include "curvefs/src/metaserver/storage/rocksdb_perf.h"
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "rocksdb/utilities/checkpoint.h"
-#include "src/fs/local_filesystem.h"
+#include "curvefs/src/fs/local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

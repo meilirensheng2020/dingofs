@@ -34,7 +34,7 @@
 #include "curvefs/test/metaserver/s3compact/mock_s3compact_inode.h"
 #include "curvefs/test/metaserver/s3compact/mock_s3infocache.h"
 #include "curvefs/test/metaserver/storage/utils.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 using ::curvefs::metaserver::copyset::CopysetNode;
 using ::curvefs::metaserver::copyset::CopysetNodeManager;

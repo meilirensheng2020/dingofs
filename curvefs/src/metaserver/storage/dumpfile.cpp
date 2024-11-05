@@ -36,9 +36,9 @@
 
 #include "curvefs/src/common/process.h"
 #include "curvefs/src/metaserver/storage/iterator.h"
-#include "src/common/crc32.h"
-#include "src/common/timeutility.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/utils/crc32.h"
+#include "curvefs/src/utils/timeutility.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 namespace curvefs {
 namespace metaserver {

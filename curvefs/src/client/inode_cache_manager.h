@@ -37,8 +37,8 @@
 #include "curvefs/src/client/inode_wrapper.h"
 #include "curvefs/src/client/rpcclient/metaserver_client.h"
 #include "curvefs/src/client/rpcclient/task_excutor.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/concurrent/generic_name_lock.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/generic_name_lock.h"
 
 namespace curvefs {
 namespace client {

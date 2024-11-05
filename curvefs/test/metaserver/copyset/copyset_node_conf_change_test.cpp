@@ -29,7 +29,7 @@
 #include "curvefs/test/metaserver/copyset/mock/mock_copyset_node_manager.h"
 #include "curvefs/test/metaserver/copyset/mock/mock_copyset_service.h"
 #include "curvefs/test/metaserver/copyset/mock/mock_raft_node.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 namespace curvefs {
 namespace metaserver {

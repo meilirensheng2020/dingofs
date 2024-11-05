@@ -33,7 +33,7 @@ DECLARE_string(partitionId);
 DECLARE_string(fsId);
 DECLARE_string(inodeId);
 
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace tools {

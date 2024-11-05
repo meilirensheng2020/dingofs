@@ -30,15 +30,14 @@
 #include "curvefs/src/client/s3/client_s3_cache_manager.h"
 #include "curvefs/src/client/service/inode_objects_service.h"
 #include "curvefs/src/client/warmup/warmup_manager.h"
-#include "curvefs/src/volume/common.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 namespace curvefs {
 namespace client {
 
 using curve::common::GetObjectAsyncCallBack;
 using curve::common::GetObjectAsyncContext;
-using curvefs::volume::kMiB;
+
 namespace warmup {
 class WarmupManager;
 class WarmupManagerS3Impl;

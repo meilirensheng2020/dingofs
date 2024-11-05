@@ -28,8 +28,8 @@
 #include <string>
 #include <thread>
 
-#include "src/common/interruptible_sleeper.h"
-#include "src/fs/local_filesystem.h"
+#include "curvefs/src/fs/local_filesystem.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 namespace curvefs {
 namespace metaserver {

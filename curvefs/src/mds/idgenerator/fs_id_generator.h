@@ -25,8 +25,8 @@
 
 #include <memory>
 
+#include "curvefs/src/idgenerator/etcd_id_generator.h"
 #include "curvefs/src/mds/common/storage_key.h"
-#include "src/idgenerator/etcd_id_generator.h"
 
 namespace curvefs {
 namespace mds {

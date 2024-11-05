@@ -30,7 +30,7 @@
 #include <thread>
 
 #include "curvefs/src/common/threading.h"
-#include "src/common/concurrent/task_queue.h"
+#include "curvefs/src/utils/concurrent/task_queue.h"
 
 namespace curvefs {
 namespace base {

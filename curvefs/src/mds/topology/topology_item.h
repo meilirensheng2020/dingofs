@@ -36,7 +36,7 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/proto/topology.pb.h"
 #include "curvefs/src/mds/topology/topology_id_generator.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 using curvefs::common::PartitionStatus;
 

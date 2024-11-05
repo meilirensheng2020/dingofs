@@ -23,6 +23,10 @@
 #ifndef CURVEFS_SRC_CLIENT_LEASE_LEASE_EXCUTOR_H_
 #define CURVEFS_SRC_CLIENT_LEASE_LEASE_EXCUTOR_H_
 
+#include <brpc/periodic_task.h>
+#include <bthread/condition_variable.h>
+#include <bthread/mutex.h>
+
 #include <atomic>
 #include <memory>
 #include <string>
@@ -30,10 +34,7 @@
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/rpcclient/mds_client.h"
 #include "curvefs/src/client/rpcclient/metacache.h"
-#include "src/client/lease_executor.h"
 
-using curve::client::LeaseExecutorBase;
-using curve::client::RefreshSessionTask;
 using curvefs::client::common::LeaseOpt;
 using curvefs::client::rpcclient::MdsClient;
 using curvefs::client::rpcclient::MetaCache;
@@ -41,6 +42,100 @@ using curvefs::mds::Mountpoint;
 
 namespace curvefs {
 namespace client {
+class LeaseExecutorBase {
+ public:
+  virtual ~LeaseExecutorBase() = default;
+  virtual bool RefreshLease() { return true; }
+};
+
+// RefreshSessin定期任务
+// 利用brpc::PeriodicTaskManager进行管理
+// 定时器触发时调用OnTriggeringTask，根据返回值决定是否继续定时触发
+// 如果不再继续触发，调用OnDestroyingTask进行清理操作
+class RefreshSessionTask : public brpc::PeriodicTask {
+ public:
+  using Task = std::function<bool(void)>;
+
+  RefreshSessionTask(LeaseExecutorBase* leaseExecutor, uint64_t intervalUs)
+      : leaseExecutor_(leaseExecutor),
+        refreshIntervalUs_(intervalUs),
+        stopped_(false),
+        stopMtx_(),
+        terminated_(false),
+        terminatedMtx_(),
+        terminatedCv_() {}
+
+  RefreshSessionTask(const RefreshSessionTask& other)
+      : leaseExecutor_(other.leaseExecutor_),
+        refreshIntervalUs_(other.refreshIntervalUs_),
+        stopped_(false),
+        stopMtx_(),
+        terminated_(false),
+        terminatedMtx_(),
+        terminatedCv_() {}
+
+  virtual ~RefreshSessionTask() = default;
+
+  /**
+   * @brief 定时器超时后执行当前函数
+   * @param next_abstime 任务下次执行的绝对时间
+   * @return true 继续定期执行当前任务
+   *         false 停止执行当前任务
+   */
+  bool OnTriggeringTask(timespec* next_abstime) override {
+    std::lock_guard<bthread::Mutex> lk(stopMtx_);
+    if (stopped_) {
+      return false;
+    }
+
+    *next_abstime = butil::microseconds_from_now(refreshIntervalUs_);
+    return leaseExecutor_->RefreshLease();
+  }
+
+  /**
+   * @brief 停止再次执行当前任务
+   */
+  void Stop() {
+    std::lock_guard<bthread::Mutex> lk(stopMtx_);
+    stopped_ = true;
+  }
+
+  /**
+   * @brief 任务停止后调用
+   */
+  void OnDestroyingTask() override {
+    std::unique_lock<bthread::Mutex> lk(terminatedMtx_);
+    terminated_ = true;
+    terminatedCv_.notify_one();
+  }
+
+  /**
+   * @brief 等待任务退出
+   */
+  void WaitTaskExit() {
+    std::unique_lock<bthread::Mutex> lk(terminatedMtx_);
+    while (terminated_ != true) {
+      terminatedCv_.wait(lk);
+    }
+  }
+
+  /**
+   * @brief 获取refresh session时间间隔(us)
+   * @return refresh session任务时间间隔(us)
+   */
+  uint64_t RefreshIntervalUs() const { return refreshIntervalUs_; }
+
+ private:
+  LeaseExecutorBase* leaseExecutor_;
+  uint64_t refreshIntervalUs_;
+
+  bool stopped_;
+  bthread::Mutex stopMtx_;
+
+  bool terminated_;
+  bthread::Mutex terminatedMtx_;
+  bthread::ConditionVariable terminatedCv_;
+};
 
 class LeaseExecutor : public LeaseExecutorBase {
  public:

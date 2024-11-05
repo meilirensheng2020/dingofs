@@ -31,8 +31,8 @@
 
 #include "curvefs/src/mds/common/mds_define.h"
 #include "curvefs/src/mds/topology/topology_item.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/uuid.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/uuid.h"
 
 namespace curvefs {
 namespace mds {

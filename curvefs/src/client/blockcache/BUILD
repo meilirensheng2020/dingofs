@@ -33,8 +33,8 @@ cc_library(
     copts = CURVE_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//src/common:curve_common",
-        "//src/common:curve_s3_adapter",
+        "//curvefs/src/utils:curve_common",
+        "//curvefs/src/utils:curve_s3_adapter",
         "//curvefs/src/base:curvefs_base_lib",
         "//curvefs/src/common:curvefs_common",
         "//curvefs/src/client/common:common",

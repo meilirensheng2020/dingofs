@@ -34,8 +34,8 @@
 #include "curvefs/src/metaserver/storage/iterator.h"
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/src/metaserver/storage/value_wrapper.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace metaserver {

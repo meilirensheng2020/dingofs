@@ -29,9 +29,9 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "curvefs/proto/common.pb.h"
+#include "curvefs/src/common/fast_align.h"
 #include "curvefs/src/tools/curvefs_tool_define.h"
-#include "src/common/fast_align.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 DECLARE_string(fsName);
 DECLARE_string(confPath);
@@ -69,9 +69,9 @@ namespace curvefs {
 namespace tools {
 namespace create {
 
-using ::curve::common::is_aligned;
 using ::curvefs::common::BitmapLocation;
 using ::curvefs::common::BitmapLocation_Parse;
+using ::curvefs::common::is_aligned;
 
 void CreateFsTool::PrintHelp() {
   CurvefsToolRpc::PrintHelp();

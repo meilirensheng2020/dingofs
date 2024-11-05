@@ -30,7 +30,7 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/src/metaserver/storage/converter.h"
 #include "curvefs/src/metaserver/storage/status.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace metaserver {

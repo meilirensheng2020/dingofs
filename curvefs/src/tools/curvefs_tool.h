@@ -43,7 +43,7 @@
 #include "curvefs/src/common/rpc_stream.h"
 #include "curvefs/src/tools/curvefs_tool_define.h"
 #include "curvefs/src/tools/curvefs_tool_metric.h"
-#include "src/common/configuration.h"
+#include "curvefs/src/utils/configuration.h"
 
 DECLARE_string(confPath);
 DECLARE_uint32(rpcTimeoutMs);

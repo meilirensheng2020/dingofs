@@ -49,8 +49,8 @@
 #include "curvefs/src/client/warmup/warmup_manager.h"
 #include "curvefs/src/client/xattr_manager.h"
 #include "curvefs/src/common/fast_align.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/throttle.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/throttle.h"
 
 #define PORT_LIMIT 65535
 

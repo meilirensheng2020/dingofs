@@ -27,8 +27,8 @@
 #include <gtest/gtest.h>
 
 #include "curvefs/proto/copyset.pb.h"
-#include "src/common/uuid.h"
-#include "src/fs/local_filesystem.h"
+#include "curvefs/src/utils/uuid.h"
+#include "curvefs/src/fs/local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

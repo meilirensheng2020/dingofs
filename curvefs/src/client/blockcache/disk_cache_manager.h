@@ -35,8 +35,8 @@
 #include "curvefs/src/client/blockcache/disk_cache_metric.h"
 #include "curvefs/src/client/blockcache/local_filesystem.h"
 #include "curvefs/src/client/blockcache/lru_cache.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/concurrent/task_thread_pool.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/task_thread_pool.h"
 
 namespace curvefs {
 namespace client {

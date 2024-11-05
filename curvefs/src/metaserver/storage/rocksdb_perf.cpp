@@ -28,7 +28,7 @@
 #include <ostream>
 
 #include "butil/fast_rand.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/timeutility.h"
 
 static bool pass_uint32(const char*, uint32_t) { return true; }
 static bool pass_uint64(const char*, uint64_t) { return true; }

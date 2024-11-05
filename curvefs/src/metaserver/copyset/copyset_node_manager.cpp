@@ -30,7 +30,7 @@
 #include "curvefs/src/metaserver/copyset/copyset_reloader.h"
 #include "curvefs/src/metaserver/copyset/raft_cli_service2.h"
 #include "curvefs/src/metaserver/copyset/utils.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/timeutility.h"
 
 namespace curvefs {
 namespace metaserver {

@@ -25,10 +25,9 @@
 #include <cstdint>
 #include <list>
 
-#include "curvefs/src/client/async_request_closure.h"
 #include "curvefs/src/client/filesystem/error.h"
 #include "curvefs/src/client/filesystem/filesystem.h"
-#include "src/common/uuid.h"
+#include "curvefs/src/utils/uuid.h"
 
 namespace curvefs {
 namespace client {

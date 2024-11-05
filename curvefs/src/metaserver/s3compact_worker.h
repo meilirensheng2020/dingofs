@@ -32,7 +32,7 @@
 
 #include "absl/types/optional.h"
 #include "curvefs/src/metaserver/s3compact.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 namespace curvefs {
 namespace metaserver {

@@ -29,7 +29,7 @@
 #include <memory>
 #include <string>
 
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 using curve::common::GetObjectAsyncContext;
 using ::testing::Return;

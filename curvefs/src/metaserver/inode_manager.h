@@ -32,7 +32,7 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/src/metaserver/inode_storage.h"
 #include "curvefs/src/metaserver/trash.h"
-#include "src/common/concurrent/name_lock.h"
+#include "curvefs/src/utils/concurrent/name_lock.h"
 
 using ::curve::common::NameLock;
 using ::curvefs::metaserver::S3ChunkInfoList;

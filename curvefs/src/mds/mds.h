@@ -28,22 +28,20 @@
 #include <memory>
 #include <string>
 
+#include "curvefs/src/kvstorageclient/etcd_client.h"
+#include "curvefs/src/leader_election/leader_election.h"
 #include "curvefs/src/mds/chunkid_allocator.h"
 #include "curvefs/src/mds/dlock/dlock.h"
 #include "curvefs/src/mds/fs_manager.h"
 #include "curvefs/src/mds/heartbeat/heartbeat_service.h"
 #include "curvefs/src/mds/schedule/coordinator.h"
-#include "curvefs/src/mds/space/manager.h"
-#include "curvefs/src/mds/space/mds_proxy_options.h"
 #include "curvefs/src/mds/topology/topology.h"
 #include "curvefs/src/mds/topology/topology_config.h"
 #include "curvefs/src/mds/topology/topology_metric.h"
 #include "curvefs/src/mds/topology/topology_service.h"
 #include "curvefs/src/mds/topology/topology_storge_etcd.h"
-#include "src/common/configuration.h"
-#include "src/common/s3_adapter.h"
-#include "src/kvstorageclient/etcd_client.h"
-#include "src/leader_election/leader_election.h"
+#include "curvefs/src/utils/configuration.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 using ::curve::common::Configuration;
 using ::curve::common::S3Adapter;
@@ -76,9 +74,6 @@ using ::curve::kvstorage::KVStorageClient;
 // TODO(split InitEtcdConf): split this InitEtcdConf to a single module
 
 using ::curvefs::mds::dlock::DLockOptions;
-using ::curvefs::mds::space::SpaceManager;
-
-using ::curvefs::mds::space::MdsProxyOptions;
 
 struct MDSOptions {
   int dummyPort;
@@ -91,8 +86,6 @@ struct MDSOptions {
   ScheduleOption scheduleOption;
 
   DLockOptions dLockOptions;
-
-  MdsProxyOptions bsMdsProxyOptions;
 };
 
 class MDS {
@@ -142,8 +135,6 @@ class MDS {
 
   void InitFsManagerOptions(FsManagerOption* fs_manager_option);
 
-  void InitMdsProxyManagerOptions(MdsProxyOptions* options);
-
   // mds configuration items
   std::shared_ptr<Configuration> conf_;
   // initialized or not
@@ -152,7 +143,6 @@ class MDS {
   bool running_;
   std::shared_ptr<FsManager> fsManager_;
   std::shared_ptr<FsStorage> fsStorage_;
-  std::shared_ptr<SpaceManager> spaceManager_;
   std::shared_ptr<MetaserverClient> metaserverClient_;
   std::shared_ptr<ChunkIdAllocator> chunkIdAllocator_;
   std::shared_ptr<TopologyImpl> topology_;

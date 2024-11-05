@@ -44,8 +44,8 @@
 #include "curvefs/src/metaserver/register.h"
 #include "curvefs/src/metaserver/resource_statistic.h"
 #include "curvefs/src/metaserver/storage/storage.h"
-#include "src/common/configuration.h"
-#include "src/fs/local_filesystem.h"
+#include "curvefs/src/utils/configuration.h"
+#include "curvefs/src/fs/local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

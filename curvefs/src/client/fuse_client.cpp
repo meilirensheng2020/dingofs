@@ -37,10 +37,10 @@
 #include "curvefs/src/client/fuse_common.h"
 #include "curvefs/src/client/inode_wrapper.h"
 #include "curvefs/src/client/service/metrics_dumper.h"
+#include "curvefs/src/others/client_common.h"
 #include "curvefs/src/common/define.h"
+#include "curvefs/src/utils/net_common.h"
 #include "glog/logging.h"
-#include "src/client/client_common.h"
-#include "src/common/net_common.h"
 
 using ::curvefs::mds::FSStatusCode_Name;
 

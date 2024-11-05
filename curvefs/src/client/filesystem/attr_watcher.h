@@ -28,7 +28,7 @@
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/filesystem/meta.h"
 #include "curvefs/src/client/filesystem/openfile.h"
-#include "src/common/lru_cache.h"
+#include "curvefs/src/utils/lru_cache.h"
 
 namespace curvefs {
 namespace client {

@@ -30,9 +30,9 @@ cc_library(
         "//curvefs/src/mds/common:fs_mds_common",
         "//curvefs/src/mds/metaserverclient:curvefs_mds_metaserverclient",
         "//curvefs/src/mds/topology:curvefs_deal_peerid",
-        "//src/common:curve_common",
-        "//src/common/concurrent:curve_concurrent",
-        "//src/kvstorageclient:kvstorage_client",
+        "//curvefs/src/utils:curve_common",
+        "//curvefs/src/utils/concurrent:curve_concurrent",
+        "//curvefs/src/kvstorageclient:kvstorage_client",
         "@brpc//:brpc",
         "@glog//:glog",
         "@jsoncpp//:jsoncpp",
@@ -47,7 +47,7 @@ cc_library(
     copts = CURVE_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//src/common:curve_common",
+        "//curvefs/src/utils:curve_common",
         "@brpc//:brpc",
     ],
 )

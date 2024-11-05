@@ -41,8 +41,8 @@
 #include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/s3/client_s3_cache_manager.h"
 #include "curvefs/src/common/s3util.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace client {

@@ -35,10 +35,8 @@
 #include "curvefs/test/mds/fake_metaserver.h"
 #include "curvefs/test/mds/mock/mock_cli2.h"
 #include "curvefs/test/mds/mock/mock_kvstorage_client.h"
-#include "curvefs/test/mds/mock/mock_space_manager.h"
 #include "curvefs/test/mds/mock/mock_topology.h"
-#include "curvefs/test/mds/utils.h"
-#include "test/common/mock_s3_adapter.h"
+#include "curvefs/test/utils/mock_s3_adapter.h"
 
 using ::curve::common::MockS3Adapter;
 using ::curvefs::common::S3Info;
@@ -60,19 +58,12 @@ using ::curvefs::metaserver::copyset::GetLeaderResponse2;
 using ::curvefs::metaserver::copyset::MockCliService2;
 
 using ::testing::_;
-using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::Invoke;
-using ::testing::Matcher;
-using ::testing::Mock;
 using ::testing::Return;
-using ::testing::ReturnArg;
-using ::testing::SaveArg;
 using ::testing::SetArgPointee;
-using ::testing::StrEq;
 
 using ::curve::common::MockS3Adapter;
-using ::curvefs::mds::space::MockSpaceManager;
 using ::google::protobuf::util::MessageDifferencer;
 
 namespace curvefs {
@@ -93,7 +84,6 @@ class MdsServiceTest : public ::testing::Test {
     std::shared_ptr<TopologyTokenGenerator> tokenGenerator_ =
         std::make_shared<DefaultTokenGenerator>();
 
-    spaceManager_ = std::make_shared<MockSpaceManager>();
     auto etcdClient_ = std::make_shared<MockEtcdClient>();
     auto codec = std::make_shared<TopologyStorageCodec>();
     auto topoStorage_ =
@@ -107,9 +97,9 @@ class MdsServiceTest : public ::testing::Test {
     FsManagerOption fsManagerOption;
     fsManagerOption.backEndThreadRunInterSec = 1;
     s3Adapter_ = std::make_shared<MockS3Adapter>();
-    fsManager_ = std::make_shared<FsManager>(
-        fsStorage_, spaceManager_, metaserverClient_, topoManager_, s3Adapter_,
-        nullptr, fsManagerOption);
+    fsManager_ =
+        std::make_shared<FsManager>(fsStorage_, metaserverClient_, topoManager_,
+                                    s3Adapter_, nullptr, fsManagerOption);
     ASSERT_TRUE(fsManager_->Init());
   }
 
@@ -134,7 +124,6 @@ class MdsServiceTest : public ::testing::Test {
 
   std::shared_ptr<FsManager> fsManager_;
   std::shared_ptr<FsStorage> fsStorage_;
-  std::shared_ptr<MockSpaceManager> spaceManager_;
   std::shared_ptr<MetaserverClient> metaserverClient_;
   std::shared_ptr<MockKVStorageClient> kvstorage_;
   std::shared_ptr<MockTopologyManager> topoManager_;
@@ -167,10 +156,6 @@ TEST_F(MdsServiceTest, test1) {
   MockCliService2 mockCliService2;
   ASSERT_EQ(
       server.AddService(&mockCliService2, brpc::SERVER_DOESNT_OWN_SERVICE), 0);
-
-  FakeCurveFSService fakeCurveFSService;
-  ASSERT_EQ(0, server.AddService(&fakeCurveFSService,
-                                 brpc::SERVER_DOESNT_OWN_SERVICE));
 
   // start rpc server
   brpc::ServerOptions option;

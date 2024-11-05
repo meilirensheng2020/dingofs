@@ -29,11 +29,11 @@
 #include <memory>
 #include <string>
 
+#include "curvefs/include/curve_compiler_specific.h"
 #include "curvefs/src/metaserver/common/types.h"
 #include "curvefs/src/metaserver/copyset/operator_type.h"
 #include "curvefs/src/metaserver/copyset/utils.h"
-#include "include/curve_compiler_specific.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/timeutility.h"
 
 namespace curvefs {
 namespace metaserver {

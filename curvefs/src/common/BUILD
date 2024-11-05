@@ -33,7 +33,7 @@ cc_library(
     copts = CURVE_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//src/common:curve_common",
+        "//curvefs/src/utils:curve_common",
         "//curvefs/src/client/blockcache:cachestore_lib",
         "@gflags//:gflags",
         "@glog//:glog",

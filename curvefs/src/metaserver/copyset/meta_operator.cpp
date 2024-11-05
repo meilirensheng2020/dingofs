@@ -35,7 +35,7 @@
 #include "curvefs/src/metaserver/copyset/raft_log_codec.h"
 #include "curvefs/src/metaserver/metastore.h"
 #include "curvefs/src/metaserver/streaming_utils.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/timeutility.h"
 
 static bvar::LatencyRecorder g_concurrent_fast_apply_wait_latency(
     "concurrent_fast_apply_wait");

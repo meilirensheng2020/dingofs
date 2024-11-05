@@ -29,7 +29,7 @@
 
 #include "curvefs/src/mds/common/mds_define.h"
 #include "curvefs/src/mds/common/storage_key.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace mds {

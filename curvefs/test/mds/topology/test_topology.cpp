@@ -25,7 +25,7 @@
 #include "curvefs/src/mds/topology/topology.h"
 #include "curvefs/src/mds/topology/topology_item.h"
 #include "curvefs/test/mds/mock/mock_topology.h"
-#include "src/common/configuration.h"
+#include "curvefs/src/utils/configuration.h"
 
 namespace curvefs {
 namespace mds {

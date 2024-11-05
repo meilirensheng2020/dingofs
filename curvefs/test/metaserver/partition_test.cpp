@@ -30,7 +30,7 @@
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/test/metaserver/storage/utils.h"
 #include "curvefs/test/metaserver/test_helper.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 using ::curvefs::metaserver::storage::KVStorage;
 using ::curvefs::metaserver::storage::RandomStoragePath;

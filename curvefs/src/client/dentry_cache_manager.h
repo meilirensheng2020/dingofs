@@ -30,7 +30,7 @@
 
 #include "curvefs/src/client/filesystem/error.h"
 #include "curvefs/src/client/rpcclient/metaserver_client.h"
-#include "src/common/concurrent/generic_name_lock.h"
+#include "curvefs/src/utils/concurrent/generic_name_lock.h"
 
 using ::curvefs::metaserver::Dentry;
 

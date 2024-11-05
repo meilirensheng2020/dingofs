@@ -39,7 +39,7 @@
 #include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/rpcclient/mds_client.h"
 #include "curvefs/src/client/s3/client_s3_cache_manager.h"
-#include "src/common/wait_interval.h"
+#include "curvefs/src/utils/wait_interval.h"
 
 namespace curvefs {
 namespace client {

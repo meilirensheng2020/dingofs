@@ -25,7 +25,7 @@
 #include <gtest/gtest.h>
 
 #include "absl/memory/memory.h"
-#include "test/fs/mock_local_filesystem.h"
+#include "curvefs/test/fs/mock_local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

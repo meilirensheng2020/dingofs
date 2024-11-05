@@ -42,7 +42,7 @@
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/test/metaserver/mock/mock_kv_storage.h"
 #include "curvefs/test/metaserver/storage/utils.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 using ::testing::Return;
 

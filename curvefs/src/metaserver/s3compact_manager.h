@@ -33,9 +33,9 @@
 #include "curvefs/src/metaserver/s3compact.h"
 #include "curvefs/src/metaserver/s3compact_worker.h"
 #include "curvefs/src/metaserver/s3infocache.h"
-#include "src/common/configuration.h"
-#include "src/common/interruptible_sleeper.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/configuration.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 namespace curvefs {
 namespace metaserver {

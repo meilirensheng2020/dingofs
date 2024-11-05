@@ -25,7 +25,7 @@
 
 #include <bthread/mutex.h>
 
-#include "src/common/concurrent/rw_lock.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
 
 namespace curvefs {
 namespace mds {

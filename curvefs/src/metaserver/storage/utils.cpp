@@ -28,10 +28,10 @@
 #include <cstring>
 #include <fstream>
 
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/string_util.h"
-#include "src/fs/ext4_filesystem_impl.h"
-#include "src/fs/fs_common.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/string_util.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/fs_common.h"
 
 namespace curvefs {
 namespace metaserver {

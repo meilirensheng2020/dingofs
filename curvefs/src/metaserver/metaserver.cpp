@@ -43,12 +43,12 @@
 #include "curvefs/src/metaserver/storage/rocksdb_perf.h"
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/src/metaserver/trash_manager.h"
-#include "src/common/crc32.h"
-#include "src/common/curve_version.h"
-#include "src/common/s3_adapter.h"
-#include "src/common/string_util.h"
-#include "src/common/uri_parser.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/utils/crc32.h"
+#include "curvefs/src/utils/curve_version.h"
+#include "curvefs/src/utils/s3_adapter.h"
+#include "curvefs/src/utils/string_util.h"
+#include "curvefs/src/utils/uri_parser.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 namespace braft {
 

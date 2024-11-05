@@ -18,15 +18,43 @@ load("//:copts.bzl", "CURVE_TEST_COPTS")
 
 cc_library(
     name = "curvefs_test_utils",
-    srcs = glob(
-        ["*.cpp"],
-    ),
-    hdrs = glob(
-        ["*.h"],
-    ),
+    srcs = ["protobuf_message_utils.cpp"],
+    hdrs = ["protobuf_message_utils.h"],
     copts = CURVE_TEST_COPTS + ["-DUNIT_TEST"],
     visibility = ["//visibility:public"],
     deps = [
          "@protobuf//:protobuf",       
     ],
+)
+
+cc_test(
+    name = "common-test",
+    srcs = glob([
+        "*.cpp",
+        ],
+        exclude = ["protobuf_message_utils.cpp"],
+    ),
+    deps = [
+        "//curvefs/src/utils:curve_common",
+        "//curvefs/src/utils:curve_auth",
+        "//curvefs/src/utils:curve_s3_adapter",
+        "//curvefs/src/utils/concurrent:curve_concurrent",
+        "//curvefs/src/kvstorageclient:kvstorage_client",
+        "//curvefs/src/utils/concurrent:curve_dlock",
+        "@gtest//:gtest",
+    ],
+    copts = CURVE_TEST_COPTS,
+)
+
+cc_library(
+    name = "common_mock",
+    srcs = [
+            "mock_s3_adapter.h",
+            ],
+    deps = [
+            "//curvefs/src/utils:curve_common",
+            "//curvefs/src/utils:curve_s3_adapter",
+            ],
+    visibility = ["//visibility:public"],
+    copts = CURVE_TEST_COPTS,
 )

@@ -38,7 +38,7 @@
 #include "curvefs/src/mds/common/mds_define.h"
 #include "curvefs/src/tools/curvefs_tool.h"
 #include "curvefs/src/tools/curvefs_tool_define.h"
-#include "src/common/configuration.h"
+#include "curvefs/src/utils/configuration.h"
 
 namespace curvefs {
 namespace mds {

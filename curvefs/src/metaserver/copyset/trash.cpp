@@ -30,8 +30,8 @@
 #include "absl/cleanup/cleanup.h"
 #include "absl/strings/str_cat.h"
 #include "curvefs/src/metaserver/copyset/utils.h"
-#include "src/common/string_util.h"
-#include "src/common/uri_parser.h"
+#include "curvefs/src/utils/string_util.h"
+#include "curvefs/src/utils/uri_parser.h"
 
 namespace curvefs {
 namespace metaserver {

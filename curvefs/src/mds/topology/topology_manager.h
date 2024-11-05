@@ -34,9 +34,9 @@
 #include "curvefs/proto/topology.pb.h"
 #include "curvefs/src/mds/metaserverclient/metaserver_client.h"
 #include "curvefs/src/mds/topology/topology.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/concurrent/name_lock.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/name_lock.h"
+#include "curvefs/src/utils/timeutility.h"
 
 namespace curvefs {
 namespace mds {

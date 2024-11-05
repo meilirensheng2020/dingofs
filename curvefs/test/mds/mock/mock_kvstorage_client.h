@@ -32,7 +32,7 @@
 #include <utility>
 #include <vector>
 
-#include "src/kvstorageclient/etcd_client.h"
+#include "curvefs/src/kvstorageclient/etcd_client.h"
 
 namespace curvefs {
 namespace mds {

@@ -28,7 +28,7 @@
 #include "curvefs/src/mds/common/mds_define.h"
 #include "curvefs/src/mds/common/storage_key.h"
 #include "curvefs/src/mds/topology/topology_item.h"
-#include "src/common/encode.h"
+#include "curvefs/src/utils/encode.h"
 
 namespace curvefs {
 namespace mds {

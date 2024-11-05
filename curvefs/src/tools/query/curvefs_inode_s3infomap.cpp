@@ -26,7 +26,7 @@
 #include <iostream>
 #include <memory>
 
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 DECLARE_string(metaserverAddr);
 DECLARE_string(poolId);

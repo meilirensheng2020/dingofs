@@ -35,7 +35,7 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/src/mds/common/mds_define.h"
 #include "curvefs/src/mds/topology/topology.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 using ::curve::common::InterruptibleSleeper;
 

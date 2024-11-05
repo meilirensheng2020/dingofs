@@ -28,7 +28,7 @@
 #include <deque>
 #include <unordered_map>
 
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace client {

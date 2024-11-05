@@ -36,7 +36,7 @@
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/src/metaserver/superpartition/super_partition.h"
 #include "curvefs/test/metaserver/superpartition/builder/shell.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 namespace curvefs {
 namespace metaserver {

@@ -38,7 +38,7 @@
 #include "curvefs/src/client/client_operator.h"
 #include "curvefs/src/client/filesystem/error.h"
 #include "curvefs/src/common/define.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 #define DirectIOAlignment 512
 

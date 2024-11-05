@@ -22,14 +22,15 @@
 
 #include "curvefs/src/client/lease/lease_excutor.h"
 
-#include <glog/logging.h>
-
 #include <vector>
 
-using curvefs::mds::topology::PartitionTxId;
+#include "brpc/periodic_task.h"
+#include "glog/logging.h"
 
 namespace curvefs {
 namespace client {
+
+using curvefs::mds::topology::PartitionTxId;
 
 LeaseExecutor::~LeaseExecutor() {
   if (task_) {

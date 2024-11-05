@@ -32,10 +32,10 @@
 
 #include <utility>
 
+#include "curvefs/src/fs/local_filesystem.h"
 #include "curvefs/src/metaserver/copyset/copyset_node_manager.h"
 #include "curvefs/src/metaserver/copyset/raft_cli2.h"
-#include "src/common/uuid.h"
-#include "src/fs/local_filesystem.h"
+#include "curvefs/src/utils/uuid.h"
 
 namespace curvefs {
 namespace metaserver {

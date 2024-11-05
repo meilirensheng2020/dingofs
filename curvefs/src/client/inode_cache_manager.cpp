@@ -270,11 +270,7 @@ CURVEFS_ERROR InodeCacheManagerImpl::RefreshData(
       break;
 
     case FsFileType::TYPE_FILE: {
-      if (inode->GetLength() > 0) {
-        rc = inode->RefreshVolumeExtent();
-        LOG_IF(ERROR, rc != CURVEFS_ERROR::OK)
-            << "RefreshVolumeExtent failed, error: " << rc;
-      }
+      CHECK(false) << "not supprt, TYPE_FILE should not be here";
       break;
     }
 

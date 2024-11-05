@@ -29,7 +29,7 @@ cc_test(
     visibility = ["//visibility:public"],
     deps = [
         "//curvefs/src/metaserver:curvefs_metaserver",
-        "//test/fs:fs_mock",
+        "//curvefs/test/fs:fs_mock",
         "@gflags//:gflags",
         "@gtest//:gtest",
     ],

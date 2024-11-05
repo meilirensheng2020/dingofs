@@ -32,12 +32,11 @@
 #include <sstream>
 #include <vector>
 
+#include "curvefs/include/curve_compiler_specific.h"
 #include "curvefs/proto/metaserver.pb.h"
-#include "curvefs/src/client/async_request_closure.h"
 #include "curvefs/src/client/rpcclient/metaserver_client.h"
 #include "curvefs/src/client/rpcclient/task_excutor.h"
 #include "curvefs/src/client/xattr_manager.h"
-#include "include/curve_compiler_specific.h"
 
 using ::curvefs::metaserver::MetaStatusCode_Name;
 
@@ -247,40 +246,6 @@ void InodeWrapper::FlushS3ChunkInfoAsync() {
   }
 }
 
-CURVEFS_ERROR InodeWrapper::FlushVolumeExtent() {
-  std::lock_guard<::curve::common::Mutex> guard(syncingVolumeExtentsMtx_);
-  if (!extentCache_.HasDirtyExtents()) {
-    return CURVEFS_ERROR::OK;
-  }
-
-  UpdateVolumeExtentClosure closure(shared_from_this(), true);
-  auto dirtyExtents = extentCache_.GetDirtyExtents();
-  VLOG(3) << "FlushVolumeExtent, ino: " << inode_.inodeid()
-          << ", dirty extents: " << dirtyExtents.ShortDebugString();
-  CHECK_GT(dirtyExtents.slices_size(), 0);
-  metaClient_->AsyncUpdateVolumeExtent(inode_.fsid(), inode_.inodeid(),
-                                       dirtyExtents, &closure);
-  return closure.Wait();
-}
-
-void InodeWrapper::FlushVolumeExtentAsync() {
-  syncingVolumeExtentsMtx_.lock();
-  if (!extentCache_.HasDirtyExtents()) {
-    VLOG(3) << "FlushVolumeExtentAsync, ino: " << inode_.inodeid()
-            << ", no dirty extents";
-    syncingVolumeExtentsMtx_.unlock();
-    return;
-  }
-
-  auto dirtyExtents = extentCache_.GetDirtyExtents();
-  VLOG(3) << "FlushVolumeExtent, ino: " << inode_.inodeid()
-          << ", dirty extents: " << dirtyExtents.ShortDebugString();
-  CHECK_GT(dirtyExtents.slices_size(), 0);
-  auto* closure = new UpdateVolumeExtentClosure(shared_from_this(), false);
-  metaClient_->AsyncUpdateVolumeExtent(inode_.fsid(), inode_.inodeid(),
-                                       dirtyExtents, closure);
-}
-
 CURVEFS_ERROR InodeWrapper::RefreshS3ChunkInfo() {
   curve::common::UniqueLock lock = GetSyncingS3ChunkInfoUniqueLock();
   google::protobuf::Map<uint64_t, S3ChunkInfoList> s3ChunkInfoMap;
@@ -367,26 +332,8 @@ CURVEFS_ERROR InodeWrapper::UnLinkWithReturn(uint64_t parent,
       }
     }
 
-    if (inode_.type() == FsFileType::TYPE_FILE) {
-      // TODO(all): Maybe we need separate unlink from UpdateInode,
-      // because it's wired that we need to update extents when
-      // unlinking inode. Currently, the reason is when unlinking an
-      // inode, we delete the inode from InodeCacheManager,
-      // so next time read the inode again,  InodeCacheManager will fetch
-      // inode from metaserver. If we don't update extents here,
-      // read will read nothing.
-      // scenario: pjdtest/tests/unlink/14.t
-      //           1. open a file with O_RDWR
-      //           2. write "hello, world"
-      //           3. unlink this file
-      //           4. pread from 0 to 13, expected "hello, world"
-      auto err = FlushVolumeExtent();
-      if (err != CURVEFS_ERROR::OK) {
-        LOG(ERROR) << "Flush volume extent failed, inodeId=" << inode_.inodeid()
-                   << ", error: " << err;
-        return err;
-      }
-    }
+    CHECK(inode_.type() != FsFileType::TYPE_FILE)
+        << "not support volum file is not allowed";
 
     dirtyAttr_.set_nlink(inode_.nlink());
     *dirtyAttr_.mutable_parent() = inode_.parent();
@@ -446,11 +393,7 @@ CURVEFS_ERROR InodeWrapper::Sync(bool internal) {
       ret = SyncS3(internal);
       break;
     case FsFileType::TYPE_FILE:
-      ret = SyncAttr(internal);
-      if (ret != CURVEFS_ERROR::OK) {
-        break;
-      }
-      ret = FlushVolumeExtent();
+      CHECK(false) << "not support volumn file in sync";
       break;
     case FsFileType::TYPE_DIRECTORY:
       ret = SyncAttr(internal);
@@ -468,7 +411,8 @@ void InodeWrapper::Async(MetaServerClientDone* done, bool internal) {
     case FsFileType::TYPE_S3:
       return AsyncS3(done, internal);
     case FsFileType::TYPE_FILE:
-      return AsyncFlushAttrAndExtents(done, internal);
+      CHECK(false) << "not support volumn file in async";
+      break;
     case FsFileType::TYPE_DIRECTORY:
       FALLTHROUGH_INTENDED;
     case FsFileType::TYPE_SYM_LINK:
@@ -477,32 +421,6 @@ void InodeWrapper::Async(MetaServerClientDone* done, bool internal) {
 
   CHECK(false) << "Unexpected inode type: " << inode_.type() << ", "
                << inode_.inodeid();
-}
-
-void InodeWrapper::AsyncFlushAttrAndExtents(MetaServerClientDone* done,
-                                            bool /*internal*/) {
-  if (dirty_ || extentCache_.HasDirtyExtents()) {
-    LockSyncingInode();
-    syncingVolumeExtentsMtx_.lock();
-    DataIndices indices;
-    if (extentCache_.HasDirtyExtents()) {
-      indices.volumeExtents = extentCache_.GetDirtyExtents();
-    }
-
-    metaClient_->UpdateInodeWithOutNlinkAsync(
-        inode_.fsid(), inode_.inodeid(), dirtyAttr_,
-        new UpdateInodeAttrAndExtentClosure{shared_from_this(), done},
-        std::move(indices));
-
-    dirtyAttr_.Clear();
-    return;
-  }
-
-  // nothing to update
-  if (done != nullptr) {
-    done->SetMetaStatusCode(MetaStatusCode::OK);
-    done->Run();
-  }
 }
 
 CURVEFS_ERROR InodeWrapper::SyncS3(bool internal) {
@@ -584,23 +502,6 @@ void InodeWrapper::AsyncS3(MetaServerClientDone* done, bool internal) {
     done->SetMetaStatusCode(MetaStatusCode::OK);
     done->Run();
   }
-}
-
-CURVEFS_ERROR InodeWrapper::RefreshVolumeExtent() {
-  VolumeExtentList extents;
-  auto st = metaClient_->GetVolumeExtent(inode_.fsid(), inode_.inodeid(), true,
-                                         &extents);
-  VLOG(9) << "RefreshVolumeExtent, ino: " << inode_.inodeid()
-          << ", extents: " << extents.ShortDebugString();
-  if (st == MetaStatusCode::OK) {
-    VLOG(9) << "Refresh volume extent success, inodeId=" << inode_.inodeid()
-            << ", extents: [" << extents.ShortDebugString() << "]";
-    extentCache_.Build(extents);
-  } else {
-    LOG(ERROR) << "GetVolumeExtent failed, inodeId=" << inode_.inodeid();
-  }
-
-  return ToFSError(st);
 }
 
 CURVEFS_ERROR InodeWrapper::RefreshNlink() {

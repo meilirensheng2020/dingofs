@@ -30,7 +30,7 @@
 #include <vector>
 
 #include "curvefs/src/tools/curvefs_tool_define.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 DECLARE_string(mdsAddr);
 DECLARE_string(fsId);

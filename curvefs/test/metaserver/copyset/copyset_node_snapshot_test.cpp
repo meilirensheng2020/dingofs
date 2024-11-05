@@ -28,8 +28,8 @@
 #include "curvefs/src/metaserver/copyset/copyset_node.h"
 #include "curvefs/src/metaserver/copyset/copyset_node_manager.h"
 #include "curvefs/test/metaserver/mock/mock_metastore.h"
-#include "src/common/uuid.h"
-#include "test/fs/mock_local_filesystem.h"
+#include "curvefs/src/utils/uuid.h"
+#include "curvefs/test/fs/mock_local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

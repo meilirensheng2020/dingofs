@@ -32,8 +32,8 @@
 #include <vector>
 
 #include "curvefs/proto/topology.pb.h"
-#include "src/common/string_util.h"
-#include "src/common/uri_parser.h"
+#include "curvefs/src/utils/string_util.h"
+#include "curvefs/src/utils/uri_parser.h"
 
 using ::curvefs::mds::topology::MetaServerRegistRequest;
 using ::curvefs::mds::topology::MetaServerRegistResponse;

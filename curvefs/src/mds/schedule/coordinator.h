@@ -35,7 +35,7 @@
 #include "curvefs/src/mds/schedule/scheduler.h"
 #include "curvefs/src/mds/schedule/topoAdapter.h"
 #include "curvefs/src/mds/topology/topology_item.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 namespace curvefs {
 namespace mds {

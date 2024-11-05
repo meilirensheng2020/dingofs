@@ -36,9 +36,9 @@
 #include "curvefs/src/mds/topology/topology_item.h"
 #include "curvefs/src/mds/topology/topology_storge.h"
 #include "curvefs/src/mds/topology/topology_token_generator.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/concurrent/rw_lock.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 namespace curvefs {
 namespace mds {

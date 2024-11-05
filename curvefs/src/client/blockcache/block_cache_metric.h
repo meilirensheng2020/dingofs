@@ -33,7 +33,7 @@
 #include "curvefs/src/client/blockcache/cache_store.h"
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/common/dynamic_config.h"
-#include "src/common/concurrent/task_thread_pool.h"
+#include "curvefs/src/utils/concurrent/task_thread_pool.h"
 
 namespace curvefs {
 namespace client {

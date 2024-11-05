@@ -23,6 +23,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//curvefs/src/mds/common:fs_mds_common",
-        "//src/idgenerator",
+        "//curvefs/src/idgenerator",
     ],
 )

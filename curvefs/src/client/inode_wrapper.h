@@ -36,10 +36,9 @@
 #include "curvefs/src/client/filesystem/error.h"
 #include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/rpcclient/metaserver_client.h"
-#include "curvefs/src/client/volume/extent_cache.h"
 #include "curvefs/src/common/define.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/timeutility.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/timeutility.h"
 
 using ::curvefs::metaserver::Inode;
 using ::curvefs::metaserver::S3ChunkInfo;
@@ -288,15 +287,6 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
     return curve::common::UniqueLock(syncingS3ChunkInfoMtx_);
   }
 
-  ExtentCache* GetMutableExtentCache() {
-    curve::common::UniqueLock lk(mtx_);
-    return &extentCache_;
-  }
-
-  ExtentCache* GetMutableExtentCacheLocked() { return &extentCache_; }
-
-  CURVEFS_ERROR RefreshVolumeExtent();
-
   bool NeedRefreshData() {
     if (s3ChunkInfoSize_ >= maxDataSize_ &&
         ::curve::common::TimeUtility::GetTimeofDaySec() - lastRefreshTime_ >=
@@ -353,9 +343,6 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   friend class UpdateVolumeExtentClosure;
   friend class UpdateInodeAttrAndExtentClosure;
 
-  CURVEFS_ERROR FlushVolumeExtent();
-  void FlushVolumeExtentAsync();
-
  private:
   FRIEND_TEST(TestInodeWrapper, TestUpdateInodeAttrIncrementally);
 
@@ -383,7 +370,6 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   mutable ::curve::common::Mutex syncingS3ChunkInfoMtx_;
 
   mutable ::curve::common::Mutex syncingVolumeExtentsMtx_;
-  ExtentCache extentCache_;
 
   // timestamp when put in cache
   uint64_t time_;

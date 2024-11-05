@@ -29,7 +29,7 @@
 #include "absl/memory/memory.h"
 #include "curvefs/src/metaserver/partition.h"
 #include "curvefs/src/metaserver/s3compact_worker.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 using curve::common::Configuration;
 using curve::common::InitS3AdaptorOptionExceptS3InfoOption;

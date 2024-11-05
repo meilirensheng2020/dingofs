@@ -33,8 +33,8 @@
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/src/metaserver/storage/utils.h"
 #include "curvefs/test/metaserver/storage/storage_test.h"
-#include "src/fs/ext4_filesystem_impl.h"
-#include "test/fs/mock_local_filesystem.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
+#include "curvefs/test/fs/mock_local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

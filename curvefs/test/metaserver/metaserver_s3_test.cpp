@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include "test/common/mock_s3_adapter.h"
+#include "curvefs/test/utils/mock_s3_adapter.h"
 
 namespace curvefs {
 namespace metaserver {

@@ -31,7 +31,7 @@
 #include "curvefs/src/metaserver/storage/iterator.h"
 #include "curvefs/src/metaserver/storage/memory_storage.h"
 #include "curvefs/src/metaserver/storage/rocksdb_storage.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace metaserver {

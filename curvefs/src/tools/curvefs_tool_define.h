@@ -33,7 +33,7 @@
 #include "curvefs/proto/copyset.pb.h"
 #include "curvefs/proto/heartbeat.pb.h"
 #include "curvefs/proto/topology.pb.h"
-#include "src/common/configuration.h"
+#include "curvefs/src/utils/configuration.h"
 
 namespace curvefs {
 namespace tools {

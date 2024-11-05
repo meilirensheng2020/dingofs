@@ -30,11 +30,14 @@
 #include <mutex>
 #include <string>
 
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
+#include "curvefs/src/utils/timeutility.h"
 
 namespace curvefs {
 namespace client {
 namespace metric {
+
+using ::curve::common::TimeUtility;
 
 // metric stats per second
 struct PerSecondMetric {
@@ -371,6 +374,21 @@ struct MetricListGuard {
   std::list<InterfaceMetric*> metricList_;
   uint64_t start_;
 };
+
+struct LatencyGuard {
+  bvar::LatencyRecorder* latencyRec;
+  uint64_t startTimeUs;
+
+  explicit LatencyGuard(bvar::LatencyRecorder* latency) {
+    latencyRec = latency;
+    startTimeUs = TimeUtility::GetTimeofDayUs();
+  }
+
+  ~LatencyGuard() {
+    *latencyRec << (TimeUtility::GetTimeofDayUs() - startTimeUs);
+  }
+};
+
 }  // namespace metric
 }  // namespace client
 }  // namespace curvefs

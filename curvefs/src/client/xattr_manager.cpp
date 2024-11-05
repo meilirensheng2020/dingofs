@@ -25,7 +25,7 @@
 #include "curvefs/src/client/common/common.h"
 #include "curvefs/src/client/filesystem/xattr.h"
 #include "glog/logging.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace client {

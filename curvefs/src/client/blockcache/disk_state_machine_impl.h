@@ -21,7 +21,7 @@
 #include "curvefs/src/base/timer/timer_impl.h"
 #include "curvefs/src/client/blockcache/disk_cache_metric.h"
 #include "curvefs/src/client/blockcache/disk_state_machine.h"
-#include "src/common/concurrent/rw_lock.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
 
 namespace curvefs {
 namespace client {

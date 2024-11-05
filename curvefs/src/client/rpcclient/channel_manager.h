@@ -31,7 +31,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "src/common/concurrent/rw_lock.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
 
 namespace curvefs {
 namespace client {

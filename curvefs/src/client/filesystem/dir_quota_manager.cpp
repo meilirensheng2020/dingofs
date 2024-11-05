@@ -22,7 +22,7 @@
 #include "curvefs/src/client/inode_wrapper.h"
 #include "curvefs/src/common/define.h"
 #include "glog/logging.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace client {

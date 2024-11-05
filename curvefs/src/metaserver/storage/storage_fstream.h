@@ -31,7 +31,7 @@
 #include "absl/cleanup/cleanup.h"
 #include "absl/strings/str_cat.h"
 #include "curvefs/src/metaserver/storage/dumpfile.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace metaserver {

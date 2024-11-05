@@ -31,8 +31,8 @@
 #include "curvefs/src/base/math/math.h"
 #include "curvefs/src/base/string/string.h"
 #include "curvefs/src/client/common/dynamic_config.h"
-#include "src/common/gflags_helper.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/gflags_helper.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace brpc {
 DECLARE_int32(defer_close_second);

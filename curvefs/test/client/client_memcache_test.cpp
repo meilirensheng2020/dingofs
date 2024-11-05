@@ -31,7 +31,7 @@
 #include "absl/strings/str_cat.h"
 #include "curvefs/src/client/kvclient/kvclient_manager.h"
 #include "curvefs/src/client/kvclient/memcache_client.h"
-#include "src/common/concurrent/count_down_event.h"
+#include "curvefs/src/utils/concurrent/count_down_event.h"
 
 using curve::common::CountDownEvent;
 

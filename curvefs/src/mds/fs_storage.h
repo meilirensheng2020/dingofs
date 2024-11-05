@@ -31,12 +31,12 @@
 #include <vector>
 
 #include "curvefs/proto/mds.pb.h"
+#include "curvefs/src/idgenerator/etcd_id_generator.h"
+#include "curvefs/src/kvstorageclient/etcd_client.h"
 #include "curvefs/src/mds/common/types.h"
 #include "curvefs/src/mds/fs_info_wrapper.h"
 #include "curvefs/src/mds/idgenerator/fs_id_generator.h"
-#include "src/common/concurrent/rw_lock.h"
-#include "src/idgenerator/etcd_id_generator.h"
-#include "src/kvstorageclient/etcd_client.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
 
 namespace curvefs {
 namespace mds {

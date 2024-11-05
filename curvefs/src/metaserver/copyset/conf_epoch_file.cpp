@@ -28,7 +28,7 @@
 #include <sys/fcntl.h>
 
 #include "absl/cleanup/cleanup.h"
-#include "src/common/crc32.h"
+#include "curvefs/src/utils/crc32.h"
 
 namespace curvefs {
 namespace metaserver {

@@ -26,7 +26,7 @@
 
 #include <fstream>
 
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 DECLARE_string(mds_addr);
 DECLARE_string(cluster_map);

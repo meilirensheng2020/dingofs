@@ -38,8 +38,8 @@
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/rpcclient/cli2_client.h"
 #include "curvefs/src/client/rpcclient/mds_client.h"
-#include "src/client/metacache_struct.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/others/metacache_struct.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 using ::curve::client::CopysetID;
 using ::curve::client::CopysetInfo;

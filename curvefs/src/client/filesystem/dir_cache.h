@@ -34,8 +34,8 @@
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/filesystem/meta.h"
 #include "curvefs/src/client/filesystem/metric.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/lru_cache.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/lru_cache.h"
 
 namespace curvefs {
 namespace client {

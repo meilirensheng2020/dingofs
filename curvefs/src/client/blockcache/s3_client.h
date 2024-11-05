@@ -28,7 +28,7 @@
 
 #include "curvefs/src/base/time/time.h"
 #include "curvefs/src/client/blockcache/error.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 namespace curvefs {
 namespace client {

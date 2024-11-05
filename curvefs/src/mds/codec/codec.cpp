@@ -25,7 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "src/common/encode.h"
+#include "curvefs/src/utils/encode.h"
 
 namespace curvefs {
 namespace mds {

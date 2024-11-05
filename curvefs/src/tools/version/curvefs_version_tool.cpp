@@ -22,7 +22,7 @@
 
 #include "curvefs/src/tools/version/curvefs_version_tool.h"
 
-#include "src/common/macros.h"
+#include "curvefs/src/utils/macros.h"
 
 namespace curvefs {
 namespace tools {

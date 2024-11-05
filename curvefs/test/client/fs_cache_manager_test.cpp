@@ -26,7 +26,7 @@
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
 #include "curvefs/src/client/s3/client_s3_cache_manager.h"
 #include "curvefs/test/client/mock_client_s3_cache_manager.h"
-#include "src/common/concurrent/count_down_event.h"
+#include "curvefs/src/utils/concurrent/count_down_event.h"
 
 namespace curvefs {
 namespace client {

@@ -30,7 +30,7 @@
 #include "curvefs/src/client/common/config.h"
 #include "curvefs/src/client/datastream/metric.h"
 #include "curvefs/src/client/datastream/page_allocator.h"
-#include "src/common/concurrent/task_thread_pool.h"
+#include "curvefs/src/utils/concurrent/task_thread_pool.h"
 
 namespace curvefs {
 namespace client {

@@ -30,8 +30,6 @@
 #include <utility>
 #include <vector>
 
-#include "src/client/metacache.h"
-
 using ::curve::common::ReadLockGuard;
 using ::curve::common::WriteLockGuard;
 
@@ -432,8 +430,7 @@ bool MetaCache::UpdateLeaderInternal(
       groupID.poolID, groupID.copysetID, toupdateCopyset->csinfos_,
       toupdateCopyset->leaderindex_, &leaderAddr, &metaserverID);
   if (!getLeaderOk) {
-    LOG(WARNING) << "get leader failed!"
-                 << ", copyset:" << groupID.ToString();
+    LOG(WARNING) << "get leader failed!" << ", copyset:" << groupID.ToString();
     return false;
   }
 

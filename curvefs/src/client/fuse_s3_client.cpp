@@ -29,7 +29,7 @@
 #include "curvefs/src/client/datastream/data_stream.h"
 #include "curvefs/src/client/filesystem/xattr.h"
 #include "curvefs/src/client/kvclient/memcache_client.h"
-#include "src/common/net_common.h"
+#include "curvefs/src/utils/net_common.h"
 
 namespace curvefs {
 namespace client {

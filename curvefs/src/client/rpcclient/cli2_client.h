@@ -34,8 +34,8 @@
 
 #include "curvefs/proto/cli2.pb.h"
 #include "curvefs/src/client/common/common.h"
-#include "src/client/client_common.h"
-#include "src/client/metacache_struct.h"
+#include "curvefs/src/others/client_common.h"
+#include "curvefs/src/others/metacache_struct.h"
 
 using ::curve::client::CopysetID;
 using ::curve::client::CopysetInfo;

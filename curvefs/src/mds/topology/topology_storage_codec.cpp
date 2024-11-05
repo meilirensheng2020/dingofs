@@ -25,7 +25,7 @@
 #include <utility>
 
 #include "curvefs/src/mds/common/storage_key.h"
-#include "src/common/encode.h"
+#include "curvefs/src/utils/encode.h"
 
 namespace curvefs {
 namespace mds {

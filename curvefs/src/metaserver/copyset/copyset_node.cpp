@@ -42,8 +42,8 @@
 #include "curvefs/src/metaserver/copyset/snapshot_closure.h"
 #include "curvefs/src/metaserver/copyset/utils.h"
 #include "curvefs/src/metaserver/storage/storage.h"
-#include "src/common/timeutility.h"
-#include "src/common/uri_parser.h"
+#include "curvefs/src/utils/timeutility.h"
+#include "curvefs/src/utils/uri_parser.h"
 
 static bvar::LatencyRecorder g_oprequest_propose_latency("oprequest_propose");
 static bvar::LatencyRecorder g_concurrent_apply_wait_latency(

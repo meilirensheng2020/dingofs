@@ -30,7 +30,7 @@
 #include "curvefs/test/metaserver/copyset/mock/mock_copyset_node.h"
 #include "curvefs/test/metaserver/mock_metaserver_s3_adaptor.h"
 #include "curvefs/test/metaserver/storage/utils.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 using ::curvefs::client::rpcclient::MockMdsClient;
 using ::curvefs::mds::FSStatusCode;

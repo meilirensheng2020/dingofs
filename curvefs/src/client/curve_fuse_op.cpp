@@ -36,20 +36,18 @@
 #include "curvefs/src/client/filesystem/xattr.h"
 #include "curvefs/src/client/fuse_client.h"
 #include "curvefs/src/client/fuse_s3_client.h"
-#include "curvefs/src/client/fuse_volume_client.h"
 #include "curvefs/src/client/metric/client_metric.h"
 #include "curvefs/src/client/rpcclient/base_client.h"
 #include "curvefs/src/client/rpcclient/mds_client.h"
 #include "curvefs/src/client/warmup/warmup_manager.h"
 #include "curvefs/src/common/dynamic_vlog.h"
-#include "src/common/configuration.h"
-#include "src/common/gflags_helper.h"
+#include "curvefs/src/utils/configuration.h"
+#include "curvefs/src/utils/gflags_helper.h"
 
 using ::curve::common::Configuration;
 using ::curvefs::client::CURVEFS_ERROR;
 using ::curvefs::client::FuseClient;
 using ::curvefs::client::FuseS3Client;
-using ::curvefs::client::FuseVolumeClient;
 using ::curvefs::client::blockcache::InitBlockCacheLog;
 using ::curvefs::client::common::FuseClientOption;
 using ::curvefs::client::filesystem::AccessLogGuard;
@@ -175,8 +173,6 @@ int InitFuseClient(const struct MountOption* mount_option) {
   std::string fs_type_mds;
   if (fs_info->fstype() == FSType::TYPE_S3) {
     fs_type_mds = "s3";
-  } else if (fs_info->fstype() == FSType::TYPE_VOLUME) {
-    fs_type_mds = "volume";
   }
 
   if (fs_type_mds != fs_type_str) {
@@ -184,8 +180,6 @@ int InitFuseClient(const struct MountOption* mount_option) {
     return -1;
   } else if (fs_type_str == "s3") {
     g_client_instance = new FuseS3Client();
-  } else if (fs_type_str == "volume") {
-    g_client_instance = new FuseVolumeClient();
   } else {
     LOG(ERROR) << "unknown fstype! fstype is " << fs_type_str;
     return -1;

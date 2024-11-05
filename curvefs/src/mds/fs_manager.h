@@ -36,17 +36,15 @@
 #include "curvefs/src/mds/fs_info_wrapper.h"
 #include "curvefs/src/mds/fs_storage.h"
 #include "curvefs/src/mds/metaserverclient/metaserver_client.h"
-#include "curvefs/src/mds/space/manager.h"
 #include "curvefs/src/mds/topology/topology.h"
 #include "curvefs/src/mds/topology/topology_manager.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/interruptible_sleeper.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 namespace curvefs {
 namespace mds {
 
-using ::curvefs::mds::space::SpaceManager;
 using ::curvefs::mds::topology::Topology;
 using ::curvefs::mds::topology::TopologyManager;
 
@@ -71,13 +69,11 @@ struct FsManagerOption {
 class FsManager {
  public:
   FsManager(const std::shared_ptr<FsStorage>& fs_storage,
-            const std::shared_ptr<SpaceManager>& space_manager,
             const std::shared_ptr<MetaserverClient>& metaserver_client,
             const std::shared_ptr<TopologyManager>& topo_manager,
             const std::shared_ptr<S3Adapter>& s3_adapter,
             const std::shared_ptr<DLock>& dlock, const FsManagerOption& option)
       : fsStorage_(fs_storage),
-        spaceManager_(space_manager),
         metaserverClient_(metaserver_client),
         topoManager_(topo_manager),
         s3Adapter_(s3_adapter),
@@ -211,8 +207,6 @@ class FsManager {
   // set partition status to DELETING in topology
   bool SetPartitionToDeleting(const PartitionInfo& partition);
 
-  FSStatusCode ReloadMountedFsVolumeSpace();
-
   void GetLatestTxId(uint32_t fs_id, std::vector<PartitionTxId>* tx_ids);
 
   FSStatusCode IncreaseFsTxSequence(const std::string& fs_name,
@@ -235,10 +229,7 @@ class FsManager {
 
   uint64_t GetRootId();
 
-  bool FillVolumeInfo(common::Volume* volume);
-
   std::shared_ptr<FsStorage> fsStorage_;
-  std::shared_ptr<SpaceManager> spaceManager_;
   std::shared_ptr<MetaserverClient> metaserverClient_;
   curve::common::GenericNameLock<Mutex> nameLock_;
   std::shared_ptr<TopologyManager> topoManager_;

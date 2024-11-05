@@ -39,8 +39,8 @@
 #include "curvefs/src/client/filesystem/error.h"
 #include "curvefs/src/client/inode_wrapper.h"
 #include "curvefs/src/client/kvclient/kvclient_manager.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 using curve::common::ReadLockGuard;
 using curve::common::RWLock;

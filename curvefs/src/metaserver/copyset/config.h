@@ -46,10 +46,10 @@
 #include <memory>
 #include <string>
 
+#include "curvefs/src/fs/local_filesystem.h"
 #include "curvefs/src/metaserver/copyset/apply_queue.h"
 #include "curvefs/src/metaserver/copyset/trash.h"
 #include "curvefs/src/metaserver/storage/config.h"
-#include "src/fs/local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

@@ -33,8 +33,8 @@
 #include "curvefs/src/mds/heartbeat/topo_updater.h"
 #include "curvefs/src/mds/schedule/coordinator.h"
 #include "curvefs/src/mds/topology/topology.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/interruptible_sleeper.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/interruptible_sleeper.h"
 
 using ::curvefs::mds::schedule::Coordinator;
 using ::curvefs::mds::topology::CopySetIdType;

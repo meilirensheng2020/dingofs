@@ -34,8 +34,8 @@
 #include "curvefs/test/metaserver/copyset/mock/mock_raft_node.h"
 #include "curvefs/test/metaserver/mock/mock_metastore.h"
 #include "curvefs/test/utils/protobuf_message_utils.h"
-#include "src/common/timeutility.h"
-#include "test/fs/mock_local_filesystem.h"
+#include "curvefs/src/utils/timeutility.h"
+#include "curvefs/test/fs/mock_local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

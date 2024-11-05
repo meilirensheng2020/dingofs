@@ -32,9 +32,8 @@
 #include "curvefs/test/mds/mock/mock_cli2.h"
 #include "curvefs/test/mds/mock/mock_fs_stroage.h"
 #include "curvefs/test/mds/mock/mock_metaserver.h"
-#include "curvefs/test/mds/mock/mock_space_manager.h"
 #include "curvefs/test/mds/mock/mock_topology.h"
-#include "test/common/mock_s3_adapter.h"
+#include "curvefs/test/utils/mock_s3_adapter.h"
 
 using ::curve::common::MockS3Adapter;
 using ::curvefs::mds::topology::DefaultIdGenerator;
@@ -53,7 +52,6 @@ using ::curvefs::metaserver::copyset::MockCliService2;
 namespace curvefs {
 namespace mds {
 
-using ::curvefs::mds::space::MockSpaceManager;
 using ::curvefs::metaserver::MockMetaserverService;
 
 const char* kFsManagerTest2ServerAddress = "0.0.0.0:22000";
@@ -104,14 +102,12 @@ class FsManagerTest2 : public testing::Test {
         metaServerClient_);
     s3Adapter_ = std::make_shared<MockS3Adapter>();
 
-    spaceManager_ = std::make_shared<MockSpaceManager>();
-
     // init fsmanager
     FsManagerOption fsManagerOption;
     fsManagerOption.backEndThreadRunInterSec = 1;
-    fsManager_ = std::make_shared<FsManager>(
-        storage_, spaceManager_, metaServerClient_, topoManager_, s3Adapter_,
-        nullptr, fsManagerOption);
+    fsManager_ =
+        std::make_shared<FsManager>(storage_, metaServerClient_, topoManager_,
+                                    s3Adapter_, nullptr, fsManagerOption);
 
     // spaceService_ = std::make_shared<MockSpaceService>();
     metaserverService_ = std::make_shared<MockMetaserverService>();
@@ -139,7 +135,6 @@ class FsManagerTest2 : public testing::Test {
  protected:
   std::shared_ptr<MockFsStorage> storage_;
   std::shared_ptr<MetaserverClient> metaServerClient_;
-  std::shared_ptr<MockSpaceManager> spaceManager_;
 
   std::shared_ptr<MockTopologyManager> topoManager_;
   std::shared_ptr<MockMetaserverService> metaserverService_;

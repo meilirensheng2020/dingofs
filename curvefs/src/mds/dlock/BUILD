@@ -23,9 +23,9 @@ cc_library(
     copts = CURVE_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//src/common:curve_common",
-        "//src/common/concurrent:curve_concurrent",
-        "//src/kvstorageclient:kvstorage_client",
+        "//curvefs/src/utils:curve_common",
+        "//curvefs/src/utils/concurrent:curve_concurrent",
+        "//curvefs/src/kvstorageclient:kvstorage_client",
         "//curvefs/proto:mds_cc_proto",
         "//curvefs/src/mds/common:fs_mds_common",
         "@protobuf//:protobuf",

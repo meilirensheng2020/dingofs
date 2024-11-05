@@ -47,8 +47,8 @@
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "rocksdb/utilities/checkpoint.h"
 #include "rocksdb/utilities/options_util.h"
-#include "src/common/concurrent/rw_lock.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 namespace curvefs {
 namespace metaserver {

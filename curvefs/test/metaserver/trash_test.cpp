@@ -29,7 +29,7 @@
 #include "curvefs/test/client/rpcclient/mock_mds_client.h"
 #include "curvefs/test/metaserver/mock_metaserver_s3_adaptor.h"
 #include "curvefs/test/metaserver/storage/utils.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 using ::testing::_;
 using ::testing::AtLeast;

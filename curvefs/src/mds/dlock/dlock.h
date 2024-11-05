@@ -26,10 +26,10 @@
 #include <memory>
 #include <string>
 
-#include "src/common/concurrent/name_lock.h"
-#include "src/common/encode.h"
-#include "src/common/uncopyable.h"
-#include "src/kvstorageclient/etcd_client.h"
+#include "curvefs/src/kvstorageclient/etcd_client.h"
+#include "curvefs/src/utils/concurrent/name_lock.h"
+#include "curvefs/src/utils/encode.h"
+#include "curvefs/src/utils/uncopyable.h"
 
 namespace curvefs {
 namespace mds {

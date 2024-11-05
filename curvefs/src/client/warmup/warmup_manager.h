@@ -50,9 +50,9 @@
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
 #include "curvefs/src/client/s3/client_s3_cache_manager.h"
 #include "curvefs/src/common/task_thread_pool.h"
-#include "src/common/concurrent/concurrent.h"
-#include "src/common/concurrent/rw_lock.h"
-#include "src/common/s3_adapter.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/rw_lock.h"
+#include "curvefs/src/utils/s3_adapter.h"
 
 namespace curvefs {
 namespace client {

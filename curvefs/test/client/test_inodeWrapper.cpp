@@ -34,10 +34,8 @@
 #include "curvefs/src/client/inode_wrapper.h"
 #include "curvefs/src/client/rpcclient/metaserver_client.h"
 #include "curvefs/src/client/rpcclient/task_excutor.h"
-#include "curvefs/src/client/volume/extent.h"
-#include "curvefs/src/client/volume/extent_cache.h"
+#include "curvefs/src/utils/timeutility.h"
 #include "curvefs/test/client/mock_metaserver_client.h"
-#include "src/common/timeutility.h"
 
 using ::google::protobuf::util::MessageDifferencer;
 
@@ -169,41 +167,6 @@ TEST_F(TestInodeWrapper, testSyncFailed) {
 
   CURVEFS_ERROR ret = inodeWrapper_->Sync();
   ASSERT_EQ(CURVEFS_ERROR::NOTEXIST, ret);
-}
-
-TEST_F(TestInodeWrapper, TestFlushVolumeExtent_NoNeedFlush) {
-  ExtentCache::SetOption({});
-
-  inodeWrapper_->SetType(FsFileType::TYPE_FILE);
-  inodeWrapper_->ClearDirty();
-  EXPECT_CALL(*metaClient_, UpdateInodeAttrWithOutNlink(_, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*metaClient_, AsyncUpdateVolumeExtent(_, _, _, _)).Times(0);
-
-  ASSERT_EQ(CURVEFS_ERROR::OK, inodeWrapper_->Sync());
-}
-
-TEST_F(TestInodeWrapper, TestFlushVolumeExtent) {
-  ExtentCache::SetOption({});
-
-  inodeWrapper_->SetType(FsFileType::TYPE_FILE);
-  inodeWrapper_->ClearDirty();
-  auto* extentCache = inodeWrapper_->GetMutableExtentCache();
-  PExtent pext;
-  pext.len = 4096;
-  pext.pOffset = 0;
-  pext.UnWritten = true;
-  extentCache->Merge(0, pext);
-  EXPECT_CALL(*metaClient_, UpdateInodeAttrWithOutNlink(_, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*metaClient_, AsyncUpdateVolumeExtent(_, _, _, _))
-      .WillOnce(Invoke([](uint32_t, uint64_t, const VolumeExtentList&,
-                          MetaServerClientDone* done) {
-        done->SetMetaStatusCode(MetaStatusCode::OK);
-        done->Run();
-      }));
-
-  ASSERT_EQ(CURVEFS_ERROR::OK, inodeWrapper_->Sync());
 }
 
 TEST_F(TestInodeWrapper, TestRefreshNlink) {

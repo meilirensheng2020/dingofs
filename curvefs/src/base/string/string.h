@@ -31,7 +31,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "src/common/uuid.h"
+#include "curvefs/src/utils/uuid.h"
 
 namespace curvefs {
 namespace base {

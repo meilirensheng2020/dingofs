@@ -29,7 +29,7 @@
 #include <memory>
 #include <vector>
 
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace metaserver {

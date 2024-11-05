@@ -23,7 +23,7 @@ cc_library(
     copts = CURVE_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//src/common:curve_common",
+        "//curvefs/src/utils:curve_common",
         "//curvefs/src/mds/topology:curvefs_topology",
         "//curvefs/src/mds/common:fs_mds_common",
         "//curvefs/proto:curvefs_schedule_cc_proto",

@@ -32,7 +32,7 @@
 
 #include "curvefs/src/mds/schedule/operatorStepTemplate.h"
 #include "curvefs/src/mds/schedule/operatorTemplate.h"
-#include "src/common/stringstatus.h"
+#include "curvefs/src/utils/stringstatus.h"
 
 namespace curvefs {
 namespace mds {

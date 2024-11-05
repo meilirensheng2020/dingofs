@@ -21,7 +21,7 @@
  */
 #include "curvefs/src/tools/umount/curvefs_umount_fs_tool.h"
 
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 DECLARE_string(fsName);
 DECLARE_string(mountpoint);

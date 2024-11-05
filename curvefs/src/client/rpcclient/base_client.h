@@ -33,7 +33,7 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/proto/space.pb.h"
 #include "curvefs/proto/topology.pb.h"
-#include "src/client/client_common.h"
+#include "curvefs/src/others/client_common.h"
 
 namespace curvefs {
 namespace client {

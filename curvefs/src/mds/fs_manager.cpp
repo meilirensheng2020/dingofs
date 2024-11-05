@@ -34,20 +34,16 @@
 
 #include "curvefs/proto/common.pb.h"
 #include "curvefs/proto/mds.pb.h"
-#include "curvefs/proto/space.pb.h"
 #include "curvefs/src/common/define.h"
 #include "curvefs/src/mds/common/types.h"
 #include "curvefs/src/mds/metric/fs_metric.h"
-#include "curvefs/src/mds/space/mds_proxy_manager.h"
-#include "curvefs/src/mds/space/reloader.h"
-#include "src/common/string_util.h"
+#include "curvefs/src/utils/string_util.h"
 
 namespace curvefs {
 namespace mds {
 
 using ::curvefs::common::FSType;
 using ::curvefs::mds::dlock::LOCK_STATUS;
-using ::curvefs::mds::space::Reloader;
 using ::curvefs::mds::topology::TopoStatusCode;
 using ::google::protobuf::util::MessageDifferencer;
 using NameLockGuard = ::curve::common::GenericNameLockGuard<Mutex>;
@@ -55,12 +51,8 @@ using NameLockGuard = ::curve::common::GenericNameLockGuard<Mutex>;
 bool FsManager::Init() {
   LOG_IF(FATAL, !fsStorage_->Init()) << "fsStorage Init fail";
   s3Adapter_->Init(option_.s3AdapterOption);
-  auto ret = ReloadMountedFsVolumeSpace();
-  if (ret != FSStatusCode::OK) {
-    LOG(ERROR) << "Reload mounted fs volume space error";
-  }
   RebuildTimeRecorder();
-  return ret == FSStatusCode::OK;
+  return true;
 }
 
 void FsManager::Run() {
@@ -146,12 +138,8 @@ void FsManager::ScanFs(const FsInfoWrapper& wrapper) {
               << wrapper.GetFsName() << ", fsId = " << wrapper.GetFsId();
 
     if (wrapper.GetFsType() == FSType::TYPE_VOLUME) {
-      auto err = spaceManager_->DeleteVolume(wrapper.GetFsId());
-      if (err != space::SpaceOk && err != space::SpaceErrNotFound) {
-        LOG(ERROR) << "Delete volume space failed, fsId: " << wrapper.GetFsId()
-                   << ", err: " << space::SpaceErrCode_Name(err);
-        return;
-      }
+      LOG(FATAL) << "delete FSType::TYPE_VOLUME space not supported";
+      return;
     }
 
     FSStatusCode ret = fsStorage_->Delete(wrapper.GetFsName());
@@ -313,17 +301,7 @@ FSStatusCode FsManager::CreateFs(const ::curvefs::mds::CreateFsRequest* request,
     }
   }
 
-  // fill volume size and segment size
-  if (detail.has_volume()) {
-    if (!FillVolumeInfo(const_cast<curvefs::mds::CreateFsRequest*>(request)
-                            ->mutable_fsdetail()
-                            ->mutable_volume())) {
-      LOG(WARNING) << "Fail to get volume size";
-      return FSStatusCode::VOLUME_INFO_ERROR;
-    }
-
-    LOG(INFO) << "Volume info: " << detail.volume().ShortDebugString();
-  }
+  CHECK(!detail.has_volume()) << "not supported volumn";
 
   if (!skip_create_new_fs) {
     uint64_t fs_id = fsStorage_->NextFsId();
@@ -614,14 +592,7 @@ FSStatusCode FsManager::MountFs(const std::string& fs_name,
   // If this is the first mountpoint, init space,
   if (wrapper.GetFsType() == FSType::TYPE_VOLUME &&
       wrapper.IsMountPointEmpty()) {
-    const auto& temp_fs_info = wrapper.ProtoFsInfo();
-    auto ret = spaceManager_->AddVolume(temp_fs_info);
-    if (ret != space::SpaceOk) {
-      LOG(ERROR) << "MountFs fail, init space fail, fsName = " << fs_name
-                 << ", mountpoint = " << mountpoint.ShortDebugString()
-                 << ", errCode = " << FSStatusCode_Name(INIT_SPACE_ERROR);
-      return INIT_SPACE_ERROR;
-    }
+    LOG(FATAL) << "MountFs fail, FSType::TYPE_VOLUME init space not supported";
   }
 
   // insert mountpoint
@@ -682,16 +653,7 @@ FSStatusCode FsManager::UmountFs(const std::string& fs_name,
   // 3. if no mount point exist, uninit space
   if (wrapper.GetFsType() == FSType::TYPE_VOLUME &&
       wrapper.IsMountPointEmpty()) {
-    auto ret = spaceManager_->RemoveVolume(wrapper.GetFsId());
-    if (ret != space::SpaceOk) {
-      LOG(ERROR) << "UmountFs fail, uninit space fail, fsName = " << fs_name
-                 << ", mountpoint = " << mountpoint.ShortDebugString()
-                 << ", errCode = " << space::SpaceErrCode_Name(ret);
-      return UNINIT_SPACE_ERROR;
-    }
-
-    LOG(INFO) << "Remove volume space success, fsName = " << fs_name
-              << ", fsId = " << wrapper.GetFsId();
+    LOG(FATAL) << "UmountFs fail, FSType::TYPE_VOLUME not supported";
   }
 
   // 4. update fs info
@@ -841,31 +803,6 @@ void FsManager::RefreshSession(const RefreshSessionRequest* request,
   }
 
   response->set_enablesumindir(wrapper.ProtoFsInfo().enablesumindir());
-}
-
-FSStatusCode FsManager::ReloadMountedFsVolumeSpace() {
-  std::vector<FsInfoWrapper> allfs;
-  fsStorage_->GetAll(&allfs);
-
-  Reloader reloader(spaceManager_.get(), option_.spaceReloadConcurrency);
-  for (auto& fs : allfs) {
-    if (fs.GetFsType() != FSType::TYPE_VOLUME) {
-      continue;
-    }
-
-    if (!fs.MountPoints().empty()) {
-      reloader.Add(fs.ProtoFsInfo());
-    }
-  }
-
-  auto err = reloader.Wait();
-  if (err != space::SpaceOk) {
-    LOG(ERROR) << "Reload volume space failed, err: "
-               << space::SpaceErrCode_Name(err);
-    return FSStatusCode::INIT_SPACE_ERROR;
-  }
-
-  return FSStatusCode::OK;
 }
 
 void FsManager::GetLatestTxId(const uint32_t fs_id,
@@ -1120,28 +1057,6 @@ bool FsManager::GetClientAliveTime(const std::string& mountpoint,
   }
 
   *out = iter->second;
-  return true;
-}
-
-bool FsManager::FillVolumeInfo(common::Volume* volume) {
-  auto* proxy = space::MdsProxyManager::GetInstance().GetOrCreateProxy(
-      {volume->cluster().begin(), volume->cluster().end()});
-  if (proxy == nullptr) {
-    LOG(ERROR) << "Fail to get or create proxy";
-    return false;
-  }
-
-  uint64_t size = 0;
-  uint64_t alignment = 0;
-  auto ret = proxy->GetVolumeInfo(*volume, &size, &alignment);
-  if (!ret) {
-    LOG(WARNING) << "Fail to get volume size, volume name: "
-                 << volume->volumename();
-    return false;
-  }
-
-  volume->set_volumesize(size);
-  volume->set_extendalignment(alignment);
   return true;
 }
 

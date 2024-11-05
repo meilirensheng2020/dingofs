@@ -33,9 +33,9 @@
 #include "curvefs/src/metaserver/copyset/copyset_node_manager.h"
 #include "curvefs/src/metaserver/copyset/types.h"
 #include "curvefs/src/metaserver/copyset/utils.h"
-#include "src/common/string_util.h"
-#include "src/common/timeutility.h"
-#include "src/common/uri_parser.h"
+#include "curvefs/src/utils/string_util.h"
+#include "curvefs/src/utils/timeutility.h"
+#include "curvefs/src/utils/uri_parser.h"
 
 namespace curvefs {
 namespace metaserver {

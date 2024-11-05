@@ -29,7 +29,7 @@
 #include "curvefs/proto/metaserver.pb.h"
 #include "curvefs/src/metaserver/copyset/meta_operator.h"
 #include "curvefs/test/utils/protobuf_message_utils.h"
-#include "src/common/macros.h"
+#include "curvefs/src/utils/macros.h"
 
 namespace curvefs {
 namespace metaserver {

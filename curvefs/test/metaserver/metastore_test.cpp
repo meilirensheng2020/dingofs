@@ -37,8 +37,8 @@
 #include "curvefs/src/metaserver/storage/rocksdb_storage.h"
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/test/metaserver/storage/utils.h"
-#include "src/common/uuid.h"
-#include "src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/utils/uuid.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
 
 namespace curvefs {
 namespace metaserver {

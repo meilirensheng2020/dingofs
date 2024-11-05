@@ -27,7 +27,7 @@
 #include <vector>
 
 #include "curvefs/src/metaserver/dentry_storage.h"
-#include "src/common/concurrent/concurrent.h"
+#include "curvefs/src/utils/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace metaserver {

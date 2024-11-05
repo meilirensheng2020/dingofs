@@ -26,9 +26,9 @@
 #include <gtest/gtest.h>
 
 #include "curvefs/src/metaserver/copyset/copyset_node_manager.h"
-#include "src/fs/ext4_filesystem_impl.h"
-#include "src/fs/local_filesystem.h"
-#include "test/fs/mock_local_filesystem.h"
+#include "curvefs/src/fs/ext4_filesystem_impl.h"
+#include "curvefs/src/fs/local_filesystem.h"
+#include "curvefs/test/fs/mock_local_filesystem.h"
 
 namespace curvefs {
 namespace metaserver {

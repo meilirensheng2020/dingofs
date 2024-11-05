@@ -35,7 +35,7 @@
 #include "curvefs/test/client/mock_kvclient.h"
 #include "curvefs/test/client/mock_metaserver_service.h"
 #include "curvefs/test/client/rpcclient/mock_mds_client.h"
-#include "src/common/curve_define.h"
+#include "curvefs/src/utils/curve_define.h"
 
 namespace curvefs {
 namespace client {

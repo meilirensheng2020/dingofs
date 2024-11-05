@@ -26,7 +26,6 @@ cc_library(
         "//curvefs/proto:mds_cc_proto",
         "//curvefs/src/client/rpcclient:rpcclient",
         "//curvefs/src/client/common:common",
-        "//src/client:curve_client",
         "@brpc//:brpc",
         "@gflags//:gflags",
         "@glog//:glog",

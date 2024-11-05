@@ -35,8 +35,8 @@
 
 #include "curvefs/proto/mds.pb.h"
 #include "curvefs/test/mds/mock_chunkid_allocator.h"
-#include "src/common/timeutility.h"
-#include "src/kvstorageclient/etcd_client.h"
+#include "curvefs/src/utils/timeutility.h"
+#include "curvefs/src/kvstorageclient/etcd_client.h"
 
 using ::std::thread;
 using ::std::vector;
