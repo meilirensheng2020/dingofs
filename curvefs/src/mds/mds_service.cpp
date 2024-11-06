@@ -45,32 +45,6 @@ void MdsServiceImpl::CreateFs(::google::protobuf::RpcController* controller,
 
   LOG(INFO) << "CreateFs request: " << request->ShortDebugString();
 
-  // create volume fs
-  auto createVolumeFs = [&]() {
-    if (!request->fsdetail().has_volume()) {
-      response->set_statuscode(FSStatusCode::PARAM_ERROR);
-      LOG(ERROR) << "CreateFs request, type is volume, but has no volume"
-                 << ", fsName = " << fsName;
-      return;
-    }
-    const auto& volume = request->fsdetail().volume();
-    FSStatusCode status =
-        fsManager_->CreateFs(request, response->mutable_fsinfo());
-
-    if (status != FSStatusCode::OK) {
-      response->clear_fsinfo();
-      response->set_statuscode(status);
-      LOG(ERROR) << "CreateFs fail, fsName = " << fsName
-                 << ", blockSize = " << blockSize
-                 << ", volume.volumeName = " << volume.volumename()
-                 << ", enableSumInDir = " << enableSumInDir
-                 << ", owner = " << request->owner()
-                 << ", capacity = " << request->capacity()
-                 << ", errCode = " << FSStatusCode_Name(status);
-      return;
-    }
-  };
-
   // create s3 fs
   auto createS3Fs = [&]() {
     if (!request->fsdetail().has_s3info()) {
@@ -97,32 +71,15 @@ void MdsServiceImpl::CreateFs(::google::protobuf::RpcController* controller,
     }
   };
 
-  auto createHybridFs = [&]() {
-    // not support now
-    if (!request->fsdetail().has_volume()) {
-      response->set_statuscode(FSStatusCode::PARAM_ERROR);
-      LOG(ERROR) << "CreateFs request, type is hybrid, but has no volume"
-                 << ", fsName = " << fsName;
-      return;
-    }
-    if (!request->fsdetail().has_s3info()) {
-      response->set_statuscode(FSStatusCode::PARAM_ERROR);
-      LOG(ERROR) << "CreateFs request, type is hybrid, but has no s3info"
-                 << ", fsName = " << fsName;
-      return;
-    }
-    response->set_statuscode(FSStatusCode::UNKNOWN_ERROR);
-  };
-
   switch (type) {
     case ::curvefs::common::FSType::TYPE_VOLUME:
-      createVolumeFs();
+      CHECK(false) << "CreateFs TYPE_VOLUME is not supported";
       break;
     case ::curvefs::common::FSType::TYPE_S3:
       createS3Fs();
       break;
     case ::curvefs::common::FSType::TYPE_HYBRID:
-      createHybridFs();
+      CHECK(false) << "CreateFs TYPE_HYBRID is not supported";
       break;
     default:
       response->set_statuscode(FSStatusCode::PARAM_ERROR);

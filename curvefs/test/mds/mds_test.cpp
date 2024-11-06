@@ -29,25 +29,14 @@
 #include <ctime>
 #include <memory>
 #include <string>
-#include <thread>  // NOLINT
-#include <utility>
+#include <thread>
 #include <vector>
 
 #include "curvefs/proto/mds.pb.h"
-#include "curvefs/test/mds/mock_chunkid_allocator.h"
-#include "curvefs/src/utils/timeutility.h"
 #include "curvefs/src/kvstorageclient/etcd_client.h"
+#include "curvefs/src/utils/timeutility.h"
 
-using ::std::thread;
 using ::std::vector;
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::DoAll;
-using ::testing::Return;
-using ::testing::ReturnArg;
-using ::testing::SaveArg;
-using ::testing::SetArgPointee;
-using ::testing::StrEq;
 
 using ::curve::kvstorage::EtcdClientImp;
 

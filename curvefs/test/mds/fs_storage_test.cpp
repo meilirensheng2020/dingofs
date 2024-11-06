@@ -26,14 +26,6 @@
 #include <gtest/gtest.h>
 
 using ::google::protobuf::util::MessageDifferencer;
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::DoAll;
-using ::testing::Return;
-using ::testing::ReturnArg;
-using ::testing::SaveArg;
-using ::testing::SetArgPointee;
-using ::testing::StrEq;
 
 namespace curvefs {
 namespace mds {
