@@ -32,7 +32,7 @@
 namespace curvefs {
 namespace client {
 
-using ::curve::common::UUIDGenerator;
+using ::curvefs::utils::UUIDGenerator;
 using ::curvefs::client::filesystem::FileSystem;
 using ::curvefs::client::filesystem::ToFSError;
 using ::curvefs::mds::topology::PartitionTxId;
@@ -321,7 +321,7 @@ CURVEFS_ERROR RenameOperator::UpdateMCTime(uint64_t inode_id) {
     return rc;
   }
 
-  curve::common::UniqueLock lk = inode_wrapper->GetUniqueLock();
+  curvefs::utils::UniqueLock lk = inode_wrapper->GetUniqueLock();
   inode_wrapper->UpdateTimestampLocked(kModifyTime | kChangeTime);
 
   rc = inode_wrapper->SyncAttr();
@@ -410,7 +410,7 @@ CURVEFS_ERROR RenameOperator::UpdateInodeCtime() {
     return rc;
   }
 
-  curve::common::UniqueLock lk = inode_wrapper->GetUniqueLock();
+  curvefs::utils::UniqueLock lk = inode_wrapper->GetUniqueLock();
   inode_wrapper->UpdateTimestampLocked(kChangeTime);
 
   rc = inode_wrapper->SyncAttr();

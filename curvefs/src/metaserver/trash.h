@@ -38,12 +38,12 @@
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::common::Atomic;
-using ::curve::common::Configuration;
-using ::curve::common::InterruptibleSleeper;
-using ::curve::common::LockGuard;
-using ::curve::common::Mutex;
-using ::curve::common::Thread;
+using ::curvefs::utils::Atomic;
+using ::curvefs::utils::Configuration;
+using ::curvefs::utils::InterruptibleSleeper;
+using ::curvefs::utils::LockGuard;
+using ::curvefs::utils::Mutex;
+using ::curvefs::utils::Thread;
 using ::curvefs::client::rpcclient::MdsClient;
 using ::curvefs::client::rpcclient::MdsClientImpl;
 

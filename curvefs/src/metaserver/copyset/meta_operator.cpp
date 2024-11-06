@@ -44,7 +44,7 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::TimeUtility;
 using ::curvefs::common::StreamConnection;
 
 MetaOperator::~MetaOperator() {

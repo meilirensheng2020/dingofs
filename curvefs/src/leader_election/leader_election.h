@@ -31,11 +31,11 @@
 #include "curvefs/src/kvstorageclient/etcd_client.h"
 #include "curvefs/src/utils/namespace_define.h"
 
-namespace curve {
+namespace curvefs {
 namespace election {
 
-using ::curve::common::LEADERCAMPAIGNNPFX;
-using ::curve::kvstorage::EtcdClientImp;
+using ::curvefs::utils::LEADERCAMPAIGNNPFX;
+using ::curvefs::kvstorage::EtcdClientImp;
 
 struct LeaderElectionOptions {
   // etcd客户端

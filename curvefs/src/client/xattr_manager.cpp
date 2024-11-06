@@ -30,8 +30,8 @@
 namespace curvefs {
 namespace client {
 
-using ::curve::common::StringToUll;
-using ::curve::common::Thread;
+using ::curvefs::utils::StringToUll;
+using ::curvefs::utils::Thread;
 using ::curvefs::client::common::AddUllStringToFirst;
 using ::curvefs::client::filesystem::XATTR_DIR_ENTRIES;
 using ::curvefs::client::filesystem::XATTR_DIR_FBYTES;
@@ -466,7 +466,7 @@ CURVEFS_ERROR XattrManager::UpdateParentInodeXattr(uint64_t parentId,
     return ret;
   }
 
-  ::curve::common::UniqueLock lgGuard = pInodeWrapper->GetUniqueLock();
+  ::curvefs::utils::UniqueLock lgGuard = pInodeWrapper->GetUniqueLock();
   auto inodeXAttr = pInodeWrapper->GetInodeLocked()->xattr();
   bool update = false;
   for (const auto& it : xattr.xattrinfos()) {

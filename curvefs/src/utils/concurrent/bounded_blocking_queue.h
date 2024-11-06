@@ -33,8 +33,8 @@
 
 #include "curvefs/src/utils/uncopyable.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 template <typename T>
 class BBQItem {
@@ -149,7 +149,7 @@ class BoundedBlockingDeque : public Uncopyable {
   size_t capacity_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_BOUNDED_BLOCKING_QUEUE_H_

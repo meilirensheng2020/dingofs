@@ -42,7 +42,7 @@ namespace blockcache {
 USING_FLAG(block_cache_stage_bandwidth_throttle_enable);
 USING_FLAG(block_cache_stage_bandwidth_throttle_mb);
 
-using ::curve::common::TaskThreadPool;
+using ::curvefs::utils::TaskThreadPool;
 using ::curvefs::client::common::BlockCacheOption;
 
 class BlockCacheMetricHelper {

@@ -54,7 +54,7 @@ int PartitionListTool::Init() {
     return -1;
   }
 
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
   google::CommandLineFlagInfo info;
   if (CheckFsIdDefault(&info)) {
     std::cerr << "no -fsId=*, please use --example check!" << std::endl;
@@ -62,7 +62,7 @@ int PartitionListTool::Init() {
   }
 
   std::vector<std::string> fsIds;
-  curve::common::SplitString(FLAGS_fsId, ",", &fsIds);
+  curvefs::utils::SplitString(FLAGS_fsId, ",", &fsIds);
 
   service_stub_func_ =
       std::bind(&curvefs::mds::topology::TopologyService_Stub::ListPartition,
@@ -72,7 +72,7 @@ int PartitionListTool::Init() {
   curvefs::mds::topology::ListPartitionRequest request;
   for (const auto& i : fsIds) {
     uint32_t fsId = 0;
-    curve::common::StringToUl(i, &fsId);
+    curvefs::utils::StringToUl(i, &fsId);
     request.set_fsid(fsId);
     AddRequest(request);
   }

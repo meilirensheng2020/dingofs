@@ -127,7 +127,7 @@ bool CompareCopyset(Copyset first, Copyset second) {
 class MdsClientImplTest : public testing::Test {
  protected:
   void SetUp() override {
-    ::curve::client::MetaServerOption mdsopt;
+    ::curvefs::client::MetaServerOption mdsopt;
     mdsopt.rpcRetryOpt.addrs = {addr_};
     mdsopt.rpcRetryOpt.rpcTimeoutMs = 500;            // 500ms
     mdsopt.rpcRetryOpt.maxRPCTimeoutMS = 1000;        // 1s
@@ -545,9 +545,9 @@ TEST_F(MdsClientImplTest, GetLatestTxIdWithLock) {
 
 TEST_F(MdsClientImplTest, test_GetMetaServerInfo) {
   // in
-  curve::client::EndPoint ep;
+  curvefs::client::EndPoint ep;
   butil::str2endpoint("127.0.0.1", 5000, &ep);
-  curve::client::PeerAddr addr(ep);
+  curvefs::client::PeerAddr addr(ep);
 
   // out
   CopysetPeerInfo<MetaserverID> out;

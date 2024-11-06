@@ -426,7 +426,7 @@ class MetaServer {
 
   void SetDirtyFlag(bool dirty) { dirty_ = dirty; }
 
-  ::curve::common::RWLock& GetRWLockRef() const { return mutex_; }
+  ::curvefs::utils::RWLock& GetRWLockRef() const { return mutex_; }
 
   bool SerializeToString(std::string* value) const;
 
@@ -445,7 +445,7 @@ class MetaServer {
   OnlineState onlineState_;  // 0:online、1: offline
   MetaServerSpace space_;
   bool dirty_;
-  mutable ::curve::common::RWLock mutex_;
+  mutable ::curvefs::utils::RWLock mutex_;
 };
 
 using CopySetKey = std::pair<PoolIdType, CopySetIdType>;
@@ -563,7 +563,7 @@ class CopySetInfo {
 
   void SetAvailableFlag(bool aval) { available_ = aval; }
 
-  ::curve::common::RWLock& GetRWLockRef() const { return mutex_; }
+  ::curvefs::utils::RWLock& GetRWLockRef() const { return mutex_; }
 
   bool SerializeToString(std::string* value) const;
 
@@ -602,7 +602,7 @@ class CopySetInfo {
    * @brief metaserver read/write lock, for protecting concurrent
    *        read/write on the copyset
    */
-  mutable ::curve::common::RWLock mutex_;
+  mutable ::curvefs::utils::RWLock mutex_;
 };
 
 struct PartitionStatistic {
@@ -764,7 +764,7 @@ class Partition {
 
   void SetDentryNum(uint64_t dentryNum) { dentryNum_ = dentryNum; }
 
-  ::curve::common::RWLock& GetRWLockRef() const { return mutex_; }
+  ::curvefs::utils::RWLock& GetRWLockRef() const { return mutex_; }
 
   bool SerializeToString(std::string* value) const;
 
@@ -800,7 +800,7 @@ class Partition {
   uint64_t inodeNum_;
   uint64_t dentryNum_;
   std::unordered_map<FileType, uint64_t> fileType2InodeNum_;
-  mutable ::curve::common::RWLock mutex_;
+  mutable ::curvefs::utils::RWLock mutex_;
 };
 
 class MemcacheServer {

@@ -43,7 +43,7 @@ class TrashManager {
   }
 
   void Add(uint32_t partitionId, const std::shared_ptr<Trash>& trash) {
-    curve::common::WriteLockGuard lg(rwLock_);
+    curvefs::utils::WriteLockGuard lg(rwLock_);
     trash->Init(options_);
     trashs_.emplace(partitionId, trash);
     LOG(INFO) << "add partition to trash manager, partitionId = "
@@ -75,7 +75,7 @@ class TrashManager {
   InterruptibleSleeper sleeper_;
 
   std::map<uint32_t, std::shared_ptr<Trash>> trashs_;
-  curve::common::RWLock rwLock_;
+  curvefs::utils::RWLock rwLock_;
 };
 
 }  // namespace metaserver

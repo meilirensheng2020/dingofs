@@ -113,8 +113,8 @@ using common::FLAGS_fuseClientAvgReadBytes;
 using common::FLAGS_fuseClientBurstReadBytes;
 using common::FLAGS_fuseClientBurstReadBytesSecs;
 
-using ::curve::common::ReadWriteThrottleParams;
-using ::curve::common::ThrottleParams;
+using ::curvefs::utils::ReadWriteThrottleParams;
+using ::curvefs::utils::ThrottleParams;
 
 static void on_throttle_timer(void* arg) {
   FuseClient* fuseClient = reinterpret_cast<FuseClient*>(arg);
@@ -285,7 +285,7 @@ CURVEFS_ERROR FuseClient::HandleOpenFlags(fuse_req_t req, fuse_ino_t ino,
 
   if (fi->flags & O_TRUNC) {
     if (fi->flags & O_WRONLY || fi->flags & O_RDWR) {
-      ::curve::common::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+      ::curvefs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
       uint64_t length = inodeWrapper->GetLengthLocked();
       CURVEFS_ERROR tRet = Truncate(inodeWrapper.get(), 0);
       if (tRet != CURVEFS_ERROR::OK) {
@@ -362,7 +362,7 @@ CURVEFS_ERROR FuseClient::UpdateParentMCTimeAndNlink(fuse_ino_t parent,
   }
 
   {
-    curve::common::UniqueLock lk = inode_wrapper->GetUniqueLock();
+    curvefs::utils::UniqueLock lk = inode_wrapper->GetUniqueLock();
     inode_wrapper->UpdateTimestampLocked(kModifyTime | kChangeTime);
 
     if (FsFileType::TYPE_DIRECTORY == type) {
@@ -970,7 +970,7 @@ CURVEFS_ERROR FuseClient::FuseOpRename(fuse_req_t req, fuse_ino_t parent,
                                  inodeManager_, metaClient_, mdsClient_,
                                  option_.enableMultiMountPointRename);
 
-  curve::common::LockGuard lg(renameMutex_);
+  curvefs::utils::LockGuard lg(renameMutex_);
   CURVEFS_ERROR rc = CURVEFS_ERROR::OK;
   VLOG(3) << "FuseOpRename [start]: " << renameOp.DebugString();
   RETURN_IF_UNSUCCESS(GetTxId);
@@ -1028,7 +1028,7 @@ CURVEFS_ERROR FuseClient::FuseOpSetAttr(fuse_req_t req, fuse_ino_t ino,
     return ret;
   }
 
-  ::curve::common::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
+  ::curvefs::utils::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
   if (to_set & FUSE_SET_ATTR_MODE) {
     inode_wrapper->SetMode(attr->st_mode);
   }
@@ -1161,7 +1161,7 @@ CURVEFS_ERROR FuseClient::FuseOpSetXattr(fuse_req_t req, fuse_ino_t ino,
     return ret;
   }
 
-  ::curve::common::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
+  ::curvefs::utils::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
   inode_wrapper->SetXattrLocked(strname, strvalue);
   ret = inode_wrapper->SyncAttr();
   if (ret != CURVEFS_ERROR::OK) {
@@ -1563,13 +1563,13 @@ CURVEFS_ERROR FuseClient::InitBrpcServer() {
   }
 
   std::string local_ip;
-  if (!curve::common::NetCommon::GetLocalIP(&local_ip)) {
+  if (!curvefs::utils::NetCommon::GetLocalIP(&local_ip)) {
     LOG(ERROR) << "Get local ip failed!";
     return CURVEFS_ERROR::INTERNAL;
   }
 
-  curve::client::ClientDummyServerInfo::GetInstance().SetPort(listen_port);
-  curve::client::ClientDummyServerInfo::GetInstance().SetIP(local_ip);
+  curvefs::client::ClientDummyServerInfo::GetInstance().SetPort(listen_port);
+  curvefs::client::ClientDummyServerInfo::GetInstance().SetIP(local_ip);
 
   return CURVEFS_ERROR::OK;
 }

@@ -62,7 +62,7 @@ class CopysetTrash {
  public:
   CopysetTrash();
 
-  bool Init(const CopysetTrashOptions& options, curve::fs::LocalFileSystem* fs);
+  bool Init(const CopysetTrashOptions& options, curvefs::fs::LocalFileSystem* fs);
 
   bool Start();
 
@@ -84,11 +84,11 @@ class CopysetTrash {
 
  private:
   CopysetTrashOptions options_;
-  curve::fs::LocalFileSystem* lfs_;
+  curvefs::fs::LocalFileSystem* lfs_;
   std::string trashDir_;
   std::atomic<bool> running_;
   std::thread recycleThread_;
-  curve::common::InterruptibleSleeper sleeper_;
+  curvefs::utils::InterruptibleSleeper sleeper_;
 };
 
 }  // namespace copyset

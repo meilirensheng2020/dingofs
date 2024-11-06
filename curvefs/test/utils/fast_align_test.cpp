@@ -24,8 +24,8 @@
 
 #include <gtest/gtest.h>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(FastAlignTest, TestAlignUp) {
   ASSERT_EQ(0, align_up(0, 512));
@@ -50,5 +50,5 @@ TEST(FastAlignTest, TestIsAligned) {
   ASSERT_FALSE(is_aligned(4095, 4096));
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

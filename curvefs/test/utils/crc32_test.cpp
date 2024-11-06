@@ -24,8 +24,8 @@
 
 #include <gtest/gtest.h>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(Crc32TEST, BasicTest) {
   char buf1[10];
@@ -81,5 +81,5 @@ TEST(Crc32TEST, Extend) {
   ASSERT_EQ(CRC32("hello world", 11), CRC32(CRC32("hello ", 6), "world", 5));
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

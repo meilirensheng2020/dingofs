@@ -145,7 +145,7 @@ struct CRC32Helper {
 
   template <typename T>
   CRC32Helper& operator()(const T& val) {
-    crc32c = curve::common::CRC32(crc32c, reinterpret_cast<const char*>(&val),
+    crc32c = curvefs::utils::CRC32(crc32c, reinterpret_cast<const char*>(&val),
                                   sizeof(val));
 
     return *this;

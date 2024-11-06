@@ -29,8 +29,8 @@
 #include <mutex>
 #include <sstream>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 bool StartBrpcDummyserver(uint32_t dummyServerStartPort,
                           uint32_t dummyServerEndPort, uint32_t* listenPort) {
@@ -76,7 +76,7 @@ class MetricsDumper : public bvar::Dumper {
   }
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_DUMMYSERVER_H_

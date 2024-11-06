@@ -41,8 +41,8 @@
 
 #include "curvefs/src/utils/uncopyable.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 namespace {
 
@@ -205,7 +205,7 @@ class TaskThreadPool : public Uncopyable {
   std::atomic<bool> running_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_TASK_THREAD_POOL_H_

@@ -36,7 +36,7 @@ namespace curvefs {
 namespace client {
 namespace datastream {
 
-using ::curve::common::TaskThreadPool;
+using ::curvefs::utils::TaskThreadPool;
 using ::curvefs::client::common::DataStreamOption;
 
 static uint32_t GetQueueSize(void* arg) {

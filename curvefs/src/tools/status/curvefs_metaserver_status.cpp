@@ -34,7 +34,7 @@ void MetaserverStatusTool::PrintHelp() {
 }
 
 void MetaserverStatusTool::InitHostsAddr() {
-  curve::common::SplitString(FLAGS_metaserverAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_metaserverAddr, ",", &hostsAddr_);
 }
 
 void MetaserverStatusTool::AddUpdateFlags() {

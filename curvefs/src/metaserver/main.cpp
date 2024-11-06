@@ -45,7 +45,7 @@ DEFINE_string(raftSnapshotUri, "local://mnt/data/copysets",
               "local://mnt/data/copysets");
 DECLARE_int32(v);
 
-using ::curve::common::Configuration;
+using ::curvefs::utils::Configuration;
 using ::curvefs::common::FLAGS_vlog_level;
 using ::curvefs::metaserver::superpartition::InitAccessLog;
 
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
   // stop server and background threads
   metaserver.Stop();
 
-  curve::common::S3Adapter::Shutdown();
+  curvefs::utils::S3Adapter::Shutdown();
   google::ShutdownGoogleLogging();
   return 0;
 }

@@ -45,7 +45,7 @@ Register::Register(const RegisterOptions& ops) {
   this->ops_ = ops;
 
   // Resolve multiple addresses of mds
-  ::curve::common::SplitString(ops.mdsListenAddr, ",", &mdsEps_);
+  ::curvefs::utils::SplitString(ops.mdsListenAddr, ",", &mdsEps_);
   // Check the legitimacy of each address
   for (const auto& addr : mdsEps_) {
     butil::EndPoint endpt;

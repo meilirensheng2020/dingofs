@@ -34,10 +34,10 @@ namespace curvefs {
 namespace client {
 namespace blockcache {
 
-using ::curve::common::GetObjectAsyncContext;
-using ::curve::common::PutObjectAsyncContext;
-using ::curve::common::S3Adapter;
-using ::curve::common::S3AdapterOption;
+using ::curvefs::utils::GetObjectAsyncContext;
+using ::curvefs::utils::PutObjectAsyncContext;
+using ::curvefs::utils::S3Adapter;
+using ::curvefs::utils::S3AdapterOption;
 using ::curvefs::base::time::TimeNow;
 
 class S3Client {

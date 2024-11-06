@@ -41,10 +41,10 @@ int PartitionQueryTool::Init() {
     return -1;
   }
 
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 
   std::vector<std::string> partitionId;
-  curve::common::SplitString(FLAGS_partitionId, ",", &partitionId);
+  curvefs::utils::SplitString(FLAGS_partitionId, ",", &partitionId);
   curvefs::mds::topology::GetCopysetOfPartitionRequest request;
   for (auto const& i : partitionId) {
     request.add_partitionid(std::stoul(i));

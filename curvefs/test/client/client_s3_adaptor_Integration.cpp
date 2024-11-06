@@ -47,7 +47,7 @@ DECLARE_bool(enableCto);
 
 namespace curvefs {
 namespace client {
-using ::curve::common::kMB;
+using ::curvefs::utils::kMB;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::DoAll;

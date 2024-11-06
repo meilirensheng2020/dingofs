@@ -38,7 +38,7 @@
 
 using ::std::vector;
 
-using ::curve::kvstorage::EtcdClientImp;
+using ::curvefs::kvstorage::EtcdClientImp;
 
 namespace curvefs {
 namespace mds {
@@ -77,9 +77,9 @@ class MdsTest : public ::testing::Test {
     auto client = std::make_shared<EtcdClientImp>();
     EtcdConf conf{const_cast<char*>(kEtcdAddr),
                   static_cast<int>(strlen(kEtcdAddr)), 1000};
-    uint64_t now = curve::common::TimeUtility::GetTimeofDaySec();
+    uint64_t now = curvefs::utils::TimeUtility::GetTimeofDaySec();
     bool initSucc = false;
-    while (curve::common::TimeUtility::GetTimeofDaySec() - now <= 50) {
+    while (curvefs::utils::TimeUtility::GetTimeofDaySec() - now <= 50) {
       if (0 == client->Init(conf, 0, 3)) {
         initSucc = true;
         break;
@@ -111,7 +111,7 @@ class MdsTest : public ::testing::Test {
 
 pid_t MdsTest::etcdPid_ = 0;
 
-void GetChunkIds(std::shared_ptr<curve::common::Configuration> conf,
+void GetChunkIds(std::shared_ptr<curvefs::utils::Configuration> conf,
                  int numChunkIds, vector<uint64_t>* data) {
   brpc::Channel channel;
   std::string allocateServer(kMdsListenAddr);

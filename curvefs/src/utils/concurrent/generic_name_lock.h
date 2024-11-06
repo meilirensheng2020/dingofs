@@ -30,8 +30,8 @@
 
 #include "curvefs/src/utils/concurrent/concurrent.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 template <typename MutexT>
 class GenericNameLock {
@@ -115,8 +115,8 @@ class GenericNameLockGuard {
   bool release_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #include "curvefs/src/utils/concurrent/generic_name_lock-inl.h"
 

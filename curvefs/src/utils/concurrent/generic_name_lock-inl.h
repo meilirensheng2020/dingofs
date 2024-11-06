@@ -27,8 +27,8 @@
 #include <memory>
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 template <typename MutexT>
 GenericNameLock<MutexT>::GenericNameLock(int bucketNum) {
@@ -112,7 +112,7 @@ int GenericNameLock<MutexT>::GetBucketOffset(const std::string& lockStr) {
   return hash_fn(lockStr) % locks_.size();
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_GENERIC_NAME_LOCK_INL_H_

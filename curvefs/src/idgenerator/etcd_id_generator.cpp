@@ -28,11 +28,11 @@
 
 #include "curvefs/src/utils/string_util.h"
 
-namespace curve {
+namespace curvefs {
 namespace idgenerator {
 
 bool EtcdIdGenerator::GenID(uint64_t* id) {
-  std::lock_guard<curve::common::Mutex> guard(lock_);
+  std::lock_guard<curvefs::utils::Mutex> guard(lock_);
 
   if (nextId_ > bundleEnd_ || nextId_ == initialize_) {
     if (!AllocateBundleIds(bundle_)) {
@@ -58,7 +58,7 @@ bool EtcdIdGenerator::AllocateBundleIds(int requiredNum) {
   } else if (EtcdErrCode::EtcdKeyNotExist == errCode) {
     // key not exist, indicates the first allocation
     alloc = initialize_;
-  } else if (!curve::common::StringToUll(out, &alloc)) {
+  } else if (!curvefs::utils::StringToUll(out, &alloc)) {
     // The value corresponding to the key exists, but the decode fails,
     // indicating that an internal err has occurred, alarm!
     LOG(ERROR) << "decode id: " << out << "err";

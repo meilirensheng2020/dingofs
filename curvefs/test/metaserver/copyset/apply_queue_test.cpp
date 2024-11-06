@@ -32,7 +32,7 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::CountDownEvent;
+using ::curvefs::utils::CountDownEvent;
 
 TEST(ApplyQueueTest, StartAndStopTest) {
   ApplyQueue applyQueue;

@@ -44,9 +44,9 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::RWLock;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::RWLock;
+using ::curvefs::utils::WriteLockGuard;
 using ROCKSDB_NAMESPACE::BlockBasedTableOptions;
 using ROCKSDB_NAMESPACE::ColumnFamilyDescriptor;
 using ROCKSDB_NAMESPACE::ColumnFamilyHandle;

@@ -52,7 +52,7 @@ int DeletePartitionTool::Init() {
 }
 
 void DeletePartitionTool::InitHostsAddr() {
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 }
 
 void DeletePartitionTool::AddUpdateFlags() {

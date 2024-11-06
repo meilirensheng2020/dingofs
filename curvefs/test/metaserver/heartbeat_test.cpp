@@ -28,8 +28,8 @@
 #include "curvefs/src/metaserver/storage/storage.h"
 #include "curvefs/test/metaserver/mock_heartbeat_service.h"
 
-using ::curve::fs::FileSystemType;
-using ::curve::fs::LocalFsFactory;
+using ::curvefs::fs::FileSystemType;
+using ::curvefs::fs::LocalFsFactory;
 using ::curvefs::mds::heartbeat::HeartbeatStatusCode;
 using ::curvefs::mds::heartbeat::MetaServerHeartbeatRequest;
 using ::curvefs::mds::heartbeat::MetaServerHeartbeatResponse;

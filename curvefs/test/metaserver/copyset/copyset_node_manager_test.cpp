@@ -34,10 +34,10 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::fs::FileSystemType;
-using ::curve::fs::LocalFileSystem;
-using ::curve::fs::LocalFsFactory;
-using ::curve::fs::MockLocalFileSystem;
+using ::curvefs::fs::FileSystemType;
+using ::curvefs::fs::LocalFileSystem;
+using ::curvefs::fs::LocalFsFactory;
+using ::curvefs::fs::MockLocalFileSystem;
 
 using ::testing::_;
 using ::testing::Return;

@@ -44,8 +44,8 @@
 namespace curvefs {
 namespace client {
 
-using ::curve::common::TaskThreadPool;
-using ::curve::common::Thread;
+using ::curvefs::utils::TaskThreadPool;
+using ::curvefs::utils::Thread;
 using ::curvefs::client::blockcache::BlockCache;
 using ::curvefs::client::blockcache::S3Client;
 using ::curvefs::client::blockcache::StoreType;
@@ -232,7 +232,7 @@ class S3ClientAdaptorImpl : public S3ClientAdaptor {
   std::mutex mtx_;
   std::mutex ioMtx_;
   std::condition_variable cond_;
-  curve::common::WaitInterval waitInterval_;
+  curvefs::utils::WaitInterval waitInterval_;
   std::shared_ptr<FsCacheManager> fsCacheManager_;
   std::shared_ptr<InodeCacheManager> inodeManager_;
   std::shared_ptr<FileSystem> filesystem_;

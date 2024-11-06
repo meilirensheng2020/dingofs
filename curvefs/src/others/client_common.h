@@ -34,7 +34,7 @@
 #include "curvefs/include/client/libcurve.h"
 #include "curvefs/src/utils/throttle.h"
 
-namespace curve {
+namespace curvefs {
 namespace client {
 
 using ChunkID = uint64_t;
@@ -159,7 +159,7 @@ typedef struct FInfo {
   uint64_t stripeCount;
 
   OpenFlags openflags;
-  common::ReadWriteThrottleParams throttleParams;
+  utils::ReadWriteThrottleParams throttleParams;
 
   FInfo() {
     id = 0;

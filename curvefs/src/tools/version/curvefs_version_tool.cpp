@@ -36,7 +36,7 @@ void VersionTool::PrintHelp() {
 }
 
 int VersionTool::RunCommand() {
-  std::cout << curve::common::CurveVersion() << std::endl;
+  std::cout << curvefs::utils::CurveVersion() << std::endl;
   return 0;
 }
 

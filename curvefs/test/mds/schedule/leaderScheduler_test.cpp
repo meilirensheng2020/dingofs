@@ -434,7 +434,7 @@ TEST_F(TestLeaderSchedule, test_transferLeaderIn_normal) {
   PeerInfo peer4(3, 4, 4, "192.168.10.4", 9000);
   MetaServerSpace space(100, 20);
   MetaServerInfo msInfo1(peer1, OnlineState::ONLINE, space, 10, 2);
-  msInfo1.startUpTime = ::curve::common::TimeUtility::GetTimeofDaySec() -
+  msInfo1.startUpTime = ::curvefs::utils::TimeUtility::GetTimeofDaySec() -
                         opt_.metaserverCoolingTimeSec - 1;
   MetaServerInfo msInfo2(peer2, OnlineState::ONLINE, space, 10, 3);
   MetaServerInfo msInfo3(peer3, OnlineState::ONLINE, space, 10, 4);
@@ -489,12 +489,12 @@ TEST_F(TestLeaderSchedule, test_transferLeaderIn_rapid) {
   PeerInfo peer4(3, 4, 4, "192.168.10.4", 9000);
   MetaServerSpace space(100, 20);
   MetaServerInfo msInfo1(peer1, OnlineState::ONLINE, space, 10, 2);
-  msInfo1.startUpTime = ::curve::common::TimeUtility::GetTimeofDaySec();
+  msInfo1.startUpTime = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
   MetaServerInfo msInfo2(peer2, OnlineState::ONLINE, space, 10, 3);
   MetaServerInfo msInfo3(peer3, OnlineState::ONLINE, space, 10, 4);
   MetaServerInfo msInfo4(peer4, OnlineState::ONLINE, space, 10, 3);
   MetaServerInfo msInfo5(peer1, OnlineState::ONLINE, space, 10, 3);
-  msInfo5.startUpTime = ::curve::common::TimeUtility::GetTimeofDaySec();
+  msInfo5.startUpTime = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
   std::vector<MetaServerInfo> msInfos({msInfo1, msInfo2, msInfo3, msInfo4});
   std::vector<MetaServerInfo> msInfos2({msInfo5, msInfo2, msInfo3, msInfo4});
 
@@ -582,7 +582,7 @@ TEST_F(TestLeaderSchedule, test_transferLeaderIn_add_operator_fail) {
   PeerInfo peer4(3, 4, 4, "192.168.10.4", 9000);
   MetaServerSpace space(100, 20);
   MetaServerInfo msInfo1(peer1, OnlineState::ONLINE, space, 10, 2);
-  uint64_t currentTime = ::curve::common::TimeUtility::GetTimeofDaySec();
+  uint64_t currentTime = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
   msInfo1.startUpTime = currentTime - opt_.metaserverCoolingTimeSec - 1;
   MetaServerInfo msInfo2(peer2, OnlineState::ONLINE, space, 10, 3);
   MetaServerInfo msInfo3(peer3, OnlineState::ONLINE, space, 10, 4);

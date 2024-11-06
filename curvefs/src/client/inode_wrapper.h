@@ -60,7 +60,7 @@ enum class InodeStatus {
 };
 
 using common::NlinkChange;
-using curve::common::TimeUtility;
+using curvefs::utils::TimeUtility;
 using metric::S3ChunkInfoMetric;
 using rpcclient::MetaServerClient;
 using rpcclient::MetaServerClientDone;
@@ -106,12 +106,12 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   FsFileType GetType() const { return inode_.type(); }
 
   std::string GetSymlinkStr() const {
-    curve::common::UniqueLock lg(mtx_);
+    curvefs::utils::UniqueLock lg(mtx_);
     return inode_.symlink();
   }
 
   void SetLength(uint64_t len) {
-    curve::common::UniqueLock lg(mtx_);
+    curvefs::utils::UniqueLock lg(mtx_);
     SetLengthLocked(len);
   }
 
@@ -130,7 +130,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   uint64_t GetLengthLocked() const { return inode_.length(); }
 
   uint64_t GetLength() const {
-    curve::common::UniqueLock lg(mtx_);
+    curvefs::utils::UniqueLock lg(mtx_);
     return inode_.length();
   }
 
@@ -153,7 +153,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   }
 
   Inode GetInode() const {
-    curve::common::UniqueLock lg(mtx_);
+    curvefs::utils::UniqueLock lg(mtx_);
     return inode_;
   }
 
@@ -181,7 +181,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
 
   XAttr GetXattr() const {
     XAttr ret;
-    curve::common::UniqueLock lg(mtx_);
+    curvefs::utils::UniqueLock lg(mtx_);
     ret.set_fsid(inode_.fsid());
     ret.set_inodeid(inode_.inodeid());
     *(ret.mutable_xattrinfos()) = inode_.xattr();
@@ -194,8 +194,8 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
     dirty_ = true;
   }
 
-  curve::common::UniqueLock GetUniqueLock() {
-    return curve::common::UniqueLock(mtx_);
+  curvefs::utils::UniqueLock GetUniqueLock() {
+    return curvefs::utils::UniqueLock(mtx_);
   }
 
   const google::protobuf::RepeatedField<uint64_t>& GetParentLocked() {
@@ -241,7 +241,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   void ClearDirty() { dirty_ = false; }
 
   bool S3ChunkInfoEmpty() {
-    curve::common::UniqueLock lg(mtx_);
+    curvefs::utils::UniqueLock lg(mtx_);
     return s3ChunkInfoAdd_.empty();
   }
 
@@ -254,7 +254,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   }
 
   void AppendS3ChunkInfo(uint64_t chunkIndex, const S3ChunkInfo& info) {
-    curve::common::UniqueLock lg(mtx_);
+    curvefs::utils::UniqueLock lg(mtx_);
     AppendS3ChunkInfoToMap(chunkIndex, info, &s3ChunkInfoAdd_);
     AppendS3ChunkInfoToMap(chunkIndex, info, inode_.mutable_s3chunkinfomap());
     s3ChunkInfoAddSize_++;
@@ -275,21 +275,21 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
 
   void ReleaseSyncingInode() const { syncingInodeMtx_.unlock(); }
 
-  curve::common::UniqueLock GetSyncingInodeUniqueLock() {
-    return curve::common::UniqueLock(syncingInodeMtx_);
+  curvefs::utils::UniqueLock GetSyncingInodeUniqueLock() {
+    return curvefs::utils::UniqueLock(syncingInodeMtx_);
   }
 
   void LockSyncingS3ChunkInfo() const { syncingS3ChunkInfoMtx_.lock(); }
 
   void ReleaseSyncingS3ChunkInfo() const { syncingS3ChunkInfoMtx_.unlock(); }
 
-  curve::common::UniqueLock GetSyncingS3ChunkInfoUniqueLock() {
-    return curve::common::UniqueLock(syncingS3ChunkInfoMtx_);
+  curvefs::utils::UniqueLock GetSyncingS3ChunkInfoUniqueLock() {
+    return curvefs::utils::UniqueLock(syncingS3ChunkInfoMtx_);
   }
 
   bool NeedRefreshData() {
     if (s3ChunkInfoSize_ >= maxDataSize_ &&
-        ::curve::common::TimeUtility::GetTimeofDaySec() - lastRefreshTime_ >=
+        ::curvefs::utils::TimeUtility::GetTimeofDaySec() - lastRefreshTime_ >=
             refreshDataInterval_) {
       VLOG(6) << "EliminateLargeS3ChunkInfo size = " << s3ChunkInfoSize_
               << ", max = " << maxDataSize_
@@ -364,12 +364,12 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   std::shared_ptr<MetaServerClient> metaClient_;
   std::shared_ptr<S3ChunkInfoMetric> s3ChunkInfoMetric_;
   bool dirty_;
-  mutable ::curve::common::Mutex mtx_;
+  mutable ::curvefs::utils::Mutex mtx_;
 
-  mutable ::curve::common::Mutex syncingInodeMtx_;
-  mutable ::curve::common::Mutex syncingS3ChunkInfoMtx_;
+  mutable ::curvefs::utils::Mutex syncingInodeMtx_;
+  mutable ::curvefs::utils::Mutex syncingS3ChunkInfoMtx_;
 
-  mutable ::curve::common::Mutex syncingVolumeExtentsMtx_;
+  mutable ::curvefs::utils::Mutex syncingVolumeExtentsMtx_;
 
   // timestamp when put in cache
   uint64_t time_;

@@ -283,13 +283,13 @@ class CurvefsToolRpc : public CurvefsTool {
   }
 
   void AddUpdateFlagsFunc(
-      const std::function<void(curve::common::Configuration*,
+      const std::function<void(curvefs::utils::Configuration*,
                                google::CommandLineFlagInfo*)>& func) {
     updateFlagsFunc_.push_back(func);
   }
 
   virtual void UpdateFlags() {
-    curve::common::Configuration conf;
+    curvefs::utils::Configuration conf;
     conf.SetConfigPath(FLAGS_confPath);
     if (!conf.LoadConfig()) {
       std::cerr << "load configure file " << FLAGS_confPath << " failed!"
@@ -378,7 +378,7 @@ class CurvefsToolRpc : public CurvefsTool {
    *
    * @details
    */
-  std::vector<std::function<void(curve::common::Configuration*,
+  std::vector<std::function<void(curvefs::utils::Configuration*,
                                  google::CommandLineFlagInfo*)>>
       updateFlagsFunc_;
   /**
@@ -415,7 +415,7 @@ class CurvefsToolMetric : public CurvefsTool {
 
  protected:
   void AddUpdateFlagsFunc(
-      const std::function<void(curve::common::Configuration*,
+      const std::function<void(curvefs::utils::Configuration*,
                                google::CommandLineFlagInfo*)>& func);
 
   virtual int RunCommand();
@@ -466,7 +466,7 @@ class CurvefsToolMetric : public CurvefsTool {
    *
    * @details
    */
-  std::vector<std::function<void(curve::common::Configuration*,
+  std::vector<std::function<void(curvefs::utils::Configuration*,
                                  google::CommandLineFlagInfo*)>>
       updateFlagsFunc_;
 };

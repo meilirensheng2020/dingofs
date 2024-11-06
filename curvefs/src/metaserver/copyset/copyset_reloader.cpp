@@ -41,9 +41,9 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::TaskThreadPool;
-using ::curve::common::TimeUtility;
-using ::curve::common::UriParser;
+using ::curvefs::utils::TaskThreadPool;
+using ::curvefs::utils::TimeUtility;
+using ::curvefs::utils::UriParser;
 
 CopysetReloader::CopysetReloader(CopysetNodeManager* copysetNodeManager)
     : nodeManager_(copysetNodeManager),
@@ -103,7 +103,7 @@ bool CopysetReloader::ReloadOneCopyset(const std::string& copyset) {
   LOG(INFO) << "Found copyset " << copyset;
 
   GroupNid groupid = 0;
-  if (!curve::common::StringToUll(copyset, &groupid)) {
+  if (!curvefs::utils::StringToUll(copyset, &groupid)) {
     LOG(ERROR) << "Parse " << copyset << " to GroupNid failed";
     return false;
   }

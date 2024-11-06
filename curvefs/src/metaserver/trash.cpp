@@ -25,7 +25,7 @@
 #include "curvefs/proto/mds.pb.h"
 #include "curvefs/src/utils/timeutility.h"
 
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::TimeUtility;
 
 namespace curvefs {
 namespace metaserver {

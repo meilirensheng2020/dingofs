@@ -35,11 +35,11 @@
 namespace curvefs {
 namespace client {
 namespace common {
-using ::curve::common::Configuration;
-using ::curve::common::S3AdapterOption;
-using ::curve::common::S3InfoOption;
+using ::curvefs::utils::Configuration;
+using ::curvefs::utils::S3AdapterOption;
+using ::curvefs::utils::S3InfoOption;
 using ::curvefs::client::common::DiskCacheType;
-using MdsOption = ::curve::client::MetaServerOption;
+using MdsOption = ::curvefs::client::MetaServerOption;
 
 struct BlockDeviceClientOptions {
   std::string configPath;

@@ -22,8 +22,8 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using curve::common::ReadLockGuard;
-using curve::common::WriteLockGuard;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::WriteLockGuard;
 
 void DirQuota::UpdateUsage(int64_t new_space, int64_t new_inodes) {
   VLOG(6) << "UpdateUsage dir inodeId=" << ino_ << " new_space:" << new_space

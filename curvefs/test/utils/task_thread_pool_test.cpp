@@ -29,10 +29,10 @@
 
 #include "curvefs/src/utils/concurrent/count_down_event.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
-using curve::common::CountDownEvent;
+using curvefs::utils::CountDownEvent;
 
 void TestAdd1(int a, double b, CountDownEvent* cond) {
   double c = a + b;
@@ -263,5 +263,5 @@ TEST(TaskThreadPool, basic) {
   }
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

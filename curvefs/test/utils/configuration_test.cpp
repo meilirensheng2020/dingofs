@@ -32,8 +32,8 @@
 #include <string>
 #include <vector>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class ConfigurationTest : public ::testing::Test {
  public:
@@ -366,5 +366,5 @@ TEST_F(ConfigurationTest, TestGetValueFatalIfFail) {
   ASSERT_DEATH(conf.GetValueFatalIfFail("key7", &value7), "");
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

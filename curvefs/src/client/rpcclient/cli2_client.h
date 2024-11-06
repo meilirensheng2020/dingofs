@@ -37,11 +37,11 @@
 #include "curvefs/src/others/client_common.h"
 #include "curvefs/src/others/metacache_struct.h"
 
-using ::curve::client::CopysetID;
-using ::curve::client::CopysetInfo;
-using ::curve::client::CopysetPeerInfo;
-using ::curve::client::LogicPoolID;
-using ::curve::client::PeerAddr;
+using ::curvefs::client::CopysetID;
+using ::curvefs::client::CopysetInfo;
+using ::curvefs::client::CopysetPeerInfo;
+using ::curvefs::client::LogicPoolID;
+using ::curvefs::client::PeerAddr;
 using ::curvefs::client::common::MetaserverID;
 
 namespace curvefs {

@@ -34,10 +34,10 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::UUIDGenerator;
-using ::curve::fs::FileSystemType;
-using ::curve::fs::LocalFileSystem;
-using ::curve::fs::LocalFsFactory;
+using ::curvefs::utils::UUIDGenerator;
+using ::curvefs::fs::FileSystemType;
+using ::curvefs::fs::LocalFileSystem;
+using ::curvefs::fs::LocalFsFactory;
 
 const std::string kTestDataPath =
     "./runlog/" + UUIDGenerator{}.GenerateUUID();             // NOLINT

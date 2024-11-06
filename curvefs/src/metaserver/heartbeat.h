@@ -37,13 +37,13 @@
 #include "curvefs/src/utils/concurrent/concurrent.h"
 #include "curvefs/src/utils/wait_interval.h"
 
-using ::curve::common::Thread;
+using ::curvefs::utils::Thread;
 using ::curvefs::metaserver::copyset::CopysetNode;
 
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::fs::LocalFileSystem;
+using ::curvefs::fs::LocalFileSystem;
 using HeartbeatRequest = curvefs::mds::heartbeat::MetaServerHeartbeatRequest;
 using HeartbeatResponse = curvefs::mds::heartbeat::MetaServerHeartbeatResponse;
 using MetaServerSpaceStatus = curvefs::mds::heartbeat::MetaServerSpaceStatus;
@@ -142,7 +142,7 @@ class Heartbeat {
 
   std::atomic<bool> toStop_;
 
-  ::curve::common::WaitInterval waitInterval_;
+  ::curvefs::utils::WaitInterval waitInterval_;
 
   CopysetNodeManager* copysetMan_;
 

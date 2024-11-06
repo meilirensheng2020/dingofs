@@ -37,14 +37,14 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::StringToUll;
-using ::curve::common::WriteLockGuard;
-using ::curve::fs::Ext4FileSystemImpl;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::StringToUll;
+using ::curvefs::utils::WriteLockGuard;
+using ::curvefs::fs::Ext4FileSystemImpl;
 
 bool GetFileSystemSpaces(const std::string& path, uint64_t* total,
                          uint64_t* available) {
-  struct curve::fs::FileSystemInfo info;
+  struct curvefs::fs::FileSystemInfo info;
 
   auto localFS = Ext4FileSystemImpl::getInstance();
   int ret = localFS->Statfs(path, &info);

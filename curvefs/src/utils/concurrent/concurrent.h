@@ -34,8 +34,8 @@
 #include "curvefs/src/utils/concurrent/task_thread_pool.h"
 #include "curvefs/src/utils/concurrent/thread_pool.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 // curve公共组件命名空间替换
 template <class T>
@@ -56,6 +56,6 @@ using WriteLockGuard = WriteLockGuard;
 using TaskQueue = TaskQueue;
 using ThreadPool = ThreadPool;
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 #endif  // SRC_COMMON_CONCURRENT_CONCURRENT_H_

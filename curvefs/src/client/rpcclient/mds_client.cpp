@@ -33,7 +33,7 @@ namespace curvefs {
 namespace client {
 namespace rpcclient {
 
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::TimeUtility;
 using ::curvefs::client::metric::MetricListGuard;
 using ::curvefs::mds::space::SpaceErrCode;
 using ::curvefs::mds::space::SpaceErrCode_Name;
@@ -201,7 +201,7 @@ int RPCExcutorRetryPolicy::ExcuteTask(int mdsindex, uint64_t rpcTimeOutMS,
 }
 
 FSStatusCode MdsClientImpl::Init(
-    const ::curve::client::MetaServerOption& mdsOpt,
+    const ::curvefs::client::MetaServerOption& mdsOpt,
     MDSBaseClient* baseclient) {
   mdsOpt_ = mdsOpt;
   rpcexcutor_.SetOption(mdsOpt_.rpcRetryOpt);
@@ -387,10 +387,10 @@ void GetEndPoint(const T& info, butil::EndPoint* internal,
 bool MdsClientImpl::GetMetaServerInfo(
     const PeerAddr& addr, CopysetPeerInfo<MetaserverID>* metaserverInfo) {
   std::vector<std::string> strs;
-  curve::common::SplitString(addr.ToString(), ":", &strs);
+  curvefs::utils::SplitString(addr.ToString(), ":", &strs);
   const std::string& ip = strs[0];
   uint64_t port;
-  ::curve::common::StringToUll(strs[1], &port);
+  ::curvefs::utils::StringToUll(strs[1], &port);
 
   auto task = RPCTask {
     (void)addrindex;

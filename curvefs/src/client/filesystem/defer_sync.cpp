@@ -35,7 +35,7 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using ::curve::common::LockGuard;
+using ::curvefs::utils::LockGuard;
 
 SyncInodeClosure::SyncInodeClosure(uint64_t sync_seq,
                                    std::shared_ptr<DeferSync> defer_sync)

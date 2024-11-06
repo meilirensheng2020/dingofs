@@ -32,7 +32,7 @@
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::common::RWLock;
+using ::curvefs::utils::RWLock;
 
 class RenameTx {
  public:

@@ -47,7 +47,7 @@ class MockMdsClient : public MdsClient {
   ~MockMdsClient() {}
 
   MOCK_METHOD2(Init,
-               FSStatusCode(const ::curve::client::MetaServerOption& mdsOpt,
+               FSStatusCode(const ::curvefs::client::MetaServerOption& mdsOpt,
                             MDSBaseClient* baseclient));
 
   MOCK_METHOD3(MountFs,

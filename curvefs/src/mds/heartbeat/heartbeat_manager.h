@@ -41,10 +41,10 @@ using ::curvefs::mds::topology::CopySetIdType;
 using ::curvefs::mds::topology::PoolIdType;
 using ::curvefs::mds::topology::Topology;
 
-using ::curve::common::Atomic;
-using ::curve::common::InterruptibleSleeper;
-using ::curve::common::RWLock;
-using ::curve::common::Thread;
+using ::curvefs::utils::Atomic;
+using ::curvefs::utils::InterruptibleSleeper;
+using ::curvefs::utils::RWLock;
+using ::curvefs::utils::Thread;
 
 namespace curvefs {
 namespace mds {

@@ -35,8 +35,8 @@
 #include "curvefs/src/utils/concurrent/concurrent.h"
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class CacheMetrics {
  public:
@@ -262,7 +262,7 @@ class LRUCache : public LRUCacheInterface<K, V> {
   void RemoveElement(const typename std::list<Item>::iterator& elem);
 
  private:
-  ::curve::common::RWLock lock_;
+  ::curvefs::utils::RWLock lock_;
 
   // the maximum length of the queue. 0 indicates unlimited length
   uint64_t maxCount_;
@@ -276,27 +276,27 @@ class LRUCache : public LRUCacheInterface<K, V> {
 
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 uint64_t LRUCache<K, V, KeyTraits, ValueTraits>::Size() {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   return cache_.size();
 }
 
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 void LRUCache<K, V, KeyTraits, ValueTraits>::Put(const K& key, const V& value) {
   V eliminated;
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   PutLocked(key, value, &eliminated);
 }
 
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 bool LRUCache<K, V, KeyTraits, ValueTraits>::Put(const K& key, const V& value,
                                                  V* eliminated) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   return PutLocked(key, value, eliminated);
 }
 
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 bool LRUCache<K, V, KeyTraits, ValueTraits>::Get(const K& key, V* value) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   auto iter = cache_.find(key);
   if (iter == cache_.end()) {
     if (cacheMetrics_ != nullptr) {
@@ -317,7 +317,7 @@ bool LRUCache<K, V, KeyTraits, ValueTraits>::Get(const K& key, V* value) {
 
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 bool LRUCache<K, V, KeyTraits, ValueTraits>::GetLast(const V value, K* key) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   if (ll_.empty()) {
     return false;
   }
@@ -334,7 +334,7 @@ bool LRUCache<K, V, KeyTraits, ValueTraits>::GetLast(const V value, K* key) {
 
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 bool LRUCache<K, V, KeyTraits, ValueTraits>::GetLast(K* key, V* value) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   if (ll_.empty()) {
     return false;
   }
@@ -347,7 +347,7 @@ bool LRUCache<K, V, KeyTraits, ValueTraits>::GetLast(K* key, V* value) {
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 bool LRUCache<K, V, KeyTraits, ValueTraits>::GetLast(
     K* key, V* value, bool (*f)(const V& value)) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   if (ll_.empty()) {
     return false;
   }
@@ -366,7 +366,7 @@ bool LRUCache<K, V, KeyTraits, ValueTraits>::GetLast(
 
 template <typename K, typename V, typename KeyTraits, typename ValueTraits>
 void LRUCache<K, V, KeyTraits, ValueTraits>::Remove(const K& key) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   RemoveLocked(key);
 }
 
@@ -630,7 +630,7 @@ class SglLRUCache : public SglLRUCacheInterface<K> {
   void RemoveElement(const typename std::list<K>::iterator& elem);
 
  private:
-  ::curve::common::RWLock lock_;
+  ::curvefs::utils::RWLock lock_;
 
   // the maximum length of the queue. 0 indicates unlimited length
   uint64_t maxCount_;
@@ -658,13 +658,13 @@ uint64_t SglLRUCache<K, KeyTraits>::Size() {
 
 template <typename K, typename KeyTraits>
 void SglLRUCache<K, KeyTraits>::Put(const K& key) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   PutLocked(key);
 }
 
 template <typename K, typename KeyTraits>
 bool SglLRUCache<K, KeyTraits>::MoveBack(const K& key) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   auto iter = cache_.find(key);
   if (iter == cache_.end()) {
     return false;
@@ -684,7 +684,7 @@ bool SglLRUCache<K, KeyTraits>::MoveBack(const K& key) {
 
 template <typename K, typename KeyTraits>
 bool SglLRUCache<K, KeyTraits>::GetBack(K* value) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   if (ll_.empty()) {
     return false;
   }
@@ -694,7 +694,7 @@ bool SglLRUCache<K, KeyTraits>::GetBack(K* value) {
 
 template <typename K, typename KeyTraits>
 bool SglLRUCache<K, KeyTraits>::GetBefore(const K key, K* keyNext) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   auto iter = cache_.find(key);
   if (iter == cache_.end()) {
     return false;
@@ -714,7 +714,7 @@ bool SglLRUCache<K, KeyTraits>::GetBefore(const K key, K* keyNext) {
 
 template <typename K, typename KeyTraits>
 bool SglLRUCache<K, KeyTraits>::IsCached(const K& key) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   VLOG(6) << "cached: " << key;
   auto iter = cache_.find(key);
   if (iter == cache_.end()) {
@@ -735,7 +735,7 @@ bool SglLRUCache<K, KeyTraits>::IsCached(const K& key) {
 
 template <typename K, typename KeyTraits>
 void SglLRUCache<K, KeyTraits>::Remove(const K& key) {
-  ::curve::common::WriteLockGuard guard(lock_);
+  ::curvefs::utils::WriteLockGuard guard(lock_);
   RemoveLocked(key);
 }
 
@@ -807,7 +807,7 @@ void SglLRUCache<K, KeyTraits>::RemoveElement(
   size_--;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_LRU_CACHE_H_

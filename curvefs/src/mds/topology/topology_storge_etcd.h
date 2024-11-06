@@ -36,8 +36,8 @@ namespace curvefs {
 namespace mds {
 namespace topology {
 
-using ::curve::kvstorage::EtcdClientImp;
-using ::curve::kvstorage::KVStorageClient;
+using ::curvefs::kvstorage::EtcdClientImp;
+using ::curvefs::kvstorage::KVStorageClient;
 
 class TopologyStorageEtcd : public TopologyStorage {
  public:

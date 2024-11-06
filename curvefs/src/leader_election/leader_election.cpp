@@ -30,9 +30,9 @@
 
 #include "curvefs/src/utils/concurrent/concurrent.h"
 
-using ::curve::common::Thread;
+using ::curvefs::utils::Thread;
 
-namespace curve {
+namespace curvefs {
 namespace election {
 int LeaderElection::CampaignLeader() {
   LOG(INFO) << opt_.leaderUniqueName

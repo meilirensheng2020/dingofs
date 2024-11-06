@@ -34,14 +34,14 @@
 #include "curvefs/src/utils/concurrent/rw_lock.h"
 #include "curvefs/src/utils/concurrent/spinlock.h"
 
-namespace curve {
+namespace curvefs {
 namespace client {
 
-using curve::common::Bitmap;
-using curve::common::BthreadRWLock;
-using curve::common::ReadLockGuard;
-using curve::common::SpinLock;
-using curve::common::WriteLockGuard;
+using curvefs::utils::Bitmap;
+using curvefs::utils::BthreadRWLock;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::SpinLock;
+using curvefs::utils::WriteLockGuard;
 
 // copyset内的chunkserver节点的基本信息
 // 包含当前chunkserver的id信息，以及chunkserver的地址信息
@@ -321,7 +321,7 @@ class FileSegment {
    * @return Return true if if all bits are set, otherwise return false
    */
   bool IsAllBitSet() const {
-    return discardBitmap_.NextClearBit(0) == curve::common::Bitmap::NO_POS;
+    return discardBitmap_.NextClearBit(0) == curvefs::utils::Bitmap::NO_POS;
   }
 
   void AcquireReadLock() { rwlock_.RDLock(); }

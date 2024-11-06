@@ -30,8 +30,8 @@
 
 #include "curvefs/src/utils/uncopyable.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class RWLockBase : public Uncopyable {
  public:
@@ -145,7 +145,7 @@ class WriteLockGuard : public Uncopyable {
   RWLockBase& rwlock_;
 };  // WriteLockGuard class
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_RW_LOCK_H_

@@ -200,90 +200,90 @@ namespace curvefs {
 namespace tools {
 
 template <class FlagInfoT>
-void SetFlagInfo(curve::common::Configuration* conf,
+void SetFlagInfo(curvefs::utils::Configuration* conf,
                  google::CommandLineFlagInfo* info, const std::string& key,
                  FlagInfoT* flag);
 
 /* update flags */
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetMdsAddr;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetRpcTimeoutMs;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetRpcRetryTimes;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetMetaserverAddr;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetEtcdAddr;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetMdsDummyAddr;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetBlockSize;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetFsType;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumeBlockSize;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumeName;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumeUser;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumePassword;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumeBitmapLocation;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumeAutoExtend;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumeExtendFactor;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetVolumeCluster;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetS3_ak;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetS3_sk;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetS3_endpoint;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetS3_bucket_name;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetS3_blocksize;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetS3_chunksize;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetS3_objectPrefix;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetEnableSumInDir;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetRpcStreamIdleTimeoutMs;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetRpcRetryIntervalUs;
-extern std::function<void(curve::common::Configuration*,
+extern std::function<void(curvefs::utils::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetRecycleTimeHour;
 

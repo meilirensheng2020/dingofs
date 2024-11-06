@@ -23,7 +23,7 @@
 #ifndef SRC_FS_FS_COMMON_H_
 #define SRC_FS_FS_COMMON_H_
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 enum class FileSystemType {

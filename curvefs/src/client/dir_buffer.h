@@ -55,9 +55,9 @@ class DirBuffer {
 
  private:
   std::unordered_map<uint64_t, DirBufferHead*> buffer_;
-  curve::common::RWLock bufferMtx_;
+  curvefs::utils::RWLock bufferMtx_;
 
-  curve::common::Atomic<uint64_t> index_;
+  curvefs::utils::Atomic<uint64_t> index_;
 };
 
 }  // namespace client

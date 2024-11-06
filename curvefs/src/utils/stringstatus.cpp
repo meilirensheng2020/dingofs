@@ -22,8 +22,8 @@
 
 #include "curvefs/src/utils/stringstatus.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 void StringStatus::ExposeAs(const std::string& prefix,
                             const std::string& name) {
   status_.expose_as(prefix, name);
@@ -59,5 +59,5 @@ std::string StringStatus::JsonBody() { return status_.get_value(); }
 std::string StringStatus::GetValueByKey(const std::string& key) {
   return kvs_[key];
 }
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

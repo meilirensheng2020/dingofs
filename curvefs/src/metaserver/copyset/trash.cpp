@@ -37,9 +37,9 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::StringToUll;
-using ::curve::common::UriParser;
-using ::curve::fs::LocalFileSystem;
+using ::curvefs::utils::StringToUll;
+using ::curvefs::utils::UriParser;
+using ::curvefs::fs::LocalFileSystem;
 
 CopysetTrash::CopysetTrash()
     : options_(),

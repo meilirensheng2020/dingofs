@@ -36,7 +36,7 @@ namespace curvefs {
 namespace base {
 namespace queue {
 
-using ::curve::common::TaskQueue;
+using ::curvefs::utils::TaskQueue;
 using ::curvefs::common::SetThreadName;
 
 template <typename MessageT>

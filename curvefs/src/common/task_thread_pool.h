@@ -33,8 +33,8 @@ namespace common {
 
 template <typename MutexT = std::mutex,
           typename CondVarT = std::condition_variable>
-class TaskThreadPool2 : public curve::common::TaskThreadPool<MutexT, CondVarT> {
-  using Base = curve::common::TaskThreadPool<MutexT, CondVarT>;
+class TaskThreadPool2 : public curvefs::utils::TaskThreadPool<MutexT, CondVarT> {
+  using Base = curvefs::utils::TaskThreadPool<MutexT, CondVarT>;
 
  public:
   template <class F, class... Args>
@@ -55,13 +55,13 @@ class TaskThreadPool2 : public curve::common::TaskThreadPool<MutexT, CondVarT> {
     return true;
   }
 
-  curve::common::Task Take() {
+  curvefs::utils::Task Take() {
     std::unique_lock<MutexT> guard(Base::mutex_);
     while (Base::queue_.empty() &&
            Base::running_.load(std::memory_order_acquire)) {
       Base::notEmpty_.wait(guard);
     }
-    curve::common::Task task;
+    curvefs::utils::Task task;
     if (!Base::queue_.empty()) {
       task = std::move(Base::queue_.front());
       Base::queue_.pop_front();
@@ -74,7 +74,7 @@ class TaskThreadPool2 : public curve::common::TaskThreadPool<MutexT, CondVarT> {
 
   virtual void ThreadFunc() {
     while (Base::running_.load(std::memory_order_acquire)) {
-      curve::common::Task task(Take());
+      curvefs::utils::Task task(Take());
       if (task) {
         task();
         std::unique_lock<MutexT> guard(executingMutex_);

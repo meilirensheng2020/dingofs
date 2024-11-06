@@ -28,8 +28,8 @@
 #include <list>
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class UriParser {
  public:
@@ -74,7 +74,7 @@ class UriParser {
   }
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_URI_PARSER_H_

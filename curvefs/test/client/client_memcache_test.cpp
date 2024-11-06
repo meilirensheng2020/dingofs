@@ -33,7 +33,7 @@
 #include "curvefs/src/client/kvclient/memcache_client.h"
 #include "curvefs/src/utils/concurrent/count_down_event.h"
 
-using curve::common::CountDownEvent;
+using curvefs::utils::CountDownEvent;
 
 namespace curvefs {
 namespace client {

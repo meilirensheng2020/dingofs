@@ -88,7 +88,7 @@ std::vector<::curvefs::mds::topology::MetaServer> GetTopoMetaServerForTest() {
     ::curvefs::mds::topology::MetaServer metaserver(i, "hostname", "token", i,
                                                     ip, 9000, ip, 9000);
     metaserver.SetMetaServerSpace(::curvefs::mds::topology::MetaServerSpace{});
-    metaserver.SetStartUpTime(::curve::common::TimeUtility::GetTimeofDaySec());
+    metaserver.SetStartUpTime(::curvefs::utils::TimeUtility::GetTimeofDaySec());
     out.emplace_back(metaserver);
   }
   return out;

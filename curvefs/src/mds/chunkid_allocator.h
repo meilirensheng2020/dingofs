@@ -33,8 +33,8 @@
 namespace curvefs {
 namespace mds {
 
-using ::curve::common::StringToUll;
-using ::curve::kvstorage::KVStorageClient;
+using ::curvefs::utils::StringToUll;
+using ::curvefs::kvstorage::KVStorageClient;
 
 const uint64_t CHUNKIDINITIALIZE = 0;
 const uint64_t CHUNKBUNDLEALLOCATED = 1000;
@@ -135,7 +135,7 @@ class ChunkIdAllocatorImpl : public ChunkIdAllocator {
   uint64_t nextId_;       // the next ChunkId can be allocated in this bunlde
   uint64_t lastId_;       // the last ChunkId can be allocated in this bunlde
   uint64_t bundleSize_;   // get the numnber of ChunkId at a time
-  ::curve::common::RWLock
+  ::curvefs::utils::RWLock
       nextIdRWlock_;  // guarantee the uniqueness of the ChunkId
 };
 

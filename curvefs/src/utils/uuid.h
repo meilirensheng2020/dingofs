@@ -32,8 +32,8 @@ int uuid_generate_time_safe(uuid_t out);
 }
 #include <string>
 #define BUFF_LEN 36
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 // 生成uuid的生成器
 class UUIDGenerator {
  public:
@@ -89,7 +89,7 @@ class UUIDGenerator {
   }
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_UUID_H_

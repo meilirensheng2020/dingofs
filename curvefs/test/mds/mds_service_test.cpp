@@ -38,7 +38,7 @@
 #include "curvefs/test/mds/mock/mock_topology.h"
 #include "curvefs/test/utils/mock_s3_adapter.h"
 
-using ::curve::common::MockS3Adapter;
+using ::curvefs::utils::MockS3Adapter;
 using ::curvefs::common::S3Info;
 using ::curvefs::common::Volume;
 using ::curvefs::mds::RefreshSessionRequest;
@@ -62,7 +62,7 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
-using ::curve::common::MockS3Adapter;
+using ::curvefs::utils::MockS3Adapter;
 using ::google::protobuf::util::MessageDifferencer;
 
 namespace curvefs {

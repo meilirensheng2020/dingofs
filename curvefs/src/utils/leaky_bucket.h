@@ -34,8 +34,8 @@
 #include <deque>
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 DECLARE_uint32(bucketLeakIntervalMs);
 
@@ -238,7 +238,7 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_LEAKY_BUCKET_H_

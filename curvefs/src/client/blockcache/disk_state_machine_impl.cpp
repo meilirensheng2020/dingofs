@@ -65,7 +65,7 @@ DiskStateMachineImpl::DiskStateMachineImpl(
     : state_(std::make_unique<BaseDiskState>(this)), metric_(metric) {}
 
 bool DiskStateMachineImpl::Start() {
-  curve::common::WriteLockGuard lk(rw_lock_);
+  curvefs::utils::WriteLockGuard lk(rw_lock_);
 
   if (running_) {
     return true;
@@ -97,7 +97,7 @@ bool DiskStateMachineImpl::Start() {
 }
 
 bool DiskStateMachineImpl::Stop() {
-  curve::common::WriteLockGuard lk(rw_lock_);
+  curvefs::utils::WriteLockGuard lk(rw_lock_);
 
   if (!running_) {
     return true;
@@ -125,7 +125,7 @@ bool DiskStateMachineImpl::Stop() {
 }
 
 void DiskStateMachineImpl::TickTock() {
-  curve::common::WriteLockGuard lk(rw_lock_);
+  curvefs::utils::WriteLockGuard lk(rw_lock_);
 
   if (!running_) {
     return;
@@ -158,7 +158,7 @@ int DiskStateMachineImpl::EventThread(
 }
 
 void DiskStateMachineImpl::ProcessEvent(DiskStateEvent event) {
-  curve::common::WriteLockGuard lk(rw_lock_);
+  curvefs::utils::WriteLockGuard lk(rw_lock_);
 
   LOG(INFO) << "ProcessEvent event: " << DiskStateEventToString(event)
             << " in state:" << DiskStateToString(state_->GetDiskState());

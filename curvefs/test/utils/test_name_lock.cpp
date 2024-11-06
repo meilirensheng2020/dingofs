@@ -26,8 +26,8 @@
 
 #include "curvefs/src/utils/concurrent/name_lock.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(TestNameLock, TestNameLockBasic) {
   NameLock lock1, lock2, lock3;
@@ -98,5 +98,5 @@ TEST(TestNameLock, TestNameLockConcurrent) {
   }
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

@@ -37,7 +37,7 @@ namespace curvefs {
 namespace client {
 namespace metric {
 
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::TimeUtility;
 
 // metric stats per second
 struct PerSecondMetric {

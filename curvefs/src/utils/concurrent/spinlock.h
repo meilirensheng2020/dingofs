@@ -27,8 +27,8 @@
 
 #include "curvefs/include/curve_compiler_specific.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 class SpinLock {
  public:
   void Lock() {
@@ -41,6 +41,6 @@ class SpinLock {
  private:
   CURVE_CACHELINE_ALIGNMENT std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
 };
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 #endif  // SRC_COMMON_CONCURRENT_SPINLOCK_H_

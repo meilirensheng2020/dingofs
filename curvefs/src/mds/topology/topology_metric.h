@@ -37,7 +37,7 @@
 #include "curvefs/src/mds/topology/topology.h"
 #include "curvefs/src/utils/interruptible_sleeper.h"
 
-using ::curve::common::InterruptibleSleeper;
+using ::curvefs::utils::InterruptibleSleeper;
 
 namespace curvefs {
 namespace mds {
@@ -181,11 +181,11 @@ class TopologyMetricService {
   /**
    * @brief backend thread
    */
-  curve::common::Thread backEndThread_;
+  curvefs::utils::Thread backEndThread_;
   /**
    * @brief flag marking out stopping the backend thread or not
    */
-  curve::common::Atomic<bool> isStop_;
+  curvefs::utils::Atomic<bool> isStop_;
 
   InterruptibleSleeper sleeper_;
 

@@ -26,8 +26,8 @@
 
 #include "curvefs/src/utils/macros.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 std::string CurveVersion() {
   static const std::string version =
@@ -45,5 +45,5 @@ void ExposeCurveVersion() {
   version.set_value(CurveVersion());
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

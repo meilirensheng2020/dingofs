@@ -28,8 +28,8 @@
 #include <map>
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 class StringStatus {
  public:
   /**
@@ -72,7 +72,7 @@ class StringStatus {
   // 该导出项对应的status
   bvar::Status<std::string> status_;
 };
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_STRINGSTATUS_H_

@@ -47,8 +47,8 @@
   } while (0)
 #endif
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 uint32_t Hash(const char* data, size_t n, uint32_t seed) {
   // Similar to murmur hash
   const uint32_t m = 0xc6a4a793;
@@ -81,7 +81,7 @@ uint32_t Hash(const char* data, size_t n, uint32_t seed) {
   }
   return h;
 }
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_HASH_H_

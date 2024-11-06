@@ -60,9 +60,9 @@ class Cli2ClientImplTest : public testing::Test {
                                     brpc::SERVER_DOESNT_OWN_SERVICE));
     ASSERT_EQ(0, server_.Start(addr_.c_str(), nullptr));
 
-    curve::client::EndPoint ep;
+    curvefs::client::EndPoint ep;
     butil::str2endpoint("127.0.0.1", 5800, &ep);
-    peerAddr_ = curve::client::PeerAddr(ep);
+    peerAddr_ = curvefs::client::PeerAddr(ep);
     peerInfoList_.push_back(
         CopysetPeerInfo<MetaserverID>(1, peerAddr_, peerAddr_));
     peerInfoList_.push_back(
@@ -83,7 +83,7 @@ class Cli2ClientImplTest : public testing::Test {
   std::string addr_ = "127.0.0.1:5800";
   brpc::Server server_;
 
-  curve::client::PeerAddr peerAddr_;
+  curvefs::client::PeerAddr peerAddr_;
   PeerInfoList peerInfoList_;
 };
 

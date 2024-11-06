@@ -55,22 +55,22 @@ int InodeTool::Init() {
     return -1;
   }
 
-  curve::common::SplitString(FLAGS_metaserverAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_metaserverAddr, ",", &hostsAddr_);
 
   std::vector<std::string> poolsId;
-  curve::common::SplitString(FLAGS_poolId, ",", &poolsId);
+  curvefs::utils::SplitString(FLAGS_poolId, ",", &poolsId);
 
   std::vector<std::string> copysetsId;
-  curve::common::SplitString(FLAGS_copysetId, ",", &copysetsId);
+  curvefs::utils::SplitString(FLAGS_copysetId, ",", &copysetsId);
 
   std::vector<std::string> partitionId;
-  curve::common::SplitString(FLAGS_partitionId, ",", &partitionId);
+  curvefs::utils::SplitString(FLAGS_partitionId, ",", &partitionId);
 
   std::vector<std::string> fsId;
-  curve::common::SplitString(FLAGS_fsId, ",", &fsId);
+  curvefs::utils::SplitString(FLAGS_fsId, ",", &fsId);
 
   std::vector<std::string> inodeId;
-  curve::common::SplitString(FLAGS_inodeId, ",", &inodeId);
+  curvefs::utils::SplitString(FLAGS_inodeId, ",", &inodeId);
 
   if (poolsId.size() != copysetsId.size() ||
       poolsId.size() != partitionId.size() || poolsId.size() != fsId.size() ||

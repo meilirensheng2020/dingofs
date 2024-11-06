@@ -39,8 +39,8 @@
 #include "curvefs/src/utils/concurrent/rw_lock.h"
 #include "curvefs/src/utils/math_util.h"
 
-using ::curve::client::CopysetID;
-using ::curve::client::LogicPoolID;
+using ::curvefs::client::CopysetID;
+using ::curvefs::client::LogicPoolID;
 using ::curvefs::client::common::ExcutorOpt;
 using ::curvefs::client::common::MetaserverID;
 using ::curvefs::client::common::MetaServerOpType;

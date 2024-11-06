@@ -83,10 +83,10 @@ int Heartbeat::Init(const HeartbeatOptions& options) {
   options_ = options;
 
   std::string copyset_data_path =
-      curve::common::UriParser::GetPathFromUri(options_.storeUri);
+      curvefs::utils::UriParser::GetPathFromUri(options_.storeUri);
   // get the metaserver data dir, because copysets dir doesn't exist at
   // beginning  // NOLINT
-  auto path_list = curve::common::UriParser::ParseDirPath(copyset_data_path);
+  auto path_list = curvefs::utils::UriParser::ParseDirPath(copyset_data_path);
   if (path_list.size() > 1) {
     auto it = path_list.end();
     std::advance(it, -2);
@@ -105,7 +105,7 @@ int Heartbeat::Init(const HeartbeatOptions& options) {
   LOG(INFO) << "Metaserver address: " << options_.ip << ":" << options_.port;
 
   // mdsEps can not empty
-  ::curve::common::SplitString(options_.mdsListenAddr, ",", &mdsEps_);
+  ::curvefs::utils::SplitString(options_.mdsListenAddr, ",", &mdsEps_);
   if (mdsEps_.empty()) {
     LOG(ERROR) << "Invalid mds ip provided: " << options_.mdsListenAddr;
     return -1;
@@ -128,7 +128,7 @@ int Heartbeat::Init(const HeartbeatOptions& options) {
   LOG(INFO) << "MDS timer: " << options_.intervalSec << " seconde";
   waitInterval_.Init(options_.intervalSec * 1000);
 
-  startUpTime_ = ::curve::common::TimeUtility::GetTimeofDaySec();
+  startUpTime_ = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
 
   taskExecutor_ = std::make_unique<HeartbeatTaskExecutor>(copysetMan_, msEp_);
 

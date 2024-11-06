@@ -33,8 +33,8 @@
 #ifndef SRC_COMMON_CONFIGURATION_H_
 #define SRC_COMMON_CONFIGURATION_H_
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 using ConfigItemPtr = std::shared_ptr<StringStatus>;
 using ConfigMetricMap = std::unordered_map<std::string, ConfigItemPtr>;
@@ -187,7 +187,7 @@ class Configuration {
   ConfigMetricMap configMetric_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONFIGURATION_H_

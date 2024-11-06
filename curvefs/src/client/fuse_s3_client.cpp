@@ -73,7 +73,7 @@ CURVEFS_ERROR FuseS3Client::Init(const FuseClientOption& option) {
 
   // set fs S3Option
   const auto& s3Info = fsInfo_->detail().s3info();
-  ::curve::common::S3InfoOption fsS3Option;
+  ::curvefs::utils::S3InfoOption fsS3Option;
   ::curvefs::client::common::S3Info2FsS3Option(s3Info, &fsS3Option);
   SetFuseClientS3Option(&opt, fsS3Option);
 
@@ -143,7 +143,7 @@ void FuseS3Client::UnInit() {
   s3Adaptor_->Stop();
   S3ClientImpl::GetInstance()->Destroy();
   DataStream::GetInstance().Shutdown();
-  curve::common::S3Adapter::Shutdown();
+  curvefs::utils::S3Adapter::Shutdown();
 }
 
 CURVEFS_ERROR FuseS3Client::FuseOpInit(void* userdata,
@@ -198,7 +198,7 @@ CURVEFS_ERROR FuseS3Client::FuseOpWrite(fuse_req_t req, fuse_ino_t ino,
   size_t change_size = 0;
 
   {
-    ::curve::common::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
+    ::curvefs::utils::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
 
     *w_size = w_ret;
     // update file len
@@ -304,7 +304,7 @@ CURVEFS_ERROR FuseS3Client::FuseOpRead(fuse_req_t req, fuse_ino_t ino,
     fsMetric_->userReadIoSize.set_value(rRet);
   }
 
-  ::curve::common::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+  ::curvefs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
   inodeWrapper->UpdateTimestampLocked(kAccessTime);
   inodeManager_->ShipToFlush(inodeWrapper);
 
@@ -399,7 +399,7 @@ CURVEFS_ERROR FuseS3Client::FuseOpFsync(fuse_req_t req, fuse_ino_t ino,
                << ", inodeId=" << ino;
     return ret;
   }
-  ::curve::common::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+  ::curvefs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
   return inodeWrapper->Sync();
 }
 
@@ -465,7 +465,7 @@ CURVEFS_ERROR FuseS3Client::FuseOpFlush(fuse_req_t req, fuse_ino_t ino,
       return ret;
     }
 
-    ::curve::common::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+    ::curvefs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
     ret = inodeWrapper->Sync();
     if (ret != CURVEFS_ERROR::OK) {
       LOG(ERROR) << "FuseOpFlush, inode sync s3 chunk info fail, ret = " << ret
@@ -536,13 +536,13 @@ CURVEFS_ERROR FuseS3Client::InitBrpcServer() {
   }
 
   std::string local_ip;
-  if (!curve::common::NetCommon::GetLocalIP(&local_ip)) {
+  if (!curvefs::utils::NetCommon::GetLocalIP(&local_ip)) {
     LOG(ERROR) << "Get local ip failed!";
     return CURVEFS_ERROR::INTERNAL;
   }
 
-  curve::client::ClientDummyServerInfo::GetInstance().SetPort(listen_port);
-  curve::client::ClientDummyServerInfo::GetInstance().SetIP(local_ip);
+  curvefs::client::ClientDummyServerInfo::GetInstance().SetPort(listen_port);
+  curvefs::client::ClientDummyServerInfo::GetInstance().SetIP(local_ip);
 
   return CURVEFS_ERROR::OK;
 }

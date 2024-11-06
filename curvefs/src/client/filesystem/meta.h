@@ -39,11 +39,11 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using ::curve::common::Mutex;
-using ::curve::common::ReadLockGuard;
-using ::curve::common::RWLock;
-using ::curve::common::UniqueLock;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::Mutex;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::RWLock;
+using ::curvefs::utils::UniqueLock;
+using ::curvefs::utils::WriteLockGuard;
 using ::curvefs::base::time::TimeSpec;
 using ::curvefs::client::DirBufferHead;
 using ::curvefs::client::InodeWrapper;

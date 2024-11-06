@@ -286,7 +286,7 @@ void TopologyMetricService::Init(const TopologyOption& option) {
 void TopologyMetricService::Run() {
   if (isStop_.exchange(false)) {
     backEndThread_ =
-        curve::common::Thread(&TopologyMetricService::BackEndFunc, this);
+        curvefs::utils::Thread(&TopologyMetricService::BackEndFunc, this);
   }
 }
 

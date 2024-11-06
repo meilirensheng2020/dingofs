@@ -27,7 +27,7 @@
 #include "curvefs/proto/topology.pb.h"
 #include "curvefs/src/mds/topology/topology_item.h"
 
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::WriteLockGuard;
 using ::curvefs::mds::topology::MetaServer;
 using ::curvefs::mds::topology::TopoStatusCode;
 using std::chrono::milliseconds;

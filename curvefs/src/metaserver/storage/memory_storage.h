@@ -41,8 +41,8 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::RWLock;
-using ::curve::common::StringStartWith;
+using ::curvefs::utils::RWLock;
+using ::curvefs::utils::StringStartWith;
 using ::curvefs::metaserver::Dentry;
 using ::curvefs::metaserver::Inode;
 using ::curvefs::metaserver::S3ChunkInfoList;

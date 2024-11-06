@@ -28,8 +28,8 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using curve::common::ReadLockGuard;
-using curve::common::WriteLockGuard;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::WriteLockGuard;
 
 USING_FLAG(flush_quota_interval_second);
 USING_FLAG(load_quota_interval_second);

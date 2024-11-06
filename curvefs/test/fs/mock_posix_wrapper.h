@@ -28,7 +28,7 @@
 #include "curvefs/src/fs/local_filesystem.h"
 #include "curvefs/src/fs/wrap_posix.h"
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 class MockPosixWrapper : public PosixWrapper {

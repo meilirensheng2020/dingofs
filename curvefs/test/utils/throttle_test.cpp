@@ -28,10 +28,10 @@
 
 #include <chrono>  // NOLINT
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
-using curve::common::ThrottleParams;
+using curvefs::utils::ThrottleParams;
 
 class ThrottleTest : public ::testing::Test {
  protected:
@@ -193,5 +193,5 @@ TEST_F(ThrottleTest, TestIopsLimit) {
   ASSERT_LE(seconds, 11);
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

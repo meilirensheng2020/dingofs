@@ -47,7 +47,7 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::SetArrayArgument;
 
-using ::curve::fs::MockLocalFileSystem;
+using ::curvefs::fs::MockLocalFileSystem;
 
 class CopysetNodeTest : public testing::Test {
  protected:

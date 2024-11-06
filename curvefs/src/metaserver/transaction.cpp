@@ -27,8 +27,8 @@
 namespace curvefs {
 namespace metaserver {
 
-using curve::common::ReadLockGuard;
-using curve::common::WriteLockGuard;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::WriteLockGuard;
 
 #define FOR_EACH_DENTRY(action)                                                \
   do {                                                                         \

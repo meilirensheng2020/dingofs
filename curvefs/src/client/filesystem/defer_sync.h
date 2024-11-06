@@ -39,8 +39,8 @@ namespace filesystem {
 
 using ::curvefs::client::common::DeferSyncOption;
 
-using ::curve::common::InterruptibleSleeper;
-using ::curve::common::Mutex;
+using ::curvefs::utils::InterruptibleSleeper;
+using ::curvefs::utils::Mutex;
 
 class DeferSync;
 class SyncInodeClosure : public MetaServerClientDone {

@@ -27,8 +27,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 /**
  * 计算数据的CRC32校验码(CRC32C)，基于brpc的crc32库进行封装
@@ -53,7 +53,7 @@ inline uint32_t CRC32(uint32_t crc, const char* pData, size_t iLen) {
   return butil::crc32c::Extend(crc, pData, iLen);
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CRC32_H_

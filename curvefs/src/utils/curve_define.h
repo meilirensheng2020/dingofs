@@ -32,8 +32,8 @@
   BAIDU_LOG_IF_EVERY_SECOND_IMPL(DLOG_IF, severity, true)
 #endif
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 // curve系统中共用的定义，对于各模块自己独有的放在各模块自己的define中
 using ChunkID = uint64_t;
 using CopysetID = uint32_t;
@@ -57,7 +57,7 @@ const uint32_t kGB = 1024 * kMB;
 
 // maigic number用于FilePool_meta file计算crc
 const char kFilePoolMaigic[3] = "01";
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CURVE_DEFINE_H_

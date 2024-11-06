@@ -26,7 +26,7 @@
 #include <map>
 #include <string>
 
-namespace curve {
+namespace curvefs {
 namespace snapshotcloneserver {
 
 // snapshotcloneservice字符串常量定义
@@ -138,6 +138,6 @@ constexpr uint32_t kProgressRecoverChunkEnd = 95;
 constexpr uint32_t kProgressCloneComplete = 100;
 
 }  // namespace snapshotcloneserver
-}  // namespace curve
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_DEFINE_H_

@@ -50,7 +50,7 @@
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::common::Configuration;
+using ::curvefs::utils::Configuration;
 using ::curvefs::client::common::MdsOption;
 using ::curvefs::client::rpcclient::MDSBaseClient;
 using ::curvefs::client::rpcclient::MdsClient;
@@ -140,7 +140,7 @@ class Metaserver {
   RegisterOptions registerOptions_;
 
   std::unique_ptr<InflightThrottle> inflightThrottle_;
-  std::shared_ptr<curve::fs::LocalFileSystem> localFileSystem_;
+  std::shared_ptr<curvefs::fs::LocalFileSystem> localFileSystem_;
 };
 }  // namespace metaserver
 }  // namespace curvefs

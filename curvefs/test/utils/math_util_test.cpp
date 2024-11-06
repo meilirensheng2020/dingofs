@@ -23,8 +23,8 @@
 
 #include <gtest/gtest.h>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(MathUtilTest, TestMaxPowerTimesLessEqualValue) {
   ASSERT_EQ(0, MaxPowerTimesLessEqualValue(0));
@@ -52,5 +52,5 @@ TEST(MathUtilTest, TestClamp) {
   ASSERT_EQ(255, Clamp(256, 0, 255));
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

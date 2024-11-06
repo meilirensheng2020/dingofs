@@ -27,8 +27,8 @@
 #include <chrono>  // NOLINT
 #include <thread>  // NOLINT
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(LeakyBucketTest, TestCommon) {
   uint64_t limit = 1000;
@@ -181,5 +181,5 @@ TEST(LeakyBucketTest, TestSetLimit) {
   ASSERT_FALSE(throttle.SetLimit(100, 0, 10));
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

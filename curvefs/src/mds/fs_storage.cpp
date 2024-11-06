@@ -33,8 +33,8 @@
 namespace curvefs {
 namespace mds {
 
-using ::curve::idgenerator::EtcdIdGenerator;
-using ::curve::kvstorage::KVStorageClient;
+using ::curvefs::idgenerator::EtcdIdGenerator;
+using ::curvefs::kvstorage::KVStorageClient;
 
 bool MemoryFsStorage::Init() {
   WriteLockGuard writeLockGuard(rwLock_);
@@ -160,7 +160,7 @@ void MemoryFsStorage::GetAll(std::vector<FsInfoWrapper>* fsInfoVec) {
 }
 
 PersisKVStorage::PersisKVStorage(
-    const std::shared_ptr<curve::kvstorage::KVStorageClient>& storage)
+    const std::shared_ptr<curvefs::kvstorage::KVStorageClient>& storage)
     : storage_(storage),
       idGen_(new FsIdGenerator(storage_)),
       fsLock_(),

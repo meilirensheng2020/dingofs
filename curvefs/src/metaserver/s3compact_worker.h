@@ -106,7 +106,7 @@ class S3CompactWorker {
   // current compaction info, if in waiting state, it doesn't has value
   absl::optional<S3Compact> s3Compact_;
 
-  curve::common::InterruptibleSleeper sleeper;
+  curvefs::utils::InterruptibleSleeper sleeper;
 };
 
 }  // namespace metaserver

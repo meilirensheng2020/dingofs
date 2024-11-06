@@ -38,9 +38,9 @@ namespace curvefs {
 namespace mds {
 namespace dlock {
 
-using ::curve::common::EncodeBigEndian;
-using ::curve::common::NameLockGuard;
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::EncodeBigEndian;
+using ::curvefs::utils::NameLockGuard;
+using ::curvefs::utils::TimeUtility;
 using ::curvefs::mds::DLOCK_KEY_PREFIX;
 using ::curvefs::mds::DLOCK_PREFIX_LENGTH;
 using ::curvefs::mds::DLockValue;

@@ -27,14 +27,14 @@ namespace client {
 
 uint64_t DirBuffer::DirBufferNew() {
   uint64_t dindex = index_++;
-  curve::common::WriteLockGuard wlg(bufferMtx_);
+  curvefs::utils::WriteLockGuard wlg(bufferMtx_);
   DirBufferHead* head = new DirBufferHead();
   buffer_.emplace(dindex, head);
   return dindex;
 }
 
 DirBufferHead* DirBuffer::DirBufferGet(uint64_t dindex) {
-  curve::common::ReadLockGuard rlg(bufferMtx_);
+  curvefs::utils::ReadLockGuard rlg(bufferMtx_);
   auto it = buffer_.find(dindex);
   if (it != buffer_.end()) {
     return it->second;
@@ -45,7 +45,7 @@ DirBufferHead* DirBuffer::DirBufferGet(uint64_t dindex) {
 
 // TODO(xuchaojie) : these two function need to be called in right place.
 void DirBuffer::DirBufferRelease(uint64_t dindex) {
-  curve::common::WriteLockGuard wlg(bufferMtx_);
+  curvefs::utils::WriteLockGuard wlg(bufferMtx_);
   auto it = buffer_.find(dindex);
   if (it != buffer_.end()) {
     free(it->second->p);
@@ -55,7 +55,7 @@ void DirBuffer::DirBufferRelease(uint64_t dindex) {
 }
 
 void DirBuffer::DirBufferFreeAll() {
-  curve::common::WriteLockGuard wlg(bufferMtx_);
+  curvefs::utils::WriteLockGuard wlg(bufferMtx_);
   for (auto it : buffer_) {
     free(it.second->p);
     delete it.second;

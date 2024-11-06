@@ -64,7 +64,7 @@ class RecycleManager {
   std::list<std::shared_ptr<RecycleCleaner>> recycleCleanerList_;
   std::shared_ptr<MdsClient> mdsClient_;
   std::shared_ptr<MetaServerClient> metaClient_;
-  curve::common::RWLock rwLock_;
+  curvefs::utils::RWLock rwLock_;
   std::shared_ptr<RecycleCleaner> inProcessingCleaner_;
   Atomic<bool> isStop_;
   Thread thread_;

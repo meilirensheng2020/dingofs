@@ -30,8 +30,8 @@
 namespace curvefs {
 namespace client {
 
-using curve::common::GetObjectAsyncContext;
-using curve::common::PutObjectAsyncContext;
+using curvefs::utils::GetObjectAsyncContext;
+using curvefs::utils::PutObjectAsyncContext;
 
 namespace common {
 DECLARE_bool(useFakeS3);
@@ -41,7 +41,7 @@ class S3Client {
  public:
   S3Client() {}
   virtual ~S3Client() {}
-  virtual void Init(const curve::common::S3AdapterOption& option) = 0;
+  virtual void Init(const curvefs::utils::S3AdapterOption& option) = 0;
   virtual void Deinit() = 0;
   virtual int Upload(const std::string& name, const char* buf,
                      uint64_t length) = 0;
@@ -56,27 +56,27 @@ class S3ClientImpl : public S3Client {
  public:
   S3ClientImpl() : S3Client() {
     if (curvefs::client::common::FLAGS_useFakeS3) {
-      s3Adapter_ = std::make_shared<curve::common::FakeS3Adapter>();
+      s3Adapter_ = std::make_shared<curvefs::utils::FakeS3Adapter>();
       LOG(INFO) << "use fake S3";
     } else {
-      s3Adapter_ = std::make_shared<curve::common::S3Adapter>();
+      s3Adapter_ = std::make_shared<curvefs::utils::S3Adapter>();
       LOG(INFO) << "use S3";
     }
   }
   virtual ~S3ClientImpl() {}
-  void Init(const curve::common::S3AdapterOption& option);
+  void Init(const curvefs::utils::S3AdapterOption& option);
   void Deinit();
   int Upload(const std::string& name, const char* buf, uint64_t length);
   void UploadAsync(std::shared_ptr<PutObjectAsyncContext> context);
   int Download(const std::string& name, char* buf, uint64_t offset,
                uint64_t length);
   void DownloadAsync(std::shared_ptr<GetObjectAsyncContext> context);
-  void SetAdapter(std::shared_ptr<curve::common::S3Adapter> adapter) {
+  void SetAdapter(std::shared_ptr<curvefs::utils::S3Adapter> adapter) {
     s3Adapter_ = adapter;
   }
 
  private:
-  std::shared_ptr<curve::common::S3Adapter> s3Adapter_;
+  std::shared_ptr<curvefs::utils::S3Adapter> s3Adapter_;
 };
 
 }  // namespace client

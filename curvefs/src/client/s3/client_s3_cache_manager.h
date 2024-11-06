@@ -42,9 +42,9 @@
 #include "curvefs/src/utils/concurrent/concurrent.h"
 #include "curvefs/src/utils/s3_adapter.h"
 
-using curve::common::ReadLockGuard;
-using curve::common::RWLock;
-using curve::common::WriteLockGuard;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::RWLock;
+using curvefs::utils::WriteLockGuard;
 
 namespace curvefs {
 namespace client {
@@ -58,10 +58,10 @@ using FileCacheManagerPtr = std::shared_ptr<FileCacheManager>;
 using ChunkCacheManagerPtr = std::shared_ptr<ChunkCacheManager>;
 using DataCachePtr = std::shared_ptr<DataCache>;
 using WeakDataCachePtr = std::weak_ptr<DataCache>;
-using curve::common::GetObjectAsyncCallBack;
-using curve::common::PutObjectAsyncCallBack;
-using ::curve::common::PutObjectAsyncContext;
-using curve::common::S3Adapter;
+using curvefs::utils::GetObjectAsyncCallBack;
+using curvefs::utils::PutObjectAsyncCallBack;
+using ::curvefs::utils::PutObjectAsyncContext;
+using curvefs::utils::S3Adapter;
 using ::curvefs::client::blockcache::BCACHE_ERROR;
 using ::curvefs::client::blockcache::BlockKey;
 using ::curvefs::client::datastream::DataStream;
@@ -169,7 +169,7 @@ class DataCache : public std::enable_shared_from_this<DataCache> {
   }
 
   void ErasePageData(uint64_t blockIndex, uint64_t pageIndex) {
-    curve::common::LockGuard lg(mtx_);
+    curvefs::utils::LockGuard lg(mtx_);
     PageDataMap& pdMap = dataMap_[blockIndex];
     auto iter = pdMap.find(pageIndex);
     if (iter != pdMap.end()) {
@@ -226,7 +226,7 @@ class DataCache : public std::enable_shared_from_this<DataCache> {
   uint64_t len_;             // useful len
   uint64_t actualChunkPos_;  // after alignment the actual chunkPos
   uint64_t actualLen_;       // after alignment the actual len
-  curve::common::Mutex mtx_;
+  curvefs::utils::Mutex mtx_;
   uint64_t createTime_;
   std::atomic<int> status_;
   std::atomic<bool> inReadCache_;
@@ -317,9 +317,9 @@ class ChunkCacheManager
 
   RWLock rwLockRead_;  //  for read cache
   S3ClientAdaptorImpl* s3ClientAdaptor_;
-  curve::common::Mutex flushMtx_;
+  curvefs::utils::Mutex flushMtx_;
   DataCachePtr flushingDataCache_;
-  curve::common::Mutex flushingDataCacheMtx_;
+  curvefs::utils::Mutex flushingDataCacheMtx_;
 
   std::shared_ptr<KVClientManager> kvClientManager_;
 };
@@ -459,9 +459,9 @@ class FileCacheManager {
   uint64_t inode_;
   std::map<uint64_t, ChunkCacheManagerPtr> chunkCacheMap_;  // first is index
   RWLock rwLock_;
-  curve::common::Mutex mtx_;
+  curvefs::utils::Mutex mtx_;
   S3ClientAdaptorImpl* s3ClientAdaptor_;
-  curve::common::Mutex downloadMtx_;
+  curvefs::utils::Mutex downloadMtx_;
   std::set<std::string> downloadingObj_;
 
   std::shared_ptr<KVClientManager> kvClientManager_;

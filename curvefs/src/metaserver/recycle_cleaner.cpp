@@ -25,8 +25,8 @@
 #include <list>
 #include <vector>
 
-using curve::client::MetaServerOption;
-using curve::common::StringToUll;
+using curvefs::client::MetaServerOption;
+using curvefs::utils::StringToUll;
 using curvefs::client::common::AddUllStringToFirst;
 using curvefs::client::rpcclient::MDSBaseClient;
 using curvefs::client::rpcclient::MdsClientImpl;

@@ -33,8 +33,8 @@
 #include "curvefs/src/utils/s3_adapter.h"
 
 using ::testing::Return;
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class MockS3Adapter : public S3Adapter {
  public:
@@ -71,6 +71,6 @@ class MockS3Adapter : public S3Adapter {
                    const Aws::Vector<Aws::S3::Model::CompletedPart>&));
   MOCK_METHOD2(AbortMultiUpload, int(const Aws::String&, const Aws::String&));
 };
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 #endif  // TEST_COMMON_MOCK_S3_ADAPTER_H_

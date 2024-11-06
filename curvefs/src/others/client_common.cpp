@@ -24,7 +24,7 @@
 
 #include <mutex>
 
-namespace curve {
+namespace curvefs {
 namespace client {
 
 OpenFlags DefaultReadonlyOpenFlags() {

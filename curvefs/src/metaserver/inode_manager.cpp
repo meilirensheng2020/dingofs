@@ -36,8 +36,8 @@
 #include "curvefs/src/utils/concurrent/name_lock.h"
 #include "curvefs/src/utils/timeutility.h"
 
-using ::curve::common::NameLockGuard;
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::NameLockGuard;
+using ::curvefs::utils::TimeUtility;
 using ::curvefs::client::filesystem::XATTR_DIR_ENTRIES;
 using ::curvefs::client::filesystem::XATTR_DIR_FBYTES;
 using ::curvefs::client::filesystem::XATTR_DIR_FILES;

@@ -48,18 +48,18 @@
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
 #include "curvefs/src/client/warmup/warmup_manager.h"
 #include "curvefs/src/client/xattr_manager.h"
-#include "curvefs/src/common/fast_align.h"
 #include "curvefs/src/utils/concurrent/concurrent.h"
+#include "curvefs/src/utils/fast_align.h"
 #include "curvefs/src/utils/throttle.h"
 
 #define PORT_LIMIT 65535
 
 #define DirectIOAlignment 512
 
-using ::curve::common::Atomic;
-using ::curve::common::InterruptibleSleeper;
-using ::curve::common::Thread;
-using ::curve::common::Throttle;
+using ::curvefs::utils::Atomic;
+using ::curvefs::utils::InterruptibleSleeper;
+using ::curvefs::utils::Thread;
+using ::curvefs::utils::Throttle;
 using ::curvefs::client::metric::FSMetric;
 using ::curvefs::common::FSType;
 using ::curvefs::metaserver::DentryFlag;
@@ -83,7 +83,7 @@ using rpcclient::MdsClientImpl;
 using rpcclient::MetaServerClient;
 using rpcclient::MetaServerClientImpl;
 
-using curvefs::common::is_aligned;
+using curvefs::utils::is_aligned;
 
 const uint32_t kMaxHostNameLength = 255u;
 
@@ -319,7 +319,7 @@ class FuseClient {
     }
     out->set_hostname(hostname);
     out->set_port(
-        curve::client::ClientDummyServerInfo::GetInstance().GetPort());
+        curvefs::client::ClientDummyServerInfo::GetInstance().GetPort());
     return 0;
   }
 
@@ -409,7 +409,7 @@ class FuseClient {
 
   Atomic<bool> isStop_;
 
-  curve::common::Mutex renameMutex_;
+  curvefs::utils::Mutex renameMutex_;
 
   Throttle throttle_;
 

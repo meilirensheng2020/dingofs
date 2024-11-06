@@ -25,8 +25,8 @@
 
 #include "curvefs/src/utils/interruptible_sleeper.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 class WaitInterval {
  public:
   /**
@@ -56,7 +56,7 @@ class WaitInterval {
   InterruptibleSleeper sleeper_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  //  SRC_COMMON_WAIT_INTERVAL_H_

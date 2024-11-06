@@ -94,7 +94,7 @@ void EtcdStatusTool::AfterGetMetric(const std::string hostAddr,
 }
 
 void EtcdStatusTool::InitHostsAddr() {
-  curve::common::SplitString(FLAGS_etcdAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_etcdAddr, ",", &hostsAddr_);
 }
 
 void EtcdStatusTool::AddUpdateFlags() {

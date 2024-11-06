@@ -22,8 +22,8 @@
 
 #include "curvefs/src/utils/location_operator.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 std::string LocationOperator::GenerateS3Location(
     const std::string& objectName) {
@@ -89,5 +89,5 @@ bool LocationOperator::ParseCurveChunkPath(const std::string& originPath,
   return true;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

@@ -95,7 +95,7 @@ class DentryCacheManagerImpl : public DentryCacheManager {
  private:
   std::shared_ptr<MetaServerClient> metaClient_;
 
-  curve::common::GenericNameLock<Mutex> nameLock_;
+  curvefs::utils::GenericNameLock<Mutex> nameLock_;
 };
 
 }  // namespace client

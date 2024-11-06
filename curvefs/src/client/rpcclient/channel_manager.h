@@ -53,7 +53,7 @@ class ChannelManager {
       std::unordered_map<T, ChannelPtr>* channelPool, const T& csId);
 
  private:
-  curve::common::BthreadRWLock rwlock_;
+  curvefs::utils::BthreadRWLock rwlock_;
   std::unordered_map<T, ChannelPtr> channelPool_;
   std::unordered_map<T, ChannelPtr> streamChannelPool_;
 };
@@ -62,14 +62,14 @@ template <typename T>
 typename ChannelManager<T>::ChannelPtr ChannelManager<T>::GetOrCreateChannel(
     const T& id, const butil::EndPoint& leaderAddr) {
   {
-    curve::common::ReadLockGuard guard(rwlock_);
+    curvefs::utils::ReadLockGuard guard(rwlock_);
     auto iter = channelPool_.find(id);
     if (channelPool_.end() != iter) {
       return iter->second;
     }
   }
 
-  curve::common::WriteLockGuard guard(rwlock_);
+  curvefs::utils::WriteLockGuard guard(rwlock_);
   auto iter = channelPool_.find(id);
   if (channelPool_.end() != iter) {
     return iter->second;
@@ -91,14 +91,14 @@ typename ChannelManager<T>::ChannelPtr
 ChannelManager<T>::GetOrCreateStreamChannel(const T& id,
                                             const butil::EndPoint& leaderAddr) {
   {
-    curve::common::ReadLockGuard guard(rwlock_);
+    curvefs::utils::ReadLockGuard guard(rwlock_);
     auto iter = streamChannelPool_.find(id);
     if (streamChannelPool_.end() != iter) {
       return iter->second;
     }
   }
 
-  curve::common::WriteLockGuard guard(rwlock_);
+  curvefs::utils::WriteLockGuard guard(rwlock_);
   auto iter = streamChannelPool_.find(id);
   if (streamChannelPool_.end() != iter) {
     return iter->second;
@@ -124,7 +124,7 @@ ChannelManager<T>::GetOrCreateStreamChannel(const T& id,
 template <typename T>
 void ChannelManager<T>::ResetSenderIfNotHealthInternal(
     std::unordered_map<T, ChannelPtr>* channelPool, const T& id) {
-  curve::common::WriteLockGuard guard(rwlock_);
+  curvefs::utils::WriteLockGuard guard(rwlock_);
   auto iter = channelPool->find(id);
 
   if (iter == channelPool->end()) {

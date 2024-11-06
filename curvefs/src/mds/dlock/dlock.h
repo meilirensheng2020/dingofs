@@ -35,9 +35,9 @@ namespace curvefs {
 namespace mds {
 namespace dlock {
 
-using ::curve::common::NameLock;
-using ::curve::common::Uncopyable;
-using ::curve::kvstorage::EtcdClientImp;
+using ::curvefs::utils::NameLock;
+using ::curvefs::utils::Uncopyable;
+using ::curvefs::kvstorage::EtcdClientImp;
 
 struct DLockOptions {
   uint64_t ttlMs = 5000;

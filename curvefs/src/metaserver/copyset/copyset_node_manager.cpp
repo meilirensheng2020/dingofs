@@ -36,7 +36,7 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::TimeUtility;
 
 bool CopysetNodeManager::IsLoadFinished() const {
   return loadFinished_.load(std::memory_order_acquire);

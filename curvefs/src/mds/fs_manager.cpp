@@ -46,7 +46,7 @@ using ::curvefs::common::FSType;
 using ::curvefs::mds::dlock::LOCK_STATUS;
 using ::curvefs::mds::topology::TopoStatusCode;
 using ::google::protobuf::util::MessageDifferencer;
-using NameLockGuard = ::curve::common::GenericNameLockGuard<Mutex>;
+using NameLockGuard = ::curvefs::utils::GenericNameLockGuard<Mutex>;
 
 bool FsManager::Init() {
   LOG_IF(FATAL, !fsStorage_->Init()) << "fsStorage Init fail";
@@ -178,14 +178,14 @@ void MountPoint2Str(const Mountpoint& in, std::string* out) {
 
 bool Str2MountPoint(const std::string& in, Mountpoint* out) {
   std::vector<std::string> vec;
-  curve::common::SplitString(in, ":", &vec);
+  curvefs::utils::SplitString(in, ":", &vec);
   if (vec.size() != 3) {
     LOG(ERROR) << "split string to mountpoint failed, str = " << in;
     return false;
   }
   out->set_hostname(vec[0]);
   uint32_t port;
-  if (!curve::common::StringToUl(vec[1], &port)) {
+  if (!curvefs::utils::StringToUl(vec[1], &port)) {
     LOG(ERROR) << "StringToUl failed, str = " << vec[1];
     return false;
   }
@@ -200,7 +200,7 @@ void FsManager::CheckMountPoint() {
     ReadLockGuard rlock(recorderMutex_);
     tmap = mpTimeRecorder_;
   }
-  uint64_t now = ::curve::common::TimeUtility::GetTimeofDaySec();
+  uint64_t now = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
   for (auto& iter : tmap) {
     std::string fs_name = iter.second.first;
     std::string mountpath = iter.first;
@@ -519,7 +519,7 @@ FSStatusCode FsManager::DeleteFs(const std::string& fs_name) {
     // update fs status to deleting
     new_wrapper.SetStatus(FsStatus::DELETING);
     // change fs name to oldname+"_deleting_"+fsid+deletetime
-    uint64_t now = ::curve::common::TimeUtility::GetTimeofDaySec();
+    uint64_t now = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
     new_wrapper.SetFsName(fs_name + "_deleting_" +
                           std::to_string(wrapper.GetFsId()) + "_" +
                           std::to_string(now));
@@ -1036,7 +1036,7 @@ void FsManager::UpdateClientAliveTime(const Mountpoint& mountpoint,
     }
   }
   mpTimeRecorder_[mountpath] =
-      std::make_pair(fs_name, ::curve::common::TimeUtility::GetTimeofDaySec());
+      std::make_pair(fs_name, ::curvefs::utils::TimeUtility::GetTimeofDaySec());
 }
 
 void FsManager::DeleteClientAliveTime(const std::string& mountpoint) {

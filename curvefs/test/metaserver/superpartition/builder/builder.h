@@ -53,7 +53,7 @@ using ::curvefs::metaserver::storage::StorageOptions;
 class KVStorageBuilder {
   StorageOptions DefaultOption() {
     data_dir_ = "." + GenUuid();
-    auto local_fs = ::curve::fs::Ext4FileSystemImpl::getInstance();
+    auto local_fs = ::curvefs::fs::Ext4FileSystemImpl::getInstance();
     auto options = StorageOptions();
     options.dataDir = base::filepath::PathJoin({data_dir_, "rocksdb.db"});
     options.maxMemoryQuotaBytes = 2 * kGiB;

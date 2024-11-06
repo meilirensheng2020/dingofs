@@ -27,7 +27,7 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using ::curve::common::RWLock;
+using ::curvefs::utils::RWLock;
 using ::curvefs::metaserver::Quota;
 using ::curvefs::metaserver::Usage;
 

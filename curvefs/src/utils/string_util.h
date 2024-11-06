@@ -38,8 +38,8 @@
 #include <string>
 #include <vector>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 inline void AddSplitStringToResult(const std::string& full,
                                    const std::string& delim,
@@ -171,7 +171,7 @@ inline std::string ToHexString(void* p) {
   return oss.str();
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_STRING_UTIL_H_

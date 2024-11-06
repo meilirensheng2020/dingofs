@@ -32,7 +32,7 @@ namespace curvefs {
 namespace client {
 namespace blockcache {
 
-using ::curve::common::UUIDGenerator;
+using ::curvefs::utils::UUIDGenerator;
 using ::curvefs::base::filepath::PathJoin;
 using FileInfo = LocalFileSystem::FileInfo;
 

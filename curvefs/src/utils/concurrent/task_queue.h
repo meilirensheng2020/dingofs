@@ -25,8 +25,8 @@
 #include <mutex>       // NOLINT
 #include <queue>       // NOLINT
 #include <utility>
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 template <typename MutexT, typename CondVarT>
 class GenericTaskQueue {
  public:
@@ -72,6 +72,6 @@ class GenericTaskQueue {
 
 using TaskQueue = GenericTaskQueue<std::mutex, std::condition_variable>;
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 #endif  // SRC_COMMON_CONCURRENT_TASK_QUEUE_H_

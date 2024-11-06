@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace curve {
+namespace curvefs {
 namespace client {
 
 /**

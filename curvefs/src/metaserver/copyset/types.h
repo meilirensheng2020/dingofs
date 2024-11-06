@@ -46,10 +46,10 @@ using GroupNid = uint64_t;
 
 using Mutex = ::bthread::Mutex;
 using CondVar = ::bthread::ConditionVariable;
-using RWLock = ::curve::common::BthreadRWLock;
+using RWLock = ::curvefs::utils::BthreadRWLock;
 
-using ReadLockGuard = ::curve::common::ReadLockGuard;
-using WriteLockGuard = ::curve::common::WriteLockGuard;
+using ReadLockGuard = ::curvefs::utils::ReadLockGuard;
+using WriteLockGuard = ::curvefs::utils::WriteLockGuard;
 
 }  // namespace copyset
 }  // namespace metaserver

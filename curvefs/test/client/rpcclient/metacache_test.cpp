@@ -48,22 +48,22 @@ class MetaCacheTest : public testing::Test {
     metaCache_.Init(opt_, mockCli2Client_, mockMdsClient_);
 
     // add item to metaserver list
-    curve::client::PeerAddr pd1;
+    curvefs::client::PeerAddr pd1;
     pd1.Parse("10.182.26.2:9120:0");
-    curve::client::PeerAddr pd2;
+    curvefs::client::PeerAddr pd2;
     pd2.Parse("127.0.0.1:9120:0");
 
-    curve::client::CopysetPeerInfo<MetaserverID> peerinfo_1(1, pd1, pd2);
+    curvefs::client::CopysetPeerInfo<MetaserverID> peerinfo_1(1, pd1, pd2);
     metaServerList_.AddCopysetPeerInfo(peerinfo_1);
 
     pd1.addr_.port = 9121;
     pd2.addr_.port = 9121;
-    curve::client::CopysetPeerInfo<MetaserverID> peerinfo_2(2, pd1, pd2);
+    curvefs::client::CopysetPeerInfo<MetaserverID> peerinfo_2(2, pd1, pd2);
     metaServerList_.AddCopysetPeerInfo(peerinfo_2);
 
     pd1.addr_.port = 9122;
     pd2.addr_.port = 9122;
-    curve::client::CopysetPeerInfo<MetaserverID> peerinfo_3(3, pd1, pd2);
+    curvefs::client::CopysetPeerInfo<MetaserverID> peerinfo_3(3, pd1, pd2);
     metaServerList_.AddCopysetPeerInfo(peerinfo_3);
     metaServerList_.UpdateLeaderIndex(0);
 
@@ -133,7 +133,7 @@ class MetaCacheTest : public testing::Test {
   std::shared_ptr<MockMdsClient> mockMdsClient_;
   std::shared_ptr<MockCli2Client> mockCli2Client_;
 
-  curve::client::CopysetInfo<MetaserverID> metaServerList_;
+  curvefs::client::CopysetInfo<MetaserverID> metaServerList_;
   MetaCache::PartitionInfoList pInfoList_;
   MetaCache::PartitionInfoList pInfoList2_;
   std::map<PartitionID, Copyset> copysetMap_;
@@ -190,7 +190,7 @@ TEST_F(MetaCacheTest, test_GetTarget) {
   ASSERT_TRUE(CopysetTargetEQ(target, expect));
 
   LOG(INFO) << "test5: need refresh";
-  curve::client::PeerAddr pd;
+  curvefs::client::PeerAddr pd;
   pd.Parse("127.0.0.1:9120:0");
   EXPECT_CALL(*mockCli2Client_.get(), GetLeader(_, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<4>(pd), Return(true)));
@@ -288,7 +288,7 @@ TEST_F(MetaCacheTest, test_SelectTarget) {
   std::vector<CopysetInfo<MetaserverID>> metaServerInfos;
   metaServerList_.UpdateLeaderIndex(-1);
   metaServerInfos.push_back(metaServerList_);
-  curve::client::PeerAddr pd;
+  curvefs::client::PeerAddr pd;
   pd.Parse("127.0.0.1:9120:0");
   EXPECT_CALL(*mockMdsClient_.get(), CreatePartition(_, _, _))
       .WillOnce(Return(false));

@@ -23,8 +23,8 @@
 #ifndef SRC_COMMON_UNCOPYABLE_H_
 #define SRC_COMMON_UNCOPYABLE_H_
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class Uncopyable {
  protected:
@@ -36,7 +36,7 @@ class Uncopyable {
   Uncopyable& operator=(const Uncopyable&) = delete;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_UNCOPYABLE_H_

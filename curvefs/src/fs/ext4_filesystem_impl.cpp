@@ -33,7 +33,7 @@
 
 #define MIN_KERNEL_VERSION KERNEL_VERSION(3, 15, 0)
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 std::shared_ptr<Ext4FileSystemImpl> Ext4FileSystemImpl::self_ = nullptr;
@@ -81,14 +81,14 @@ bool Ext4FileSystemImpl::CheckKernelVersion() {
   // 通过uname获取的版本字符串格式可能为a.b.c-xxx
   // a为主版本号，b为此版本号，c为修正号
   vector<string> elements;
-  ::curve::common::SplitString(kernel_info.release, "-", &elements);
+  ::curvefs::utils::SplitString(kernel_info.release, "-", &elements);
   if (elements.size() == 0) {
     LOG(ERROR) << "parse kenel version failed.";
     return false;
   }
 
   vector<string> numbers;
-  ::curve::common::SplitString(elements[0], ".", &numbers);
+  ::curvefs::utils::SplitString(elements[0], ".", &numbers);
   // 有些系统可能版本格式前面部分是a.b.c.d，但是a.b.c是不变的
   if (numbers.size() < 3) {
     LOG(ERROR) << "parse kenel version failed.";
@@ -183,7 +183,7 @@ int Ext4FileSystemImpl::Delete(const string& path) {
 
 int Ext4FileSystemImpl::Mkdir(const string& dirName) {
   vector<string> names;
-  ::curve::common::SplitString(dirName, "/", &names);
+  ::curvefs::utils::SplitString(dirName, "/", &names);
 
   // root dir must exists
   if (0 == names.size()) return 0;

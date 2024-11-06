@@ -51,7 +51,7 @@ int DeleteFsTool::Init() {
 }
 
 void DeleteFsTool::InitHostsAddr() {
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 }
 
 void DeleteFsTool::AddUpdateFlags() {

@@ -46,7 +46,7 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::TimeUtility;
 
 const uint32_t RocksDBPerfGuard::kPerfLevelOutOfBounds_ = 5;
 

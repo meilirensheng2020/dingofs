@@ -349,7 +349,7 @@ int GetClusterId(char* buf, int len);
 }
 #endif
 
-namespace curve {
+namespace curvefs {
 namespace client {
 
 class FileClient;

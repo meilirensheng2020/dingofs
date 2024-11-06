@@ -78,10 +78,10 @@ int UmountFsTool::Init() {
   request.set_fsname(FLAGS_fsName);
   // set mountpoint
   std::vector<std::string> mountpoint;
-  curve::common::SplitString(FLAGS_mountpoint, ":", &mountpoint);
+  curvefs::utils::SplitString(FLAGS_mountpoint, ":", &mountpoint);
   uint32_t port = 0;
   if (mountpoint.size() < 3 ||
-      !curve::common::StringToUl(mountpoint[1], &port)) {
+      !curvefs::utils::StringToUl(mountpoint[1], &port)) {
     std::cerr << "mountpoint " << FLAGS_mountpoint << " is invalid.\n"
               << std::endl;
     return -1;
@@ -101,7 +101,7 @@ int UmountFsTool::Init() {
 }
 
 void UmountFsTool::InitHostsAddr() {
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 }
 
 void UmountFsTool::AddUpdateFlags() {

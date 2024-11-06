@@ -43,9 +43,9 @@
 #include "curvefs/src/utils/configuration.h"
 #include "curvefs/src/utils/s3_adapter.h"
 
-using ::curve::common::Configuration;
-using ::curve::common::S3Adapter;
-using ::curve::kvstorage::EtcdClientImp;
+using ::curvefs::utils::Configuration;
+using ::curvefs::utils::S3Adapter;
+using ::curvefs::kvstorage::EtcdClientImp;
 using ::curvefs::mds::heartbeat::HeartbeatOption;
 using ::curvefs::mds::heartbeat::HeartbeatServiceImpl;
 using ::curvefs::mds::schedule::Coordinator;
@@ -65,11 +65,11 @@ using ::curvefs::mds::topology::TopologyStorageEtcd;
 namespace curvefs {
 namespace mds {
 
-using ::curve::common::Configuration;
-using ::curve::election::LeaderElection;
-using ::curve::election::LeaderElectionOptions;
-using curve::kvstorage::EtcdClientImp;
-using ::curve::kvstorage::KVStorageClient;
+using ::curvefs::utils::Configuration;
+using ::curvefs::election::LeaderElection;
+using ::curvefs::election::LeaderElectionOptions;
+using curvefs::kvstorage::EtcdClientImp;
+using ::curvefs::kvstorage::KVStorageClient;
 
 // TODO(split InitEtcdConf): split this InitEtcdConf to a single module
 
@@ -154,11 +154,11 @@ class MDS {
   MDSOptions options_;
 
   bool etcdClientInited_;
-  std::shared_ptr<curve::kvstorage::EtcdClientImp> etcdClient_;
+  std::shared_ptr<curvefs::kvstorage::EtcdClientImp> etcdClient_;
 
-  std::shared_ptr<curve::election::LeaderElection> leaderElection_;
+  std::shared_ptr<curvefs::election::LeaderElection> leaderElection_;
 
-  std::shared_ptr<curve::idgenerator::EtcdIdGenerator> idGen_;
+  std::shared_ptr<curvefs::idgenerator::EtcdIdGenerator> idGen_;
 
   bvar::Status<std::string> status_;
 

@@ -39,7 +39,7 @@ namespace curvefs {
 namespace client {
 namespace blockcache {
 
-using ::curve::common::TaskThreadPool;
+using ::curvefs::utils::TaskThreadPool;
 
 // How it works:
 //               add                   scan                     put

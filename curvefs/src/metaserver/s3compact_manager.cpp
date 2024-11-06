@@ -31,13 +31,13 @@
 #include "curvefs/src/metaserver/s3compact_worker.h"
 #include "curvefs/src/utils/string_util.h"
 
-using curve::common::Configuration;
-using curve::common::InitS3AdaptorOptionExceptS3InfoOption;
-using curve::common::ReadLockGuard;
-using curve::common::S3Adapter;
-using curve::common::S3AdapterOption;
-using curve::common::TaskThreadPool;
-using curve::common::WriteLockGuard;
+using curvefs::utils::Configuration;
+using curvefs::utils::InitS3AdaptorOptionExceptS3InfoOption;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::S3Adapter;
+using curvefs::utils::S3AdapterOption;
+using curvefs::utils::TaskThreadPool;
+using curvefs::utils::WriteLockGuard;
 
 namespace curvefs {
 namespace metaserver {
@@ -94,7 +94,7 @@ S3AdapterOption S3AdapterManager::GetBasicS3AdapterOption() { return opts_; }
 void S3CompactWorkQueueOption::Init(std::shared_ptr<Configuration> conf) {
   std::string mdsAddrsStr;
   conf->GetValueFatalIfFail("mds.listen.addr", &mdsAddrsStr);
-  curve::common::SplitString(mdsAddrsStr, ",", &mdsAddrs);
+  curvefs::utils::SplitString(mdsAddrsStr, ",", &mdsAddrs);
   conf->GetValueFatalIfFail("global.ip", &metaserverIpStr);
   conf->GetValueFatalIfFail("global.port", &metaserverPort);
   // leave ak,sk,addr,bucket,chunksize,blocksize blank

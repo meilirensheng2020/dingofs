@@ -30,8 +30,8 @@
 
 #include "curvefs/src/utils/leaky_bucket.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 struct ReadWriteThrottleParams {
   ThrottleParams iopsTotal;
@@ -56,9 +56,9 @@ class Throttle {
   struct InternalThrottle {
     Type type;
     bool enabled;
-    std::unique_ptr<common::LeakyBucket> leakyBucket;
+    std::unique_ptr<LeakyBucket> leakyBucket;
 
-    InternalThrottle(Type type, bool enabled, common::LeakyBucket* leakyBucket)
+    InternalThrottle(Type type, bool enabled, LeakyBucket* leakyBucket)
         : type(type), enabled(enabled), leakyBucket(leakyBucket) {}
   };
 
@@ -97,8 +97,8 @@ class Throttle {
 
  private:
   void UpdateIfNotEqual(Type type,
-                        const curve::common::ThrottleParams& oldParams,
-                        const curve::common::ThrottleParams& newParams);
+                        const curvefs::utils::ThrottleParams& oldParams,
+                        const curvefs::utils::ThrottleParams& newParams);
 
   /**
    * @brief Reset new params to internal throttle according to flag.
@@ -127,11 +127,11 @@ class Throttle {
 
   // all throttles, currently it contains
   // iops-total/iops-read/iops-write/bps-total/bps-read/bps-write throttle
-  // std::vector<std::pair<Type, common::LeakyBucketThrottle*>> throttles_;
+  // std::vector<std::pair<Type, LeakyBucketThrottle*>> throttles_;
   std::vector<InternalThrottle> throttles_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_THROTTLE_H_

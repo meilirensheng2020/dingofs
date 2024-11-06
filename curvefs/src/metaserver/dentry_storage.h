@@ -36,7 +36,7 @@
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::common::RWLock;
+using ::curvefs::utils::RWLock;
 using ::curvefs::metaserver::storage::Converter;
 using ::curvefs::metaserver::storage::Iterator;
 using ::curvefs::metaserver::storage::NameGenerator;

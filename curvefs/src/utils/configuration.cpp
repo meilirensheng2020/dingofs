@@ -30,8 +30,8 @@
 #include <iostream>
 #include <sstream>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 bool Configuration::LoadConfig() {
   std::ifstream cFile(confFile_);
@@ -323,5 +323,5 @@ void Configuration::GetValueFatalIfFail(const std::string& key, double* value) {
       << "Get " << key << " from " << confFile_ << " fail";
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

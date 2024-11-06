@@ -29,8 +29,8 @@
 
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 TEST(WaitIntervalTest, test) {
   WaitInterval waitInterval;
   waitInterval.Init(100);
@@ -69,5 +69,5 @@ TEST(IntervalTest, signalTest) {
   ASSERT_GT(dur, 5000);
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

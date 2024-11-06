@@ -35,9 +35,9 @@
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::StringStartWith;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::StringStartWith;
+using ::curvefs::utils::WriteLockGuard;
 using ::curvefs::metaserver::storage::Key4InodeAuxInfo;
 using ::curvefs::metaserver::storage::Key4S3ChunkInfoList;
 using ::curvefs::metaserver::storage::Key4VolumeExtentSlice;

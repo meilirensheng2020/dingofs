@@ -27,8 +27,8 @@
 
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(LocationOperatorTest, GenerateTest) {
   std::string location = LocationOperator::GenerateS3Location("test");
@@ -108,5 +108,5 @@ TEST(LocationOperatorTest, ParseCurvePathTest) {
                                                         nullptr));
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

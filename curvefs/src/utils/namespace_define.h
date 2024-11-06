@@ -23,8 +23,8 @@
 #ifndef SRC_COMMON_NAMESPACE_DEFINE_H_
 #define SRC_COMMON_NAMESPACE_DEFINE_H_
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 const char FILEINFOKEYPREFIX[] = "01";
 const char FILEINFOKEYEND[] = "02";
@@ -68,7 +68,7 @@ const int LEADER_PREFIX_LENGTH = 8;
 const int SEGMENTKEYLEN = 18;
 const int DISCARDSEGMENTKEYLEN = 26;
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_NAMESPACE_DEFINE_H_

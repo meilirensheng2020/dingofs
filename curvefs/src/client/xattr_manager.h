@@ -45,8 +45,8 @@
 namespace curvefs {
 namespace client {
 
-using ::curve::common::Atomic;
-using ::curve::common::InterruptibleSleeper;
+using ::curvefs::utils::Atomic;
+using ::curvefs::utils::InterruptibleSleeper;
 using curvefs::metaserver::FsFileType;
 
 struct SummaryInfo {

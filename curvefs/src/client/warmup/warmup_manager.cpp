@@ -48,7 +48,7 @@ namespace curvefs {
 namespace client {
 namespace warmup {
 
-using curve::common::WriteLockGuard;
+using curvefs::utils::WriteLockGuard;
 using ::curvefs::base::filepath::PathSplit;
 using ::curvefs::client::blockcache::BCACHE_ERROR;
 using ::curvefs::client::blockcache::Block;
@@ -161,7 +161,7 @@ void WarmupManagerS3Impl::GetWarmupList(const WarmupFilelist& filelist,
   file.erase(0, file.find_first_not_of(blanks));
   file.erase(file.find_last_not_of(blanks) + 1);
   VLOG(9) << "after del file is: " << file;
-  curve::common::AddSplitStringToResult(file, "\n", list);
+  curvefs::utils::AddSplitStringToResult(file, "\n", list);
 }
 
 void WarmupManagerS3Impl::FetchDentryEnqueue(fuse_ino_t key,
@@ -188,7 +188,7 @@ void WarmupManagerS3Impl::LookPath(fuse_ino_t key, std::string file) {
     splitPath.push_back(file);
     isRoot = true;
   } else {
-    curve::common::AddSplitStringToResult(file, "/", &splitPath);
+    curvefs::utils::AddSplitStringToResult(file, "/", &splitPath);
   }
   VLOG(6) << "splitPath size is: " << splitPath.size();
   if (splitPath.size() == 1 && isRoot) {
@@ -329,7 +329,7 @@ void WarmupManagerS3Impl::FetchDataEnqueue(fuse_ino_t key, fuse_ino_t ino) {
     }
     S3ChunkInfoMapType s3ChunkInfoMap;
     {
-      ::curve::common::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+      ::curvefs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
       s3ChunkInfoMap = *inodeWrapper->GetChunkInfoMap();
     }
     if (s3ChunkInfoMap.empty()) {
@@ -455,7 +455,7 @@ void WarmupManagerS3Impl::WarmUpAllObjs(
     fuse_ino_t ino,
     const std::list<std::pair<BlockKey, uint64_t>>& prefetchObjs) {
   std::atomic<uint64_t> pendingReq(0);
-  curve::common::CountDownEvent cond(1);
+  curvefs::utils::CountDownEvent cond(1);
   uint64_t start = butil::cpuwide_time_us();
   // callback function
   GetObjectAsyncCallBack cb =

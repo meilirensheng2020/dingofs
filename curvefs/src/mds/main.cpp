@@ -27,7 +27,7 @@
 #include "curvefs/src/mds/mds.h"
 #include "curvefs/src/utils/configuration.h"
 
-using ::curve::common::Configuration;
+using ::curvefs::utils::Configuration;
 using ::curvefs::common::FLAGS_vlog_level;
 
 DEFINE_string(confPath, "curvefs/conf/mds.conf", "mds confPath");
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
   // stop server and background threads
   mds.Stop();
 
-  curve::common::S3Adapter::Shutdown();
+  curvefs::utils::S3Adapter::Shutdown();
   google::ShutdownGoogleLogging();
   return 0;
 }

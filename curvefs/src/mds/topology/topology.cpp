@@ -38,7 +38,7 @@ namespace curvefs {
 namespace mds {
 namespace topology {
 
-using ::curve::common::UUIDGenerator;
+using ::curvefs::utils::UUIDGenerator;
 
 PoolIdType TopologyImpl::AllocatePoolId() { return idGenerator_->GenPoolId(); }
 
@@ -1182,7 +1182,7 @@ bool TopologyImpl::GetCopySet(CopySetKey key, CopySetInfo* out) const {
 
 int TopologyImpl::Run() {
   if (isStop_.exchange(false)) {
-    backEndThread_ = curve::common::Thread(&TopologyImpl::BackEndFunc, this);
+    backEndThread_ = curvefs::utils::Thread(&TopologyImpl::BackEndFunc, this);
   }
   return 0;
 }

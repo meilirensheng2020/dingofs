@@ -398,7 +398,7 @@ int FileCacheManager::GenerateKVRequest(
     const std::shared_ptr<InodeWrapper>& inodeWrapper,
     const std::vector<ReadRequest>& readRequest, char* dataBuf,
     std::vector<S3ReadRequest>* kvRequest) {
-  ::curve::common::UniqueLock lg_guard = inodeWrapper->GetUniqueLock();
+  ::curvefs::utils::UniqueLock lg_guard = inodeWrapper->GetUniqueLock();
 
   const Inode* inode = inodeWrapper->GetInodeLocked();
   const auto* s3chunkinfo = inodeWrapper->GetChunkInfoMap();
@@ -435,7 +435,7 @@ int FileCacheManager::HandleReadS3NotExist(
   uint32_t retryIntervalMs = s3ClientAdaptor_->GetReadRetryIntervalMs();
 
   if (retry == 1) {
-    curve::common::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+    curvefs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
     if (CURVEFS_ERROR::OK != inodeWrapper->RefreshS3ChunkInfo()) {
       LOG(ERROR) << "refresh inodeId=" << inodeWrapper->GetInodeId() << " fail";
       return -1;
@@ -741,7 +741,7 @@ class AsyncPrefetchCallback {
     }
 
     {
-      curve::common::LockGuard lg(fileCache->downloadMtx_);
+      curvefs::utils::LockGuard lg(fileCache->downloadMtx_);
       fileCache->downloadingObj_.erase(context->key);
     }
   }
@@ -759,7 +759,7 @@ void FileCacheManager::PrefetchS3Objs(
     BlockKey key = obj.first;
     std::string name = key.StoreKey();
     uint64_t read_len = obj.second;
-    curve::common::LockGuard lg(downloadMtx_);
+    curvefs::utils::LockGuard lg(downloadMtx_);
     if (downloadingObj_.find(name) != downloadingObj_.end()) {
       VLOG(9) << "inodeId=" << key.ino
               << " obj is already in downloading: " << name
@@ -1089,7 +1089,7 @@ CURVEFS_ERROR FileCacheManager::Flush(bool force, bool toS3) {
   }
 
   std::atomic<uint64_t> pendingReq(0);
-  curve::common::CountDownEvent cond(1);
+  curvefs::utils::CountDownEvent cond(1);
   FlushChunkCacheCallBack cb =
       [&](const std::shared_ptr<FlushChunkCacheContext>& context) {
         ret = context->retCode;
@@ -1683,7 +1683,7 @@ void ChunkCacheManager::ReleaseWriteDataCache(const DataCachePtr& dataCache) {
 CURVEFS_ERROR ChunkCacheManager::Flush(uint64_t inodeId, bool force,
                                        bool toS3) {
   std::map<uint64_t, DataCachePtr> tmp;
-  curve::common::LockGuard lg(flushMtx_);
+  curvefs::utils::LockGuard lg(flushMtx_);
   CURVEFS_ERROR ret = CURVEFS_ERROR::OK;
   // DataCachePtr dataCache;
   while (1) {
@@ -1695,7 +1695,7 @@ CURVEFS_ERROR ChunkCacheManager::Flush(uint64_t inodeId, bool force,
       while (iter != dataWCacheMap_.end()) {
         if (iter->second->CanFlush(force)) {
           {
-            curve::common::LockGuard lg(flushingDataCacheMtx_);
+            curvefs::utils::LockGuard lg(flushingDataCacheMtx_);
             flushingDataCache_ = std::move(iter->second);
           }
           dataWCacheMap_.erase(iter);
@@ -1739,7 +1739,7 @@ CURVEFS_ERROR ChunkCacheManager::Flush(uint64_t inodeId, bool force,
         ReleaseWriteDataCache(flushingDataCache_);
       } while (ret != CURVEFS_ERROR::OK);
       {
-        curve::common::LockGuard lg(flushingDataCacheMtx_);
+        curvefs::utils::LockGuard lg(flushingDataCacheMtx_);
         flushingDataCache_ = nullptr;
       }
     } else {
@@ -1836,7 +1836,7 @@ DataCache::DataCache(S3ClientAdaptorImpl* s3ClientAdaptor,
   actualLen_ = headZeroLen + len_ + tailZeroLen;
   assert((actualLen_ % pageSize) == 0);
   assert((actualChunkPos_ % pageSize) == 0);
-  createTime_ = ::curve::common::TimeUtility::GetTimeofDaySec();
+  createTime_ = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
 
   kvClientManager_ = std::move(kvClientManager);
 }
@@ -2043,7 +2043,7 @@ void DataCache::Write(uint64_t chunkPos, uint64_t len, const char* data,
     VLOG(9) << "mergeDataCacheVer chunkPos:" << (*iter)->GetChunkPos()
             << ", len:" << (*iter)->GetLen();
   }
-  curve::common::LockGuard lg(mtx_);
+  curvefs::utils::LockGuard lg(mtx_);
   status_.store(DataCacheStatus::Dirty, std::memory_order_release);
   uint64_t oldChunkPos = chunkPos_;
   if (chunkPos <= chunkPos_) {
@@ -2149,7 +2149,7 @@ void DataCache::Truncate(uint64_t size) {
   uint32_t pageSize = s3ClientAdaptor_->GetPageSize();
   assert(size <= len_);
 
-  curve::common::LockGuard lg(mtx_);
+  curvefs::utils::LockGuard lg(mtx_);
   uint64_t truncatePos = chunkPos_ + size;
   uint64_t truncateLen = len_ - size;
   uint64_t blockIndex = truncatePos / blockSize;
@@ -2441,7 +2441,7 @@ bool DataCache::CanFlush(bool force) {
   }
 
   uint64_t chunkSize = s3ClientAdaptor_->GetChunkSize();
-  uint64_t now = ::curve::common::TimeUtility::GetTimeofDaySec();
+  uint64_t now = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
   uint32_t flushIntervalSec = s3ClientAdaptor_->GetFlushInterval();
 
   if (len_ == chunkSize) {

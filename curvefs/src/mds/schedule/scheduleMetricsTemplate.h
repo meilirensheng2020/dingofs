@@ -37,7 +37,7 @@
 namespace curvefs {
 namespace mds {
 namespace schedule {
-using ::curve::common::StringStatus;
+using ::curvefs::utils::StringStatus;
 using ::curvefs::mds::heartbeat::ConfigChangeType;
 
 const char ADDPEER[] = "AddPeer";

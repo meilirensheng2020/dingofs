@@ -27,8 +27,8 @@
 
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 void WaitInterval::Init(uint64_t intervalMs) {
   intevalMs_ = intervalMs;
   lastSend_ = 0;
@@ -49,5 +49,5 @@ void WaitInterval::WaitForNextExcution() {
 }
 
 void WaitInterval::StopWait() { sleeper_.interrupt(); }
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

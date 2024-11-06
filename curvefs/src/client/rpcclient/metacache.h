@@ -41,10 +41,10 @@
 #include "curvefs/src/others/metacache_struct.h"
 #include "curvefs/src/utils/concurrent/concurrent.h"
 
-using ::curve::client::CopysetID;
-using ::curve::client::CopysetInfo;
-using ::curve::client::LogicPoolID;
-using ::curve::common::RWLock;
+using ::curvefs::client::CopysetID;
+using ::curvefs::client::CopysetInfo;
+using ::curvefs::client::LogicPoolID;
+using ::curvefs::utils::RWLock;
 using ::curvefs::client::common::MetaCacheOpt;
 using ::curvefs::client::common::MetaserverID;
 using ::curvefs::client::common::MetaServerOpType;

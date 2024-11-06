@@ -28,8 +28,8 @@
 #include <string>
 #include <vector>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 using std::vector;
 
@@ -206,7 +206,7 @@ class Bitmap {
   char* bitmap_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_BITMAP_H_

@@ -33,8 +33,8 @@ namespace curvefs {
 namespace client {
 namespace blockcache {
 
-using ::curve::common::LeakyBucket;
-using ::curve::common::Throttle;
+using ::curvefs::utils::LeakyBucket;
+using ::curvefs::utils::Throttle;
 using ::curvefs::base::timer::TimerImpl;
 
 class BlockCacheMetricHelper;

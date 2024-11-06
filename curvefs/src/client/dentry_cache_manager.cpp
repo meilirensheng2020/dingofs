@@ -30,8 +30,8 @@ using ::curvefs::metaserver::MetaStatusCode_Name;
 namespace curvefs {
 namespace client {
 
-using curve::common::WriteLockGuard;
-using NameLockGuard = ::curve::common::GenericNameLockGuard<Mutex>;
+using curvefs::utils::WriteLockGuard;
+using NameLockGuard = ::curvefs::utils::GenericNameLockGuard<Mutex>;
 using ::curvefs::client::filesystem::ToFSError;
 
 CURVEFS_ERROR DentryCacheManagerImpl::GetDentry(uint64_t parent,

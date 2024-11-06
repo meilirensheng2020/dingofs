@@ -34,9 +34,9 @@
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::StringStartWith;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::StringStartWith;
+using ::curvefs::utils::WriteLockGuard;
 using ::curvefs::metaserver::storage::Key4Dentry;
 using ::curvefs::metaserver::storage::Prefix4AllDentry;
 using ::curvefs::metaserver::storage::Prefix4SameParentDentry;

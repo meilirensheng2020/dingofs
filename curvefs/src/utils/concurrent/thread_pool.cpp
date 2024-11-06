@@ -22,8 +22,8 @@
 
 #include "curvefs/src/utils/concurrent/thread_pool.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 ThreadPool::ThreadPool() : numThreads_(-1), starting_(false) {}
 
@@ -60,5 +60,5 @@ void ThreadPool::Stop() {
 }
 int ThreadPool::NumOfThreads() { return numThreads_; }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

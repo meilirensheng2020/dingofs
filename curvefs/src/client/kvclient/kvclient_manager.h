@@ -45,7 +45,7 @@ namespace client {
 class KVClientManager;
 class SetKVCacheTask;
 class GetKVCacheTask;
-using curve::common::TaskThreadPool;
+using curvefs::utils::TaskThreadPool;
 using curvefs::client::common::KVClientManagerOpt;
 
 typedef std::function<void(const std::shared_ptr<SetKVCacheTask>&)>

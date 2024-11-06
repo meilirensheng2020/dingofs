@@ -58,7 +58,7 @@ namespace curvefs {
 namespace metaserver {
 
 namespace {
-auto localfs = curve::fs::Ext4FileSystemImpl::getInstance();
+auto localfs = curvefs::fs::Ext4FileSystemImpl::getInstance();
 }
 
 class S3CompactTest : public ::testing::Test {
@@ -111,7 +111,7 @@ class S3CompactTest : public ::testing::Test {
   void TearDown() override {
     ASSERT_TRUE(kvStorage_->Close());
     ASSERT_EQ(0, system(std::string{"rm -rf " + dataDir_}.c_str()));
-    curve::common::S3Adapter::Shutdown();
+    curvefs::utils::S3Adapter::Shutdown();
   }
 
  protected:

@@ -82,7 +82,7 @@ void Coordinator::InitScheduler(const ScheduleOption& conf,
 
 void Coordinator::Run() {
   for (auto& v : schedulerController_) {
-    runSchedulerThreads_[v.first] = curve::common::Thread(
+    runSchedulerThreads_[v.first] = curvefs::utils::Thread(
         &Coordinator::RunScheduler, this, std::cref(v.second), v.first);
   }
 }

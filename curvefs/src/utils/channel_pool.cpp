@@ -22,8 +22,8 @@
 
 #include "curvefs/src/utils/channel_pool.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 int ChannelPool::GetOrInitChannel(const std::string& addr,
                                   ChannelPtr* channelPtr) {
@@ -49,5 +49,5 @@ void ChannelPool::Clear() {
   channelMap_.clear();
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

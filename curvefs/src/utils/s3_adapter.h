@@ -62,8 +62,8 @@
 #include "curvefs/src/utils/configuration.h"
 #include "curvefs/src/utils/throttle.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 struct GetObjectAsyncContext;
 struct PutObjectAsyncContext;
@@ -432,6 +432,6 @@ class FakeS3Adapter final : public S3Adapter {
   }
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 #endif  // SRC_COMMON_S3_ADAPTER_H_

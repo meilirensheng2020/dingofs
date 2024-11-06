@@ -26,8 +26,8 @@
 
 #include <cstdint>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 // NOTE: value passed to this function will convert to `uint64_t'
 static inline void EncodeBigEndian(char* buf, uint64_t value) {
@@ -55,7 +55,7 @@ inline void EncodeBigEndian_uint32(char* buf, uint32_t value) {
   buf[3] = value & 0xff;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_ENCODE_H_

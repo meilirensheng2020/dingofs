@@ -26,11 +26,11 @@ namespace curvefs {
 namespace metaserver {
 
 void S3ClientImpl::SetAdaptor(
-    std::shared_ptr<curve::common::S3Adapter> s3Adapter) {
+    std::shared_ptr<curvefs::utils::S3Adapter> s3Adapter) {
   s3Adapter_ = s3Adapter;
 }
 
-void S3ClientImpl::Init(const curve::common::S3AdapterOption& option) {
+void S3ClientImpl::Init(const curvefs::utils::S3AdapterOption& option) {
   s3Adapter_->Init(option);
   option_ = option;
 }

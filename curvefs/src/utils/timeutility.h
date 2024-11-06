@@ -30,8 +30,8 @@
 #include <string>
 #include <vector>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class TimeUtility {
  public:
@@ -96,7 +96,7 @@ class ExpiredTime {
   uint64_t startUs_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_TIMEUTILITY_H_

@@ -24,8 +24,8 @@
 
 #include <glog/logging.h>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 int64_t DLock::Init() {
   LOG(INFO) << "DLock::Init:"
@@ -102,5 +102,5 @@ bool DLock::NeedRetry(int errCode) {
   return false;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

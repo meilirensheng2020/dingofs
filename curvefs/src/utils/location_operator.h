@@ -26,8 +26,8 @@
 #include <string>
 #include <vector>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 const char CURVE_TYPE[] = "cs";
 const char S3_TYPE[] = "s3";
@@ -81,7 +81,7 @@ class LocationOperator {
                                   std::string* fileName, off_t* offset);
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_LOCATION_OPERATOR_H_

@@ -25,13 +25,13 @@
 
 #include "curvefs/src/utils/concurrent/generic_name_lock.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 using NameLock = GenericNameLock<Mutex>;
 using NameLockGuard = GenericNameLockGuard<Mutex>;
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_NAME_LOCK_H_

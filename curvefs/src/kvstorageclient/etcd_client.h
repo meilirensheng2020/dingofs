@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace curve {
+namespace curvefs {
 namespace kvstorage {
 class KVStorageClient {
  public:

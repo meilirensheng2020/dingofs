@@ -37,9 +37,9 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::SplitString;
-using ::curve::common::StringToUl;
 using ::curvefs::common::PartitionInfo;
+using ::curvefs::utils::SplitString;
+using ::curvefs::utils::StringToUl;
 
 enum class ENTRY_TYPE {
   INODE,

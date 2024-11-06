@@ -33,7 +33,7 @@
 
 #include "curvefs/src/metaserver/storage/iterator.h"
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 class LocalFileSystem;
@@ -46,8 +46,8 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::fs::Ext4FileSystemImpl;
-using ::curve::fs::LocalFileSystem;
+using ::curvefs::fs::Ext4FileSystemImpl;
+using ::curvefs::fs::LocalFileSystem;
 
 enum class DUMPFILE_ERROR {
   OK,

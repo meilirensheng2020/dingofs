@@ -40,11 +40,11 @@
 namespace curvefs {
 namespace metaserver {
 
-using curve::common::Configuration;
-using curve::common::InterruptibleSleeper;
-using curve::common::RWLock;
-using curve::common::S3Adapter;
-using curve::common::S3AdapterOption;
+using curvefs::utils::Configuration;
+using curvefs::utils::InterruptibleSleeper;
+using curvefs::utils::RWLock;
+using curvefs::utils::S3Adapter;
+using curvefs::utils::S3AdapterOption;
 using curvefs::common::S3Info;
 
 class S3AdapterManager {

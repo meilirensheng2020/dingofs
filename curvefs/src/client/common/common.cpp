@@ -129,7 +129,7 @@ WarmupStorageType GetWarmupStorageType(const std::string& type) {
   return ret;
 }
 
-using ::curve::common::StringToUll;
+using ::curvefs::utils::StringToUll;
 
 // if direction is true means '+', false means '-'
 // is direction is true, add second to first

@@ -10,8 +10,8 @@ Distributed under the Boost Software License, Version 1.0.
 
 #include <cstdint>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 namespace detail {
 
@@ -59,7 +59,7 @@ constexpr inline bool is_alignment(std::size_t value) noexcept {
   return (value > 0) && ((value & (value - 1)) == 0);
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_FAST_ALIGN_H_

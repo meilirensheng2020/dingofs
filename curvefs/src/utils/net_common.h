@@ -31,8 +31,8 @@
 
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 class NetCommon {
  public:
   // addr形式为"ip:port"
@@ -91,7 +91,7 @@ class NetCommon {
     return true;
   }
 };
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_NET_COMMON_H_

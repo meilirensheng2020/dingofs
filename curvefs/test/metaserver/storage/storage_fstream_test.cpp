@@ -42,7 +42,7 @@ namespace metaserver {
 namespace storage {
 
 namespace {
-auto localfs = curve::fs::Ext4FileSystemImpl::getInstance();
+auto localfs = curvefs::fs::Ext4FileSystemImpl::getInstance();
 }
 
 using ContainerType = std::unordered_map<std::string, std::string>;

@@ -29,10 +29,10 @@
 #include "curvefs/src/kvstorageclient/etcd_client.h"
 #include "curvefs/src/utils/concurrent/concurrent.h"
 
-namespace curve {
+namespace curvefs {
 namespace idgenerator {
 
-using curve::kvstorage::KVStorageClient;
+using curvefs::kvstorage::KVStorageClient;
 
 class EtcdIdGenerator {
  public:
@@ -70,7 +70,7 @@ class EtcdIdGenerator {
   uint64_t nextId_;
   uint64_t bundleEnd_;
 
-  curve::common::Mutex lock_;
+  curvefs::utils::Mutex lock_;
 };
 
 }  // namespace idgenerator

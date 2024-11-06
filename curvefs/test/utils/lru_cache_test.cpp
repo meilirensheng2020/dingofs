@@ -29,8 +29,8 @@
 
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(TestCacheMetrics, testall) {
   CacheMetrics cacheMetrics("LRUCache");
@@ -350,5 +350,5 @@ TEST(TimedCaCheTest, test_timeout) {
   ASSERT_EQ(0, cache->Size());
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

@@ -27,8 +27,8 @@
 #include <condition_variable>  //NOLINT
 #include <mutex>               //NOLINT
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 /**
  * 用于线程间同步，CountDownEvent是通过一个计数器来实现的，计数器的
@@ -108,7 +108,7 @@ class CountDownEvent {
   int count_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_COUNT_DOWN_EVENT_H_

@@ -52,7 +52,7 @@ int TopologyListTool::Init() {
     return -1;
   }
 
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 
   service_stub_func_ =
       std::bind(&curvefs::mds::topology::TopologyService_Stub::ListTopology,

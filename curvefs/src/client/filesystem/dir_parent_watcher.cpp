@@ -21,8 +21,8 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using curve::common::ReadLockGuard;
-using curve::common::WriteLockGuard;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::WriteLockGuard;
 
 void DirParentWatcherImpl::Remeber(Ino ino, Ino parent) {
   VLOG(3) << "DirParentWatcherImpl remeber ino: " << ino

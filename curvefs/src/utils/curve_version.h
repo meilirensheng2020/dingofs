@@ -25,13 +25,13 @@
 
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 std::string CurveVersion();
 void ExposeCurveVersion();
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CURVE_VERSION_H_

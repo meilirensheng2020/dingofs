@@ -37,7 +37,7 @@ namespace curvefs {
 namespace client {
 namespace blockcache {
 
-using ::curve::common::TaskThreadPool;
+using ::curvefs::utils::TaskThreadPool;
 using FileInfo = LocalFileSystem::FileInfo;
 using UploadFunc = CacheStore::UploadFunc;
 

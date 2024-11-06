@@ -32,7 +32,7 @@
 #include <sys/vfs.h>
 #include <unistd.h>
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 class PosixWrapper {

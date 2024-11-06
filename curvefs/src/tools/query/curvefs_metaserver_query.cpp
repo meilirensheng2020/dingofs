@@ -42,16 +42,16 @@ int MetaserverQueryTool::Init() {
     return -1;
   }
 
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 
   std::vector<std::string> metaserver_id_vec;
   std::vector<std::string> metaserver_addr_vec;
   google::CommandLineFlagInfo info;
   if (CheckMetaserverIdDefault(&info) && !CheckMetaserverAddrDefault(&info)) {
     // only use mateserverAddr in this case
-    curve::common::SplitString(FLAGS_metaserverAddr, ",", &metaserver_addr_vec);
+    curvefs::utils::SplitString(FLAGS_metaserverAddr, ",", &metaserver_addr_vec);
   } else {
-    curve::common::SplitString(FLAGS_metaserverId, ",", &metaserver_id_vec);
+    curvefs::utils::SplitString(FLAGS_metaserverId, ",", &metaserver_id_vec);
   }
 
   for (auto const& i : metaserver_addr_vec) {

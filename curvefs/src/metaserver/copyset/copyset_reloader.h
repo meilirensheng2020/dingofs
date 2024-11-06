@@ -65,7 +65,7 @@ class CopysetReloader {
   CopysetNodeManager* nodeManager_;
   CopysetNodeOptions options_;
 
-  std::unique_ptr<curve::common::TaskThreadPool<>> taskPool_;
+  std::unique_ptr<curvefs::utils::TaskThreadPool<>> taskPool_;
   std::atomic<bool> running_;
 };
 

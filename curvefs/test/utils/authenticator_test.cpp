@@ -26,8 +26,8 @@
 
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(AuthenticatorTEST, basic_test) {
   std::string key = "123456";
@@ -37,5 +37,5 @@ TEST(AuthenticatorTEST, basic_test) {
   ASSERT_STREQ(sig.c_str(), expect.c_str());
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

@@ -44,7 +44,7 @@ namespace curvefs {
 namespace client {
 
 using common::RefreshDataOption;
-using curve::common::CountDownEvent;
+using curvefs::utils::CountDownEvent;
 using ::curvefs::client::filesystem::DeferSync;
 using ::curvefs::client::filesystem::OpenFiles;
 using ::curvefs::metaserver::InodeAttr;
@@ -162,9 +162,9 @@ class InodeCacheManagerImpl
 
   std::shared_ptr<DeferSync> deferSync_;
 
-  curve::common::GenericNameLock<Mutex> nameLock_;
+  curvefs::utils::GenericNameLock<Mutex> nameLock_;
 
-  curve::common::GenericNameLock<Mutex> asyncNameLock_;
+  curvefs::utils::GenericNameLock<Mutex> asyncNameLock_;
 
   RefreshDataOption option_;
 };
@@ -172,7 +172,7 @@ class InodeCacheManagerImpl
 class BatchGetInodeAttrAsyncDone : public BatchGetInodeAttrDone {
  public:
   BatchGetInodeAttrAsyncDone(std::map<uint64_t, InodeAttr>* attrs,
-                             ::curve::common::Mutex* mutex,
+                             ::curvefs::utils::Mutex* mutex,
                              std::shared_ptr<CountDownEvent> cond)
       : mutex_(mutex), attrs_(attrs), cond_(cond) {}
 
@@ -190,7 +190,7 @@ class BatchGetInodeAttrAsyncDone : public BatchGetInodeAttrDone {
       VLOG(3) << "BatchGetInodeAttrAsyncDone update inodeAttrCache"
               << " size = " << inode_attrs.size();
 
-      curve::common::LockGuard lk(*mutex_);
+      curvefs::utils::LockGuard lk(*mutex_);
       for (const auto& attr : inode_attrs) {
         attrs_->emplace(attr.inodeid(), attr);
       }
@@ -199,7 +199,7 @@ class BatchGetInodeAttrAsyncDone : public BatchGetInodeAttrDone {
   };
 
  private:
-  ::curve::common::Mutex* mutex_;
+  ::curvefs::utils::Mutex* mutex_;
   std::map<uint64_t, InodeAttr>* attrs_;
   std::shared_ptr<CountDownEvent> cond_;
 };

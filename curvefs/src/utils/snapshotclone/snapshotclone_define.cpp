@@ -24,7 +24,7 @@
 
 #include <json/json.h>
 
-namespace curve {
+namespace curvefs {
 namespace snapshotcloneserver {
 
 // 字符串常量定义
@@ -102,4 +102,4 @@ std::string BuildErrorMessage(int errCode, const std::string& requestId,
 }
 
 }  // namespace snapshotcloneserver
-}  // namespace curve
+}  // namespace curvefs

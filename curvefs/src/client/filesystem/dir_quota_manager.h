@@ -33,7 +33,7 @@ namespace client {
 namespace filesystem {
 
 using base::timer::Timer;
-using ::curve::common::RWLock;
+using ::curvefs::utils::RWLock;
 using rpcclient::MetaServerClient;
 
 class DirQuotaManager {

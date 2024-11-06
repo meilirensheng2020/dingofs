@@ -24,8 +24,8 @@
 
 #include <gtest/gtest.h>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(BitmapTEST, constructor_test) {
   // test constructor
@@ -415,5 +415,5 @@ TEST(BitmapTEST, divide_test) {
   }
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

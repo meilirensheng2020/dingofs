@@ -117,7 +117,7 @@ class RaftSnapshotMetric {
 
     MetricContext()
         : success(false),
-          startUs(curve::common::TimeUtility::GetTimeofDayUs()) {}
+          startUs(curvefs::utils::TimeUtility::GetTimeofDayUs()) {}
 
     ~MetricContext() = default;
 
@@ -131,7 +131,7 @@ class RaftSnapshotMetric {
 
   void OnSnapshotSaveDone(MetricContext* ctx) {
     if (ctx->success) {
-      latRecorder_ << (curve::common::TimeUtility::GetTimeofDayUs() -
+      latRecorder_ << (curvefs::utils::TimeUtility::GetTimeofDayUs() -
                        ctx->startUs);
     } else {
       errorCount_ << 1;

@@ -47,7 +47,7 @@ namespace curvefs {
 namespace client {
 namespace rpcclient {
 
-using ::curve::common::StringToUll;
+using ::curvefs::utils::StringToUll;
 using curvefs::client::metric::MetricListGuard;
 using curvefs::metaserver::BatchGetInodeAttrRequest;
 using curvefs::metaserver::BatchGetInodeAttrResponse;

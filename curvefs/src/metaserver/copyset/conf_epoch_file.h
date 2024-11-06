@@ -38,7 +38,7 @@ namespace copyset {
 
 class ConfEpochFile {
  public:
-  explicit ConfEpochFile(curve::fs::LocalFileSystem* fs) : fs_(fs) {}
+  explicit ConfEpochFile(curvefs::fs::LocalFileSystem* fs) : fs_(fs) {}
 
   /**
    * 加载快照文件中的配置版本
@@ -70,7 +70,7 @@ class ConfEpochFile {
  private:
   static uint32_t ConfEpochCrc(const ConfEpoch& confEpoch);
 
-  curve::fs::LocalFileSystem* fs_;
+  curvefs::fs::LocalFileSystem* fs_;
 };
 
 }  // namespace copyset

@@ -37,10 +37,10 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::StringStartWith;
 using ::curvefs::metaserver::storage::Iterator;
 using ::curvefs::metaserver::storage::NameGenerator;
 using ::curvefs::metaserver::storage::Status;
+using ::curvefs::utils::StringStartWith;
 using KeyValue = std::pair<std::string, Dentry>;
 
 Dentry Value(const std::string& name) {

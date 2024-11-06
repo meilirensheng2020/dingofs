@@ -31,7 +31,7 @@ namespace curvefs {
 namespace mds {
 namespace topology {
 
-using ::curve::common::Configuration;
+using ::curvefs::utils::Configuration;
 using ::testing::_;
 using ::testing::AnyOf;
 using ::testing::Contains;

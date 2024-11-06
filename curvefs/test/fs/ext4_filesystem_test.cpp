@@ -45,7 +45,7 @@ using ::testing::ReturnPointee;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 ACTION_TEMPLATE(SetVoidArgPointee, HAS_1_TEMPLATE_PARAMS(int, k),

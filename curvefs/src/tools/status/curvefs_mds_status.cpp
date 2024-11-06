@@ -47,7 +47,7 @@ int MdsStatusTool::Init() {
   }
 
   std::vector<std::string> hostsMainAddr;
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsMainAddr);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsMainAddr);
   if (hostsMainAddr.size() != hostsAddr_.size()) {
     std::cerr << "mdsDummyAddr and mdsAddr do not match, please check."
               << std::endl;
@@ -63,7 +63,7 @@ int MdsStatusTool::Init() {
 
 void MdsStatusTool::InitHostsAddr() {
   // use dummy addr
-  curve::common::SplitString(FLAGS_mdsDummyAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsDummyAddr, ",", &hostsAddr_);
 }
 
 void MdsStatusTool::AddUpdateFlags() {

@@ -35,7 +35,7 @@
 #include "curvefs/test/mds/mock/mock_topology.h"
 #include "curvefs/test/utils/mock_s3_adapter.h"
 
-using ::curve::common::MockS3Adapter;
+using ::curvefs::utils::MockS3Adapter;
 using ::curvefs::mds::topology::DefaultIdGenerator;
 using ::curvefs::mds::topology::DefaultTokenGenerator;
 using ::curvefs::mds::topology::MockEtcdClient;

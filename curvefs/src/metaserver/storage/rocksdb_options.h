@@ -28,18 +28,18 @@
 #include "rocksdb/db.h"
 #include "rocksdb/options.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 class Configuration;
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 namespace curvefs {
 namespace metaserver {
 namespace storage {
 
 // Parse rocksdb related options from conf
-void ParseRocksdbOptions(curve::common::Configuration* conf);
+void ParseRocksdbOptions(curvefs::utils::Configuration* conf);
 
 void InitRocksdbOptions(
     rocksdb::DBOptions* options,

@@ -38,8 +38,8 @@ DECLARE_bool(graceful_quit_on_sigterm);
 namespace curvefs {
 namespace mds {
 
-using ::curve::election::LeaderElection;
-using ::curve::kvstorage::EtcdClientImp;
+using ::curvefs::election::LeaderElection;
+using ::curvefs::kvstorage::EtcdClientImp;
 
 MDS::MDS()
     : conf_(),
@@ -151,7 +151,7 @@ void MDS::InitFsManagerOptions(FsManagerOption* fs_manager_option) {
          "default value: "
       << fs_manager_option->spaceReloadConcurrency;
 
-  ::curve::common::InitS3AdaptorOptionExceptS3InfoOption(
+  ::curvefs::utils::InitS3AdaptorOptionExceptS3InfoOption(
       conf_.get(), &fs_manager_option->s3AdapterOption);
 }
 
@@ -231,7 +231,7 @@ void MDS::Run() {
   }
 
   // set mds version in metric
-  curve::common::ExposeCurveVersion();
+  curvefs::utils::ExposeCurveVersion();
 
   LOG_IF(FATAL, topology_->Run()) << "run topology module fail";
   topologyMetricService_->Run();
@@ -288,7 +288,7 @@ void MDS::StartDummyServer() {
   status_.set_value("follower");
 
   // set mds version in metric
-  curve::common::ExposeCurveVersion();
+  curvefs::utils::ExposeCurveVersion();
 
   LOG_IF(FATAL, 0 != brpc::StartDummyServerAt(options_.dummyPort))
       << "Start dummy server failed";

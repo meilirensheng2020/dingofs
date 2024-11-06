@@ -124,21 +124,21 @@ class DiskStateMachineImpl final : public DiskStateMachine {
   bool Stop() override;
 
   void IOSucc() override {
-    curve::common::WriteLockGuard lk(rw_lock_);
+    curvefs::utils::WriteLockGuard lk(rw_lock_);
     if (running_) {
       state_->IOSucc();
     }
   }
 
   void IOErr() override {
-    curve::common::WriteLockGuard lk(rw_lock_);
+    curvefs::utils::WriteLockGuard lk(rw_lock_);
     if (running_) {
       state_->IOErr();
     }
   }
 
   DiskState GetDiskState() const override {
-    curve::common::ReadLockGuard lk(rw_lock_);
+    curvefs::utils::ReadLockGuard lk(rw_lock_);
     return state_->GetDiskState();
   }
 
@@ -152,7 +152,7 @@ class DiskStateMachineImpl final : public DiskStateMachine {
 
   void TickTock();
 
-  mutable curve::common::BthreadRWLock rw_lock_;
+  mutable curvefs::utils::BthreadRWLock rw_lock_;
   std::unique_ptr<BaseDiskState> state_;
   bool running_{false};
 

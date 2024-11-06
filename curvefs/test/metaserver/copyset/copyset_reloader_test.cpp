@@ -37,11 +37,11 @@ namespace copyset {
 const char* kCopysetDataUri = "local://./runlog/copyset_reloader_test";
 const char* kTrashDataUri = "local://./runlog/copyset_reloader_test_trash";
 
-using ::curve::fs::Ext4FileSystemImpl;
-using ::curve::fs::FileSystemType;
-using ::curve::fs::LocalFileSystem;
-using ::curve::fs::LocalFsFactory;
-using ::curve::fs::MockLocalFileSystem;
+using ::curvefs::fs::Ext4FileSystemImpl;
+using ::curvefs::fs::FileSystemType;
+using ::curvefs::fs::LocalFileSystem;
+using ::curvefs::fs::LocalFsFactory;
+using ::curvefs::fs::MockLocalFileSystem;
 
 using ::testing::_;
 using ::testing::Return;

@@ -40,7 +40,7 @@
 namespace curvefs {
 namespace mds {
 namespace schedule {
-using ::curve::common::InterruptibleSleeper;
+using ::curvefs::utils::InterruptibleSleeper;
 using ::curvefs::mds::heartbeat::ConfigChangeType;
 class Coordinator {
  public:
@@ -165,7 +165,7 @@ class Coordinator {
   ScheduleOption conf_;
 
   std::map<SchedulerType, std::shared_ptr<Scheduler>> schedulerController_;
-  std::map<SchedulerType, curve::common::Thread> runSchedulerThreads_;
+  std::map<SchedulerType, curvefs::utils::Thread> runSchedulerThreads_;
   std::shared_ptr<OperatorController> opController_;
 
   InterruptibleSleeper sleeper_;

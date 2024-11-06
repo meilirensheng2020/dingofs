@@ -55,7 +55,7 @@ void TrashManager::ScanLoop() {
 void TrashManager::ScanEveryTrash() {
   std::map<uint32_t, std::shared_ptr<Trash>> temp;
   {
-    curve::common::ReadLockGuard lg(rwLock_);
+    curvefs::utils::ReadLockGuard lg(rwLock_);
     temp = trashs_;
   }
   for (auto& pair : temp) {
@@ -66,7 +66,7 @@ void TrashManager::ScanEveryTrash() {
 }
 
 void TrashManager::Remove(uint32_t partitionId) {
-  curve::common::WriteLockGuard lg(rwLock_);
+  curvefs::utils::WriteLockGuard lg(rwLock_);
   auto it = trashs_.find(partitionId);
   if (it != trashs_.end()) {
     LOG(INFO) << "Remove partition from trash manager, partitionId = "
@@ -83,7 +83,7 @@ void TrashManager::ListItems(std::list<TrashItem>* items) {
   items->clear();
   std::map<uint32_t, std::shared_ptr<Trash>> temp;
   {
-    curve::common::ReadLockGuard lg(rwLock_);
+    curvefs::utils::ReadLockGuard lg(rwLock_);
     temp = trashs_;
   }
   for (auto& pair : temp) {

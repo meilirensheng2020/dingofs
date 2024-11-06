@@ -92,7 +92,7 @@ struct CopysetNodeOptions {
   ApplyQueueOption applyQueueOption;
 
   // filesystem adaptor
-  curve::fs::LocalFileSystem* localFileSystem;
+  curvefs::fs::LocalFileSystem* localFileSystem;
 
   CopysetTrashOptions trashOptions;
 

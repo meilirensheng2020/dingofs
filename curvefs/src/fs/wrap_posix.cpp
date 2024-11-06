@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <sys/syscall.h>
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 int PosixWrapper::open(const char* pathname, int flags, mode_t mode) {

@@ -125,7 +125,7 @@ TEST_F(FsCacheManagerTest, test_lru_set_and_delete) {
 
   {
     const uint32_t expectCallTimes = 1;
-    curve::common::CountDownEvent counter(expectCallTimes);
+    curvefs::utils::CountDownEvent counter(expectCallTimes);
 
     EXPECT_CALL(*mockChunkCacheManager_, ReleaseReadDataCache(_))
         .Times(expectCallTimes)
@@ -140,7 +140,7 @@ TEST_F(FsCacheManagerTest, test_lru_set_and_delete) {
 
   {
     const uint32_t expectCallTimes = 32;
-    curve::common::CountDownEvent counter(expectCallTimes);
+    curvefs::utils::CountDownEvent counter(expectCallTimes);
 
     EXPECT_CALL(*mockChunkCacheManager_, ReleaseReadDataCache(_))
         .Times(expectCallTimes)

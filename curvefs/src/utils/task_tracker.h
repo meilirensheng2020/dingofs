@@ -29,11 +29,11 @@
 
 #include "curvefs/src/utils/concurrent/concurrent.h"
 
-using ::curve::common::ConditionVariable;
-using ::curve::common::Mutex;
+using ::curvefs::utils::ConditionVariable;
+using ::curvefs::utils::Mutex;
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class TaskTracker : public std::enable_shared_from_this<TaskTracker> {
  public:
@@ -112,7 +112,7 @@ std::list<CTX> ContextTaskTracker<CTX>::PopResultContexts() {
   return ret;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_TASK_TRACKER_H_

@@ -87,8 +87,8 @@ using curvefs::mds::RefreshSessionResponse;
 using curvefs::mds::UmountFsRequest;
 using curvefs::mds::UmountFsResponse;
 
-using ::curve::client::CopysetID;
-using ::curve::client::LogicPoolID;
+using ::curvefs::client::CopysetID;
+using ::curvefs::client::LogicPoolID;
 
 using curvefs::mds::topology::AllocOrGetMemcacheClusterRequest;
 using curvefs::mds::topology::AllocOrGetMemcacheClusterResponse;

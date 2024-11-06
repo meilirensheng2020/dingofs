@@ -58,8 +58,8 @@ extern "C" {
 const EVP_MD* __attribute__((weak)) EVP_sha256(void);
 }
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 static char b[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -171,5 +171,5 @@ std::string Authenticator::Base64(const unsigned char* src, size_t sz) {
   qq = NULL;
   return ret;
 }
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

@@ -31,7 +31,7 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::fs::MockLocalFileSystem;
+using ::curvefs::fs::MockLocalFileSystem;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;

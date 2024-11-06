@@ -35,8 +35,8 @@
 
 #define AWS_ALLOCATE_TAG __FILE__ ":" STRINGIFY(__LINE__)
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 std::once_flag s3_init_flag;
 std::once_flag s3_shutdown_flag;
@@ -630,5 +630,5 @@ void S3Adapter::SetS3Option(const S3InfoOption& fs_s3_opt) {
   bucketName_ = fs_s3_opt.bucketName;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

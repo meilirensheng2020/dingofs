@@ -26,7 +26,7 @@
 
 #include "curvefs/src/fs/ext4_filesystem_impl.h"
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 std::shared_ptr<LocalFileSystem> LocalFsFactory::CreateFs(

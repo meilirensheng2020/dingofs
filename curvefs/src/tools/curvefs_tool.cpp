@@ -61,7 +61,7 @@ void CurvefsToolMetric::PrintHelp() {
 }
 
 void CurvefsToolMetric::AddUpdateFlagsFunc(
-    const std::function<void(curve::common::Configuration*,
+    const std::function<void(curvefs::utils::Configuration*,
                              google::CommandLineFlagInfo*)>& func) {
   updateFlagsFunc_.push_back(func);
 }
@@ -88,7 +88,7 @@ void CurvefsToolMetric::AddUpdateFlags() {
 }
 
 void CurvefsToolMetric::UpdateFlags() {
-  curve::common::Configuration conf;
+  curvefs::utils::Configuration conf;
   conf.SetConfigPath(FLAGS_confPath);
   if (!conf.LoadConfig()) {
     std::cerr << "load configure file " << FLAGS_confPath << " failed!"

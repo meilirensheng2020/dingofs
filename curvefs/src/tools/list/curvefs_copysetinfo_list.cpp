@@ -38,7 +38,7 @@ int CopysetInfoListTool::Init() {
   if (CurvefsToolRpc::Init() != 0) {
     return -1;
   }
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
   curvefs::mds::topology::ListCopysetInfoRequest request;
   AddRequest(request);
 

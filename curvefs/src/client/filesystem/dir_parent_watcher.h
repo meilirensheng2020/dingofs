@@ -28,7 +28,7 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using ::curve::common::RWLock;
+using ::curvefs::utils::RWLock;
 
 class DirParentWatcher {
  public:

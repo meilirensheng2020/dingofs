@@ -43,7 +43,7 @@ namespace curvefs {
 namespace client {
 namespace blockcache {
 
-using ::curve::common::TaskThreadPool;
+using ::curvefs::utils::TaskThreadPool;
 using ::curvefs::client::common::BlockCacheOption;
 
 enum class StoreType {

@@ -31,10 +31,10 @@ namespace curvefs {
 namespace mds {
 
 using Mutex = ::bthread::Mutex;
-using RWLock = ::curve::common::BthreadRWLock;
+using RWLock = ::curvefs::utils::BthreadRWLock;
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::WriteLockGuard;
 
 }  // namespace mds
 }  // namespace curvefs

@@ -27,8 +27,8 @@
 
 #include <string>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(Common, SpliteString) {
   const struct {
@@ -64,5 +64,5 @@ TEST(Common, StringToUll) {
   str = "ffff";
   ASSERT_FALSE(StringToUll(str, &out));
 }
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

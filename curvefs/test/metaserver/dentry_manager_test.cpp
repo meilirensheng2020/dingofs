@@ -41,7 +41,7 @@ using ::curvefs::metaserver::storage::RocksDBStorage;
 using ::curvefs::metaserver::storage::StorageOptions;
 
 namespace {
-auto localfs = curve::fs::Ext4FileSystemImpl::getInstance();
+auto localfs = curvefs::fs::Ext4FileSystemImpl::getInstance();
 const std::string kBaseTestDir = "./dentry_manager_test";  // NOLINT
 }  // namespace
 

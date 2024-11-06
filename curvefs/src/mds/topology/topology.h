@@ -44,10 +44,10 @@ namespace curvefs {
 namespace mds {
 namespace topology {
 
-using RWLock = ::curve::common::BthreadRWLock;
-using ::curve::common::InterruptibleSleeper;
-using ::curve::common::ReadLockGuard;
-using ::curve::common::WriteLockGuard;
+using RWLock = ::curvefs::utils::BthreadRWLock;
+using ::curvefs::utils::InterruptibleSleeper;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::WriteLockGuard;
 
 using PartitionFilter = std::function<bool(const Partition&)>;
 using CopySetFilter = std::function<bool(const CopySetInfo&)>;
@@ -574,8 +574,8 @@ class TopologyImpl : public Topology {
   mutable RWLock fs2MemcacheClusterMutex_;
 
   TopologyOption option_;
-  curve::common::Thread backEndThread_;
-  curve::common::Atomic<bool> isStop_;
+  curvefs::utils::Thread backEndThread_;
+  curvefs::utils::Atomic<bool> isStop_;
   InterruptibleSleeper sleeper_;
 };
 

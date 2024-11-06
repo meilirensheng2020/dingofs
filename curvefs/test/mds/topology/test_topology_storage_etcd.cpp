@@ -31,7 +31,7 @@
 #include "curvefs/test/mds/mock/mock_topology.h"
 #include "curvefs/test/mds/topology/test_topology_helper.h"
 
-using ::curve::kvstorage::MockKVStorageClient;
+using ::curvefs::kvstorage::MockKVStorageClient;
 
 using ::testing::_;
 using ::testing::AllOf;

@@ -29,7 +29,7 @@
 #define FILE_PATH1 "wraptest/1"
 #define FILE_PATH2 "wraptest/2"
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 class PosixWrapperTest : public testing::Test {

@@ -48,10 +48,10 @@ namespace mds {
 using ::curvefs::mds::topology::Topology;
 using ::curvefs::mds::topology::TopologyManager;
 
-using ::curve::common::Atomic;
-using ::curve::common::InterruptibleSleeper;
-using ::curve::common::S3Adapter;
-using ::curve::common::Thread;
+using ::curvefs::utils::Atomic;
+using ::curvefs::utils::InterruptibleSleeper;
+using ::curvefs::utils::S3Adapter;
+using ::curvefs::utils::Thread;
 using ::curvefs::mds::topology::PartitionTxId;
 using ::curvefs::mds::topology::Topology;
 using ::curvefs::mds::topology::TopologyManager;
@@ -63,7 +63,7 @@ struct FsManagerOption {
   uint32_t backEndThreadRunInterSec;
   uint32_t spaceReloadConcurrency = 10;
   uint32_t clientTimeoutSec = 20;
-  curve::common::S3AdapterOption s3AdapterOption;
+  curvefs::utils::S3AdapterOption s3AdapterOption;
 };
 
 class FsManager {
@@ -231,7 +231,7 @@ class FsManager {
 
   std::shared_ptr<FsStorage> fsStorage_;
   std::shared_ptr<MetaserverClient> metaserverClient_;
-  curve::common::GenericNameLock<Mutex> nameLock_;
+  curvefs::utils::GenericNameLock<Mutex> nameLock_;
   std::shared_ptr<TopologyManager> topoManager_;
   std::shared_ptr<S3Adapter> s3Adapter_;
   std::shared_ptr<DLock> dlock_;

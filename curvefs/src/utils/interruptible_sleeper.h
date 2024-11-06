@@ -27,8 +27,8 @@
 
 #include "curvefs/src/utils/concurrent/concurrent.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 /**
  * InterruptibleSleeper 实现可 interruptible 的 sleep 功能.
  * 正常情况下 wait_for 超时, 接收到退出信号之后, 程序会立即被唤醒,
@@ -69,7 +69,7 @@ class InterruptibleSleeper {
   bool terminate = false;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_INTERRUPTIBLE_SLEEPER_H_

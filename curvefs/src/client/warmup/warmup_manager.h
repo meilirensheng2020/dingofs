@@ -59,12 +59,12 @@ namespace client {
 namespace warmup {
 
 using common::FuseClientOption;
-using ::curve::common::GetObjectAsyncContext;
+using ::curvefs::utils::GetObjectAsyncContext;
 using ::curvefs::client::blockcache::BlockKey;
 
 using ThreadPool = curvefs::common::TaskThreadPool2<bthread::Mutex,
                                                     bthread::ConditionVariable>;
-using curve::common::BthreadRWLock;
+using curvefs::utils::BthreadRWLock;
 
 using curvefs::client::common::WarmupStorageType;
 

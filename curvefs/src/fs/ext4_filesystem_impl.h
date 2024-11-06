@@ -34,7 +34,7 @@
 
 const int MAX_RETYR_TIME = 3;
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 class Ext4FileSystemImpl : public LocalFileSystem {
  public:

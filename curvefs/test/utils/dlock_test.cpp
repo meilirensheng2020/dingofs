@@ -35,10 +35,10 @@
 #include "curvefs/src/kvstorageclient/etcd_client.h"
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
-using ::curve::kvstorage::EtcdClientImp;
+using ::curvefs::kvstorage::EtcdClientImp;
 
 class TestDLock : public ::testing::Test {
  protected:
@@ -69,9 +69,9 @@ class TestDLock : public ::testing::Test {
     }
 
     // Try init for a certain period of time until etcd is fully up
-    uint64_t now = ::curve::common::TimeUtility::GetTimeofDaySec();
+    uint64_t now = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
     bool initSuccess = false;
-    while (::curve::common::TimeUtility::GetTimeofDaySec() - now <= 5) {
+    while (::curvefs::utils::TimeUtility::GetTimeofDaySec() - now <= 5) {
       if (0 == client_->Init(conf, 0, 3)) {
         initSuccess = true;
         break;
@@ -172,5 +172,5 @@ TEST_F(TestDLock, test_LockCmpTimeout) {
   newLock.join();
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

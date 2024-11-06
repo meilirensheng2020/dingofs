@@ -67,9 +67,9 @@ class MockSnapshotWriter : public braft::SnapshotWriter {
   MOCK_METHOD1(remove_file, int(const std::string&));
 };
 
-curve::common::UUIDGenerator uuid;
-std::shared_ptr<class curve::fs::Ext4FileSystemImpl> localfs =
-    curve::fs::Ext4FileSystemImpl::getInstance();
+curvefs::utils::UUIDGenerator uuid;
+std::shared_ptr<class curvefs::fs::Ext4FileSystemImpl> localfs =
+    curvefs::fs::Ext4FileSystemImpl::getInstance();
 
 }  // namespace
 

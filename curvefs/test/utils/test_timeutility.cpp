@@ -12,8 +12,8 @@
 
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(ExpiredTimeTest, CommonTest) {
   {
@@ -42,6 +42,6 @@ TEST(ExpiredTimeTest, CommonTest) {
   }
 }
 
-}  // namespace common
+}  // namespace utils
 
-}  // namespace curve
+}  // namespace curvefs

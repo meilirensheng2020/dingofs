@@ -28,8 +28,8 @@
 #include <string>
 #include <utility>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 std::string BitRangeVecToString(const std::vector<BitRange>& ranges) {
   std::stringstream ss;
@@ -258,5 +258,5 @@ uint32_t Bitmap::Size() const { return bits_; }
 
 const char* Bitmap::GetBitmap() const { return bitmap_; }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

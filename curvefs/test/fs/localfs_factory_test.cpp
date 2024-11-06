@@ -24,7 +24,7 @@
 
 #include "curvefs/src/fs/local_filesystem.h"
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 class LocalFSFactoryTest : public testing::Test {

@@ -37,10 +37,10 @@
 namespace curvefs {
 namespace common {
 
-using curve::common::BthreadRWLock;
-using curve::common::ReadLockGuard;
-using curve::common::Thread;
-using curve::common::WriteLockGuard;
+using curvefs::utils::BthreadRWLock;
+using curvefs::utils::ReadLockGuard;
+using curvefs::utils::Thread;
+using curvefs::utils::WriteLockGuard;
 using ThreadPool = TaskThreadPool2<bthread::Mutex, bthread::ConditionVariable>;
 
 const uint64_t TIME = 1000 * 1000;

@@ -48,7 +48,7 @@ namespace curvefs {
 namespace metaserver {
 
 namespace {
-auto localfs = curve::fs::Ext4FileSystemImpl::getInstance();
+auto localfs = curvefs::fs::Ext4FileSystemImpl::getInstance();
 }
 
 class PartitionCleanManagerTest : public testing::Test {

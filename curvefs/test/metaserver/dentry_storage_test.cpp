@@ -41,7 +41,7 @@ using ::curvefs::metaserver::storage::StorageOptions;
 using TX_OP_TYPE = DentryStorage::TX_OP_TYPE;
 
 namespace {
-auto localfs = curve::fs::Ext4FileSystemImpl::getInstance();
+auto localfs = curvefs::fs::Ext4FileSystemImpl::getInstance();
 }
 
 class DentryStorageTest : public ::testing::Test {

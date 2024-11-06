@@ -75,7 +75,7 @@ void ApplyQueue::Flush() {
     return;
   }
 
-  curve::common::CountDownEvent event(option_.workerCount);
+  curvefs::utils::CountDownEvent event(option_.workerCount);
 
   auto flush = [&event]() { event.Signal(); };
 

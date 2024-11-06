@@ -40,7 +40,7 @@ using std::map;
 using std::string;
 using std::vector;
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 
 struct LocalFileSystemOption {

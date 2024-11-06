@@ -177,12 +177,12 @@ CURVEFS_ERROR InodeWrapper::GetInodeAttrUnLocked(InodeAttr* attr) {
 }
 
 void InodeWrapper::GetInodeAttr(InodeAttr* attr) {
-  curve::common::UniqueLock lg(mtx_);
+  curvefs::utils::UniqueLock lg(mtx_);
   GetInodeAttrUnLocked(attr);
 }
 
 CURVEFS_ERROR InodeWrapper::SyncAttr(bool internal) {
-  curve::common::UniqueLock lock = GetSyncingInodeUniqueLock();
+  curvefs::utils::UniqueLock lock = GetSyncingInodeUniqueLock();
   if (dirty_) {
     MetaStatusCode ret = metaClient_->UpdateInodeAttrWithOutNlink(
         inode_.fsid(), inode_.inodeid(), dirtyAttr_, nullptr, internal);
@@ -202,7 +202,7 @@ CURVEFS_ERROR InodeWrapper::SyncAttr(bool internal) {
 }
 
 CURVEFS_ERROR InodeWrapper::SyncS3ChunkInfo(bool internal) {
-  curve::common::UniqueLock lock = GetSyncingS3ChunkInfoUniqueLock();
+  curvefs::utils::UniqueLock lock = GetSyncingS3ChunkInfoUniqueLock();
   if (!s3ChunkInfoAdd_.empty()) {
     MetaStatusCode ret = metaClient_->GetOrModifyS3ChunkInfo(
         inode_.fsid(), inode_.inodeid(), s3ChunkInfoAdd_, false, nullptr,
@@ -247,7 +247,7 @@ void InodeWrapper::FlushS3ChunkInfoAsync() {
 }
 
 CURVEFS_ERROR InodeWrapper::RefreshS3ChunkInfo() {
-  curve::common::UniqueLock lock = GetSyncingS3ChunkInfoUniqueLock();
+  curvefs::utils::UniqueLock lock = GetSyncingS3ChunkInfoUniqueLock();
   google::protobuf::Map<uint64_t, S3ChunkInfoList> s3ChunkInfoMap;
   MetaStatusCode ret = metaClient_->GetOrModifyS3ChunkInfo(
       inode_.fsid(), inode_.inodeid(), s3ChunkInfoAdd_, true, &s3ChunkInfoMap);
@@ -268,7 +268,7 @@ CURVEFS_ERROR InodeWrapper::RefreshS3ChunkInfo() {
 }
 
 CURVEFS_ERROR InodeWrapper::Link(uint64_t parent) {
-  curve::common::UniqueLock lg(mtx_);
+  curvefs::utils::UniqueLock lg(mtx_);
   REFRESH_NLINK;
   uint32_t old = inode_.nlink();
   inode_.set_nlink(old + 1);
@@ -305,7 +305,7 @@ CURVEFS_ERROR InodeWrapper::UnLink(uint64_t parent) {
 
 CURVEFS_ERROR InodeWrapper::UnLinkWithReturn(uint64_t parent,
                                              uint32_t& out_nlink) {
-  curve::common::UniqueLock lg(mtx_);
+  curvefs::utils::UniqueLock lg(mtx_);
   REFRESH_NLINK;
   uint32_t old = inode_.nlink();
   if (old > 0) {
@@ -361,7 +361,7 @@ CURVEFS_ERROR InodeWrapper::UnLinkWithReturn(uint64_t parent,
 
 CURVEFS_ERROR InodeWrapper::UpdateParent(uint64_t oldParent,
                                          uint64_t newParent) {
-  curve::common::UniqueLock lg(mtx_);
+  curvefs::utils::UniqueLock lg(mtx_);
   auto parents = inode_.mutable_parent();
   for (auto iter = parents->begin(); iter != parents->end(); iter++) {
     if (*iter == oldParent) {
@@ -405,7 +405,7 @@ CURVEFS_ERROR InodeWrapper::Sync(bool internal) {
 }
 
 void InodeWrapper::Async(MetaServerClientDone* done, bool internal) {
-  curve::common::UniqueLock lg(mtx_);
+  curvefs::utils::UniqueLock lg(mtx_);
 
   switch (inode_.type()) {
     case FsFileType::TYPE_S3:
@@ -424,8 +424,8 @@ void InodeWrapper::Async(MetaServerClientDone* done, bool internal) {
 }
 
 CURVEFS_ERROR InodeWrapper::SyncS3(bool internal) {
-  curve::common::UniqueLock lock = GetSyncingInodeUniqueLock();
-  curve::common::UniqueLock lockS3chunkInfo = GetSyncingS3ChunkInfoUniqueLock();
+  curvefs::utils::UniqueLock lock = GetSyncingInodeUniqueLock();
+  curvefs::utils::UniqueLock lockS3chunkInfo = GetSyncingS3ChunkInfoUniqueLock();
   if (dirty_ || !s3ChunkInfoAdd_.empty()) {
     MetaStatusCode ret = metaClient_->UpdateInodeAttrWithOutNlink(
         inode_.fsid(), inode_.inodeid(), dirtyAttr_, &s3ChunkInfoAdd_,

@@ -30,8 +30,8 @@
 #include <utility>
 #include <vector>
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::WriteLockGuard;
 
 namespace curvefs {
 namespace client {

@@ -28,7 +28,7 @@
 
 #include "curvefs/src/utils/string_util.h"
 
-namespace curve {
+namespace curvefs {
 namespace kvstorage {
 int EtcdClientImp::Init(EtcdConf conf, int timeout, int retryTimes) {
   this->timeout_ = timeout;

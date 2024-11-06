@@ -27,8 +27,8 @@
 #include <cstdint>
 #include <numeric>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 inline uint64_t MaxPowerTimesLessEqualValue(uint64_t value) {
   uint64_t pow = 0;
@@ -63,7 +63,7 @@ inline const T& Clamp(const T& value, const T& low, const T& high) {
                [](const T& a, const T& b) { return a < b ? true : false; });
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_MATH_UTIL_H_

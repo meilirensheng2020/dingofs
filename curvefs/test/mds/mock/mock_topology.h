@@ -49,10 +49,10 @@
 using ::testing::_;
 using ::testing::Return;
 
-using ::curve::kvstorage::EtcdClientImp;
-using ::curve::kvstorage::KVStorageClient;
+using ::curvefs::kvstorage::EtcdClientImp;
+using ::curvefs::kvstorage::KVStorageClient;
 
-namespace curve {
+namespace curvefs {
 namespace kvstorage {
 
 class MockKVStorageClient : public KVStorageClient {

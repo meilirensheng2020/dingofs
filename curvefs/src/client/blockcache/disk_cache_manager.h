@@ -42,8 +42,8 @@ namespace curvefs {
 namespace client {
 namespace blockcache {
 
-using ::curve::common::Mutex;
-using ::curve::common::TaskThreadPool;
+using ::curvefs::utils::Mutex;
+using ::curvefs::utils::TaskThreadPool;
 using ::curvefs::base::cache::Cache;
 using ::curvefs::base::queue::MessageQueue;
 using ::curvefs::base::time::TimeSpec;

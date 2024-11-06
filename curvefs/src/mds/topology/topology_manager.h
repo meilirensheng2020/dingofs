@@ -42,9 +42,9 @@ namespace curvefs {
 namespace mds {
 namespace topology {
 
-using curve::common::NameLock;
-using curve::common::NameLockGuard;
-using curve::common::TimeUtility;
+using curvefs::utils::NameLock;
+using curvefs::utils::NameLockGuard;
+using curvefs::utils::TimeUtility;
 using curvefs::mds::MetaserverClient;
 using std::string;
 

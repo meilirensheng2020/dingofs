@@ -22,8 +22,8 @@
 
 #include "curvefs/src/utils/task_tracker.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 void TaskTracker::AddOneTrace() {
   concurrent_.fetch_add(1, std::memory_order_acq_rel);
@@ -56,5 +56,5 @@ void TaskTracker::WaitSome(uint32_t num) {
   });
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

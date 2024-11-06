@@ -296,7 +296,7 @@ uint64_t TaskExecutor::TimeoutBackOff() {
 bool TaskExecutor::HasValidTarget() const { return task_->target.IsValid(); }
 
 void TaskExecutor::SetRetryParam() {
-  using curve::common::MaxPowerTimesLessEqualValue;
+  using curvefs::utils::MaxPowerTimesLessEqualValue;
 
   uint64_t overloadTimes = opt_.maxRetrySleepIntervalUS / opt_.retryIntervalUS;
 

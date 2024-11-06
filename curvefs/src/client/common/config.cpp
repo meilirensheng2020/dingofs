@@ -129,7 +129,7 @@ void InitMdsOption(Configuration* conf, MdsOption* mdsOpt) {
   conf->GetValueFatalIfFail("mdsOpt.rpcRetryOpt.addrs", &adds);
 
   std::vector<std::string> mdsAddr;
-  curve::common::SplitString(adds, ",", &mdsAddr);
+  curvefs::utils::SplitString(adds, ",", &mdsAddr);
   mdsOpt->rpcRetryOpt.addrs.assign(mdsAddr.begin(), mdsAddr.end());
 }
 
@@ -199,7 +199,7 @@ void InitS3Option(Configuration* conf, S3Option* s3Opt) {
                             &s3Opt->s3ClientAdaptorOpt.maxReadRetryIntervalMs);
   conf->GetValueFatalIfFail("s3.readRetryIntervalMs",
                             &s3Opt->s3ClientAdaptorOpt.readRetryIntervalMs);
-  ::curve::common::InitS3AdaptorOptionExceptS3InfoOption(conf,
+  ::curvefs::utils::InitS3AdaptorOptionExceptS3InfoOption(conf,
                                                          &s3Opt->s3AdaptrOpt);
 }
 
@@ -419,7 +419,7 @@ void InitBlockCacheOption(Configuration* c, BlockCacheOption* option) {
 }
 
 void SetBrpcOpt(Configuration* conf) {
-  curve::common::GflagsLoadValueFromConfIfCmdNotSet dummy;
+  curvefs::utils::GflagsLoadValueFromConfIfCmdNotSet dummy;
   dummy.Load(conf, "defer_close_second", "rpc.defer.close.second",
              &brpc::FLAGS_defer_close_second);
   dummy.Load(conf, "health_check_interval", "rpc.healthCheckIntervalSec",

@@ -24,8 +24,8 @@
 
 #include <gtest/gtest.h>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 TEST(Common, ChannelPool) {
   ChannelPool channelPool;
@@ -47,5 +47,5 @@ TEST(Common, ChannelPool) {
   channelPool.Clear();
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

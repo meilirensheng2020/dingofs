@@ -41,7 +41,7 @@ namespace client {
 
 using ::curvefs::client::filesystem::ToFSError;
 
-using NameLockGuard = ::curve::common::GenericNameLockGuard<Mutex>;
+using NameLockGuard = ::curvefs::utils::GenericNameLockGuard<Mutex>;
 
 CURVEFS_ERROR InodeCacheManagerImpl::GetInodeFromCached(
     uint64_t inode_id, std::shared_ptr<InodeWrapper>& out) {
@@ -172,7 +172,7 @@ CURVEFS_ERROR InodeCacheManagerImpl::BatchGetInodeAttrAsync(
     return CURVEFS_ERROR::NOTEXIST;
   }
 
-  ::curve::common::Mutex mutex;
+  ::curvefs::utils::Mutex mutex;
   std::shared_ptr<CountDownEvent> cond =
       std::make_shared<CountDownEvent>(inode_groups.size());
   for (const auto& it : inode_groups) {

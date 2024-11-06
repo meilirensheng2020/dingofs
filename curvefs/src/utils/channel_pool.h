@@ -34,8 +34,8 @@
 
 using ChannelPtr = std::shared_ptr<brpc::Channel>;
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class ChannelPool {
  public:
@@ -59,7 +59,7 @@ class ChannelPool {
   std::unordered_map<std::string, ChannelPtr> channelMap_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CHANNEL_POOL_H_

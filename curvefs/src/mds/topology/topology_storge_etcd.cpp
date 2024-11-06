@@ -611,7 +611,7 @@ bool TopologyStorageEtcd::LoadFs2MemcacheCluster(
       return false;
     }
     FsIdType fsId;
-    if (curve::common::StringToUl(data.second, &fsId)) {
+    if (curvefs::utils::StringToUl(data.second, &fsId)) {
       fs2MemcacheCluster->emplace(id, fsId);
     } else {
       return false;

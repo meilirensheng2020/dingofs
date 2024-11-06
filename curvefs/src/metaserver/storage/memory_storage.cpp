@@ -31,8 +31,8 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::WriteLockGuard;
 using UnorderedContainerType = MemoryStorage::UnorderedContainerType;
 using UnorderedSeralizedContainerType =
     MemoryStorage::UnorderedSeralizedContainerType;

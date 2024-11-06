@@ -40,7 +40,7 @@ namespace string {
 using ::absl::StrFormat;
 using ::absl::StrJoin;
 using ::absl::StrSplit;
-using ::curve::common::UUIDGenerator;
+using ::curvefs::utils::UUIDGenerator;
 
 inline bool Str2Int(const std::string& str, uint64_t* num) noexcept {
   try {

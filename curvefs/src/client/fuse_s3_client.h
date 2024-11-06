@@ -35,8 +35,8 @@
 namespace curvefs {
 namespace client {
 
-using curve::common::GetObjectAsyncCallBack;
-using curve::common::GetObjectAsyncContext;
+using curvefs::utils::GetObjectAsyncCallBack;
+using curvefs::utils::GetObjectAsyncContext;
 
 namespace warmup {
 class WarmupManager;

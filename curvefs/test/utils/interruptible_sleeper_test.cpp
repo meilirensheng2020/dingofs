@@ -27,8 +27,8 @@
 #include "curvefs/src/utils/concurrent/concurrent.h"
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 InterruptibleSleeper sleeper;
 bool is_stop = false;
 
@@ -57,5 +57,5 @@ TEST(InterruptibleSleeperTest, test_interruptible_sleeper) {
   waitpid(pid, &waitstatus, 0);
   ASSERT_GT(8000, TimeUtility::GetTimeofDayMs() - startKill);
 }
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

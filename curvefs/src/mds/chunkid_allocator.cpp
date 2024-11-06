@@ -29,7 +29,7 @@ namespace mds {
 int ChunkIdAllocatorImpl::GenChunkId(uint64_t idNum, uint64_t* chunkId) {
   int ret = 0;
   // will unloack at destructor
-  ::curve::common::WriteLockGuard guard(nextIdRWlock_);
+  ::curvefs::utils::WriteLockGuard guard(nextIdRWlock_);
 
   if (nextId_ + idNum - 1 > lastId_ || CHUNKIDINITIALIZE == nextId_) {
     // the chunkIds is exhausted || first to get chunkId
@@ -108,7 +108,7 @@ int ChunkIdAllocatorImpl::AllocateBundleIds(int bundleSize) {
 }
 
 bool ChunkIdAllocatorImpl::DecodeID(const std::string& value, uint64_t* out) {
-  return ::curve::common::StringToUll(value, out);
+  return ::curvefs::utils::StringToUll(value, out);
 }
 
 }  // namespace mds

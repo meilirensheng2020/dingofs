@@ -28,7 +28,7 @@ namespace metaserver {
 void PartitionCleanManager::Add(
     uint32_t partitionId, const std::shared_ptr<PartitionCleaner>& cleaner,
     copyset::CopysetNode* copysetNode) {
-  curve::common::WriteLockGuard lockGuard(rwLock_);
+  curvefs::utils::WriteLockGuard lockGuard(rwLock_);
   LOG(INFO) << "Add partition to partition clean mananager, partititonId = "
             << partitionId;
   cleaner->SetS3Aapter(S3ClientAdaptor_);
@@ -40,7 +40,7 @@ void PartitionCleanManager::Add(
 }
 
 void PartitionCleanManager::Remove(uint32_t partitionId) {
-  curve::common::WriteLockGuard lockGuard(rwLock_);
+  curvefs::utils::WriteLockGuard lockGuard(rwLock_);
   // 1. first check inProcessingCleaner
   if (inProcessingCleaner_ != nullptr &&
       inProcessingCleaner_->GetPartitionId() == partitionId) {
@@ -91,7 +91,7 @@ void PartitionCleanManager::ScanLoop() {
             << scanPeriodSec_;
   while (sleeper_.wait_for(std::chrono::seconds(scanPeriodSec_))) {
     {
-      curve::common::WriteLockGuard lockGuard(rwLock_);
+      curvefs::utils::WriteLockGuard lockGuard(rwLock_);
       if (partitonCleanerList_.empty()) {
         continue;
       }
@@ -109,7 +109,7 @@ void PartitionCleanManager::ScanLoop() {
                 << partitionId;
       partitionCleanerCount << -1;
     } else {
-      curve::common::WriteLockGuard lockGuard(rwLock_);
+      curvefs::utils::WriteLockGuard lockGuard(rwLock_);
       if (!inProcessingCleaner_->IsStop()) {
         partitonCleanerList_.push_back(inProcessingCleaner_);
       } else {

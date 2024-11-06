@@ -97,7 +97,7 @@ namespace curvefs {
 namespace tools {
 
 template <class FlagInfoT>
-void SetFlagInfo(curve::common::Configuration* conf,
+void SetFlagInfo(curvefs::utils::Configuration* conf,
                  google::CommandLineFlagInfo* info, const std::string& key,
                  FlagInfoT* flag) {
   if (GetCommandLineFlagInfo(key.c_str(), info) && info->is_default) {
@@ -107,7 +107,7 @@ void SetFlagInfo(curve::common::Configuration* conf,
 
 // Used for flagname and the name in the configuration file is inconsistent
 template <class FlagInfoT>
-void SetDiffFlagInfo(curve::common::Configuration* conf,
+void SetDiffFlagInfo(curvefs::utils::Configuration* conf,
                      google::CommandLineFlagInfo* info,
                      const std::string& flagName, const std::string& key,
                      FlagInfoT* flag) {
@@ -123,143 +123,143 @@ bool CheckFlagInfoDefault(google::CommandLineFlagInfo* info,
 }
 
 /* set flag */
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetMdsAddr = std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                            std::placeholders::_2, "mdsAddr", &FLAGS_mdsAddr);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetRpcTimeoutMs =
         std::bind(&SetFlagInfo<uint32_t>, std::placeholders::_1,
                   std::placeholders::_2, "rpcTimeoutMs", &FLAGS_rpcTimeoutMs);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetRpcRetryTimes =
         std::bind(&SetFlagInfo<uint32_t>, std::placeholders::_1,
                   std::placeholders::_2, "rpcRetryTimes", &FLAGS_rpcRetryTimes);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetMetaserverAddr = std::bind(&SetFlagInfo<fLS::clstring>,
                                   std::placeholders::_1, std::placeholders::_2,
                                   "metaserverAddr", &FLAGS_metaserverAddr);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetEtcdAddr = std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                             std::placeholders::_2, "etcdAddr", &FLAGS_etcdAddr);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetMdsDummyAddr =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "mdsDummyAddr", &FLAGS_mdsDummyAddr);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetBlockSize =
         std::bind(&SetFlagInfo<uint64_t>, std::placeholders::_1,
                   std::placeholders::_2, "blockSize", &FLAGS_blockSize);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetFsType = std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                           std::placeholders::_2, "fsType", &FLAGS_fsType);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeBlockSize = std::bind(&SetFlagInfo<uint64_t>,
                                    std::placeholders::_1, std::placeholders::_2,
                                    "volumeBlockSize", &FLAGS_volumeBlockSize);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeName =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeName", &FLAGS_volumeName);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeUser =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeUser", &FLAGS_volumeUser);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumePassword = std::bind(&SetFlagInfo<fLS::clstring>,
                                   std::placeholders::_1, std::placeholders::_2,
                                   "volumePassword", &FLAGS_volumePassword);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeBlockGroupSize = std::bind(
         &SetFlagInfo<uint64_t>, std::placeholders::_1, std::placeholders::_2,
         "volumeBlockGroupSize", &FLAGS_volumeBlockGroupSize);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeBitmapLocation =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeBitmapLocation",
                   &FLAGS_volumeBitmapLocation);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeAutoExtend =
         std::bind(&SetFlagInfo<bool>, std::placeholders::_1,
                   std::placeholders::_2, "autoExtend", &FLAGS_volumeAutoExtend);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeExtendFactor = std::bind(
         &SetFlagInfo<double>, std::placeholders::_1, std::placeholders::_2,
         "extendFactor", &FLAGS_volumeExtendFactor);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetVolumeCluster =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeCluster", &FLAGS_volumeCluster);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetS3_ak = std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                          std::placeholders::_2, "s3_ak", "s3.ak", &FLAGS_s3_ak);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetS3_sk = std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                          std::placeholders::_2, "s3_sk", "s3.sk", &FLAGS_s3_sk);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetS3_endpoint =
         std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "s3_endpoint", "s3.endpoint",
                   &FLAGS_s3_endpoint);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetS3_bucket_name =
         std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "s3_bucket_name", "s3.bucket_name",
                   &FLAGS_s3_bucket_name);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetS3_blocksize =
         std::bind(&SetDiffFlagInfo<uint64_t>, std::placeholders::_1,
                   std::placeholders::_2, "s3_blocksize", "s3.blocksize",
                   &FLAGS_s3_blocksize);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetS3_chunksize =
         std::bind(&SetDiffFlagInfo<uint64_t>, std::placeholders::_1,
                   std::placeholders::_2, "s3_chunksize", "s3.chunksize",
                   &FLAGS_s3_chunksize);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetS3_objectPrefix =
         std::bind(&SetDiffFlagInfo<uint32_t>, std::placeholders::_1,
                   std::placeholders::_2, "s3_objectPrefix", "s3.objectPrefix",
                   &FLAGS_s3_objectPrefix);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetEnableSumInDir = std::bind(&SetFlagInfo<bool>, std::placeholders::_1,
                                   std::placeholders::_2, "enableSumInDir",
                                   &FLAGS_enableSumInDir);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetRpcStreamIdleTimeoutMs = std::bind(
         &SetFlagInfo<uint32_t>, std::placeholders::_1, std::placeholders::_2,
         "rpcStreamIdleTimeoutMs", &FLAGS_rpcStreamIdleTimeoutMs);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetRpcRetryIntervalUs = std::bind(
         &SetFlagInfo<uint32_t>, std::placeholders::_1, std::placeholders::_2,
         "rpcRetryIntervalUs", &FLAGS_rpcRetryIntervalUs);
 
-std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(curvefs::utils::Configuration*, google::CommandLineFlagInfo*)>
     SetRecycleTimeHour = std::bind(&SetFlagInfo<uint32_t>,
                                    std::placeholders::_1, std::placeholders::_2,
                                    "recycleTimeHour", &FLAGS_recycleTimeHour);

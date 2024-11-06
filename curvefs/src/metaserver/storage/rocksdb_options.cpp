@@ -198,8 +198,8 @@ void InitRocksdbOptions(
       kOrderedColumnFamilyName, orderedCfOptions});
 }
 
-void ParseRocksdbOptions(curve::common::Configuration* conf) {
-  curve::common::GflagsLoadValueFromConfIfCmdNotSet dummy;
+void ParseRocksdbOptions(curvefs::utils::Configuration* conf) {
+  curvefs::utils::GflagsLoadValueFromConfIfCmdNotSet dummy;
   dummy.Load(conf, "rocksdb_block_cache_capacity",
              "storage.rocksdb.block_cache_capacity",
              &FLAGS_rocksdb_block_cache_capacity, /*fatalIfMissing*/ false);

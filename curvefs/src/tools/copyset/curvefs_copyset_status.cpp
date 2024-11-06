@@ -42,12 +42,12 @@ int GetCopysetStatusTool::Init() {
     return -1;
   }
 
-  curve::common::SplitString(FLAGS_metaserverAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_metaserverAddr, ",", &hostsAddr_);
 
   std::vector<std::string> copysetsId;
-  curve::common::SplitString(FLAGS_copysetId, ",", &copysetsId);
+  curvefs::utils::SplitString(FLAGS_copysetId, ",", &copysetsId);
   std::vector<std::string> poolsId;
-  curve::common::SplitString(FLAGS_poolId, ",", &poolsId);
+  curvefs::utils::SplitString(FLAGS_poolId, ",", &poolsId);
   if (copysetsId.size() != poolsId.size()) {
     std::cerr << "copysets not match pools." << std::endl;
     return -1;

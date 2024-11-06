@@ -43,7 +43,7 @@ class ClientS3Test : public testing::Test {
   ClientS3Test() {}
   ~ClientS3Test() {}
   virtual void SetUp() {
-    s3Adapter_ = std::make_shared<curve::common::MockS3Adapter>();
+    s3Adapter_ = std::make_shared<curvefs::utils::MockS3Adapter>();
     s3Client_ = new S3ClientImpl();
     s3Client_->SetAdaptor(s3Adapter_);
   }
@@ -54,7 +54,7 @@ class ClientS3Test : public testing::Test {
   }
 
  protected:
-  std::shared_ptr<curve::common::MockS3Adapter> s3Adapter_;
+  std::shared_ptr<curvefs::utils::MockS3Adapter> s3Adapter_;
   S3ClientImpl* s3Client_;
 };
 

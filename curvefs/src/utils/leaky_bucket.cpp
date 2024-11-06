@@ -30,8 +30,8 @@
 
 #include "curvefs/src/utils/timeutility.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 DEFINE_uint32(bucketLeakIntervalMs, 20,
               "leaky bucket leak interval in milliseconds");
@@ -307,5 +307,5 @@ void LeakyBucket::InitTimerThread() {
   }
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

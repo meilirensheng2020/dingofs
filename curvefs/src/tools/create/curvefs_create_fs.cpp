@@ -29,8 +29,8 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "curvefs/proto/common.pb.h"
-#include "curvefs/src/common/fast_align.h"
 #include "curvefs/src/tools/curvefs_tool_define.h"
+#include "curvefs/src/utils/fast_align.h"
 #include "curvefs/src/utils/string_util.h"
 
 DECLARE_string(fsName);
@@ -71,7 +71,7 @@ namespace create {
 
 using ::curvefs::common::BitmapLocation;
 using ::curvefs::common::BitmapLocation_Parse;
-using ::curvefs::common::is_aligned;
+using ::curvefs::utils::is_aligned;
 
 void CreateFsTool::PrintHelp() {
   CurvefsToolRpc::PrintHelp();
@@ -157,7 +157,7 @@ google::protobuf::RepeatedPtrField<::std::string> ParseVolumeCluster(
 int CreateFsTool::Init() {
   int ret = CurvefsToolRpc::Init();
 
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
   service_stub_func_ =
       std::bind(&mds::MdsService_Stub::CreateFs, service_stub_.get(),
                 std::placeholders::_1, std::placeholders::_2,

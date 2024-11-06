@@ -29,11 +29,11 @@
 #include "curvefs/src/kvstorageclient/etcd_client.h"
 #include "curvefs/src/utils/uncopyable.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
-using curve::common::Uncopyable;
-using curve::kvstorage::KVStorageClient;
+using curvefs::utils::Uncopyable;
+using curvefs::kvstorage::KVStorageClient;
 
 struct DLockOpts {
   std::string pfx;
@@ -96,7 +96,7 @@ class DLock : public Uncopyable {
   const DLockOpts& opts_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_DLOCK_H_

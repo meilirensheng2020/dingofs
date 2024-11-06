@@ -55,8 +55,8 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::TimeUtility;
-using ::curve::common::UriParser;
+using ::curvefs::utils::TimeUtility;
+using ::curvefs::utils::UriParser;
 
 namespace {
 const char* const kConfEpochFilename = "conf.epoch";

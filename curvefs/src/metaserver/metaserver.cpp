@@ -67,9 +67,9 @@ DECLARE_bool(graceful_quit_on_sigterm);
 namespace curvefs {
 namespace metaserver {
 
-using ::curve::fs::FileSystemType;
-using ::curve::fs::LocalFileSystemOption;
-using ::curve::fs::LocalFsFactory;
+using ::curvefs::fs::FileSystemType;
+using ::curvefs::fs::LocalFileSystemOption;
+using ::curvefs::fs::LocalFsFactory;
 
 using ::curvefs::client::rpcclient::ChannelManager;
 using ::curvefs::client::rpcclient::Cli2ClientImpl;
@@ -101,7 +101,7 @@ void Metaserver::InitOptions(std::shared_ptr<Configuration> conf) {
   conf_->GetValueFatalIfFail("bthread.worker_count", &value);
   if (value == "auto") {
     options_.bthreadWorkerCount = -1;
-  } else if (!curve::common::StringToInt(value, &options_.bthreadWorkerCount)) {
+  } else if (!curvefs::utils::StringToInt(value, &options_.bthreadWorkerCount)) {
     LOG(WARNING) << "Parse bthread.worker_count to int failed, string value: "
                  << value;
   }
@@ -218,11 +218,11 @@ void Metaserver::Init() {
 
   S3ClientAdaptorOption s3ClientAdaptorOption;
   InitS3Option(conf_, &s3ClientAdaptorOption);
-  curve::common::S3AdapterOption s3AdaptorOption;
-  ::curve::common::InitS3AdaptorOptionExceptS3InfoOption(conf_.get(),
+  curvefs::utils::S3AdapterOption s3AdaptorOption;
+  ::curvefs::utils::InitS3AdaptorOptionExceptS3InfoOption(conf_.get(),
                                                          &s3AdaptorOption);
   auto s3Client_ = new S3ClientImpl;
-  s3Client_->SetAdaptor(std::make_shared<curve::common::S3Adapter>());
+  s3Client_->SetAdaptor(std::make_shared<curvefs::utils::S3Adapter>());
   s3Client_->Init(s3AdaptorOption);
   // s3Adaptor_ own the s3Client_, and will delete it when destruct.
   s3Adaptor_->Init(s3ClientAdaptorOption, s3Client_);
@@ -302,7 +302,7 @@ int Metaserver::PersistMetaserverMeta(std::string path,
     return -1;
   }
 
-  uint32_t crc = curve::common::CRC32(0, tempData.c_str(), tempData.length());
+  uint32_t crc = curvefs::utils::CRC32(0, tempData.c_str(), tempData.length());
   metadata->set_checksum(crc);
 
   std::string data;
@@ -343,7 +343,7 @@ int Metaserver::LoadMetaserverMeta(const std::string& metaFilePath,
     return -1;
   }
 
-  uint32_t crc = curve::common::CRC32(0, tempData.c_str(), tempData.length());
+  uint32_t crc = curvefs::utils::CRC32(0, tempData.c_str(), tempData.length());
   if (crc != crcFromFile) {
     LOG(ERROR) << "crc is mismatch";
     return -1;
@@ -425,7 +425,7 @@ void Metaserver::Run() {
   LOG_IF(FATAL, heartbeat_.Run() != 0) << "Failed to start heartbeat manager.";
 
   // set metaserver version in metric
-  curve::common::ExposeCurveVersion();
+  curvefs::utils::ExposeCurveVersion();
 
   PartitionCleanManager::GetInstance().Run();
 
@@ -557,7 +557,7 @@ void Metaserver::InitHeartbeat() {
 
 void Metaserver::InitResourceCollector() {
   std::string dataRoot;
-  std::string protocol = curve::common::UriParser::ParseUri(
+  std::string protocol = curvefs::utils::UriParser::ParseUri(
       copysetNodeOptions_.dataUri, &dataRoot);
 
   LOG_IF(FATAL, dataRoot.empty())

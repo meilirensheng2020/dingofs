@@ -41,10 +41,10 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using ::curve::common::LRUCache;
-using ::curve::common::ReadLockGuard;
-using ::curve::common::RWLock;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::LRUCache;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::RWLock;
+using ::curvefs::utils::WriteLockGuard;
 using ::curvefs::base::queue::MessageQueue;
 using ::curvefs::base::time::TimeSpec;
 using ::curvefs::client::common::DirCacheOption;

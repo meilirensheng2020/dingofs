@@ -31,12 +31,12 @@
 
 #include "curvefs/src/utils/s3_adapter.h"
 
-using curve::common::GetObjectAsyncContext;
+using curvefs::utils::GetObjectAsyncContext;
 using ::testing::Return;
 namespace curvefs {
 namespace client {
 
-class MockS3Adapter : public curve::common::S3Adapter {
+class MockS3Adapter : public curvefs::utils::S3Adapter {
  public:
   MockS3Adapter() {}
   ~MockS3Adapter() {}

@@ -33,8 +33,8 @@ namespace curvefs {
 namespace mds {
 namespace topology {
 
-using curve::common::SplitString;
-using curve::common::StringToUl;
+using curvefs::utils::SplitString;
+using curvefs::utils::StringToUl;
 
 /**
  * @brief the peerid format is ip:port:index, and be used in braft.
@@ -82,8 +82,8 @@ inline bool SplitPeerId(const std::string& peer_id, std::string* addr) {
 inline bool SplitAddrToIpPort(const std::string& addr, std::string* ipstr,
                               uint32_t* port) {
   std::vector<std::string> items;
-  curve::common::SplitString(addr, ":", &items);
-  if (2 == items.size() && curve::common::StringToUl(items[1], port)) {
+  curvefs::utils::SplitString(addr, ":", &items);
+  if (2 == items.size() && curvefs::utils::StringToUl(items[1], port)) {
     *ipstr = items[0];
     return true;
   }

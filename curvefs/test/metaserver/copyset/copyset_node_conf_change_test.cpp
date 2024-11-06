@@ -41,8 +41,8 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArgPointee;
 
-static std::shared_ptr<curve::fs::Ext4FileSystemImpl> localfs =
-    curve::fs::Ext4FileSystemImpl::getInstance();
+static std::shared_ptr<curvefs::fs::Ext4FileSystemImpl> localfs =
+    curvefs::fs::Ext4FileSystemImpl::getInstance();
 static const char* const kTestDataDir = "./CopysetNodeConfChangeTest";
 
 class CopysetNodeConfChangeTest : public testing::Test {

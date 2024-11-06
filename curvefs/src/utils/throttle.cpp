@@ -28,8 +28,8 @@
 #include <string>
 #include <utility>
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 const char* ThrottleTypeToName(Throttle::Type type) {
   switch (type) {
@@ -58,7 +58,7 @@ const std::vector<Throttle::Type> kDefaultEnabledThrottleTypes = {
 Throttle::Throttle() : throttleParams_(), throttles_() {
   for (auto type : kDefaultEnabledThrottleTypes) {
     throttles_.emplace_back(type, false,
-                            new common::LeakyBucket(ThrottleTypeToName(type)));
+                            new utils::LeakyBucket(ThrottleTypeToName(type)));
   }
 }
 
@@ -115,8 +115,8 @@ bool Throttle::IsThrottleEnabled(Type type) const {
 }
 
 void Throttle::UpdateIfNotEqual(
-    Type type, const curve::common::ThrottleParams& oldParams,
-    const curve::common::ThrottleParams& newParams) {
+    Type type, const curvefs::utils::ThrottleParams& oldParams,
+    const curvefs::utils::ThrottleParams& newParams) {
   if (oldParams == newParams) {
     return;
   }
@@ -149,5 +149,5 @@ uint64_t Throttle::CalcTokens(bool isRead, uint64_t length, Type type) const {
   return IsIOPSThrottle(type) ? 1 : length;
 }
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs

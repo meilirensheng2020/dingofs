@@ -41,11 +41,11 @@
 #include "curvefs/src/metaserver/storage/converter.h"
 #include "curvefs/src/utils/s3_adapter.h"
 
-using curve::common::Configuration;
-using curve::common::InitS3AdaptorOptionExceptS3InfoOption;
-using curve::common::S3Adapter;
-using curve::common::S3AdapterOption;
-using curve::common::TaskThreadPool;
+using curvefs::utils::Configuration;
+using curvefs::utils::InitS3AdaptorOptionExceptS3InfoOption;
+using curvefs::utils::S3Adapter;
+using curvefs::utils::S3AdapterOption;
+using curvefs::utils::TaskThreadPool;
 using curvefs::metaserver::copyset::CopysetNode;
 using curvefs::metaserver::copyset::CopysetNodeManager;
 

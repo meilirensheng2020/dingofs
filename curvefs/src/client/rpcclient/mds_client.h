@@ -38,11 +38,11 @@
 #include "curvefs/src/others/config_info.h"
 #include "curvefs/src/others/metacache_struct.h"
 
-using ::curve::client::CopysetID;
-using ::curve::client::CopysetInfo;
-using ::curve::client::CopysetPeerInfo;
-using ::curve::client::LogicPoolID;
-using ::curve::client::PeerAddr;
+using ::curvefs::client::CopysetID;
+using ::curvefs::client::CopysetInfo;
+using ::curvefs::client::CopysetPeerInfo;
+using ::curvefs::client::LogicPoolID;
+using ::curvefs::client::PeerAddr;
 using ::curvefs::client::common::MetaserverID;
 using ::curvefs::client::metric::MDSClientMetric;
 using ::curvefs::common::PartitionInfo;
@@ -66,7 +66,7 @@ using curvefs::mds::GetLatestTxIdResponse;
 using curvefs::mds::Mountpoint;
 using curvefs::mds::topology::MemcacheClusterInfo;
 
-using ::curve::client::MetaServerOption;
+using ::curvefs::client::MetaServerOption;
 
 class RPCExcutorRetryPolicy {
  public:
@@ -184,7 +184,7 @@ class MdsClient {
   MdsClient() {}
   virtual ~MdsClient() {}
 
-  virtual FSStatusCode Init(const ::curve::client::MetaServerOption& mdsOpt,
+  virtual FSStatusCode Init(const ::curvefs::client::MetaServerOption& mdsOpt,
                             MDSBaseClient* baseclient) = 0;
 
   virtual FSStatusCode MountFs(const std::string& fsName,
@@ -262,7 +262,7 @@ class MdsClientImpl : public MdsClient {
  public:
   MdsClientImpl() = default;
 
-  FSStatusCode Init(const ::curve::client::MetaServerOption& mdsOpt,
+  FSStatusCode Init(const ::curvefs::client::MetaServerOption& mdsOpt,
                     MDSBaseClient* baseclient) override;
 
   FSStatusCode MountFs(const std::string& fsName, const Mountpoint& mountPt,
@@ -346,7 +346,7 @@ class MdsClientImpl : public MdsClient {
  private:
   MDSBaseClient* mdsbasecli_;
   RPCExcutorRetryPolicy rpcexcutor_;
-  ::curve::client::MetaServerOption mdsOpt_;
+  ::curvefs::client::MetaServerOption mdsOpt_;
 
   MDSClientMetric mdsClientMetric_;
 };

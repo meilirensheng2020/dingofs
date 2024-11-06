@@ -34,7 +34,7 @@ void RecycleManager::Init(const RecycleManagerOption& opt) {
 void RecycleManager::Add(uint32_t partitionId,
                          const std::shared_ptr<RecycleCleaner>& cleaner,
                          copyset::CopysetNode* copysetNode) {
-  curve::common::WriteLockGuard lockGuard(rwLock_);
+  curvefs::utils::WriteLockGuard lockGuard(rwLock_);
   LOG(INFO) << "Add recycle cleaner to recycle mananager, fsId = "
             << cleaner->GetFsId() << ", partititonId = " << partitionId;
   cleaner->SetCopysetNode(copysetNode);
@@ -45,7 +45,7 @@ void RecycleManager::Add(uint32_t partitionId,
 }
 
 void RecycleManager::Remove(uint32_t partitionId) {
-  curve::common::WriteLockGuard lockGuard(rwLock_);
+  curvefs::utils::WriteLockGuard lockGuard(rwLock_);
   if (inProcessingCleaner_ != nullptr &&
       inProcessingCleaner_->GetPartitionId() == partitionId) {
     inProcessingCleaner_->Stop();
@@ -93,7 +93,7 @@ void RecycleManager::ScanLoop() {
             << scanPeriodSec_;
   while (sleeper_.wait_for(std::chrono::seconds(scanPeriodSec_))) {
     {
-      curve::common::WriteLockGuard lockGuard(rwLock_);
+      curvefs::utils::WriteLockGuard lockGuard(rwLock_);
       if (recycleCleanerList_.empty()) {
         continue;
       }
@@ -111,7 +111,7 @@ void RecycleManager::ScanLoop() {
                 << partitionId
                 << ", fsId = " << inProcessingCleaner_->GetFsId();
     } else {
-      curve::common::WriteLockGuard lockGuard(rwLock_);
+      curvefs::utils::WriteLockGuard lockGuard(rwLock_);
       if (!inProcessingCleaner_->IsStop()) {
         recycleCleanerList_.push_back(inProcessingCleaner_);
       } else {

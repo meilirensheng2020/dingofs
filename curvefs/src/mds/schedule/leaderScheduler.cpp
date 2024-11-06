@@ -359,7 +359,7 @@ bool LeaderScheduler::CoolingTimeExpired(uint64_t startUpTime) {
     return false;
   }
 
-  uint64_t currentTime = ::curve::common::TimeUtility::GetTimeofDaySec();
+  uint64_t currentTime = ::curvefs::utils::TimeUtility::GetTimeofDaySec();
   return currentTime - startUpTime > metaserverCoolingTimeSec_;
 }
 

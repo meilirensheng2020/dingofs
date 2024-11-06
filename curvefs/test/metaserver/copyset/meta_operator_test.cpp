@@ -85,7 +85,7 @@ std::string Exec(const std::string& cmd) {
   return result;
 }
 
-using ::curve::common::TimeUtility;
+using ::curvefs::utils::TimeUtility;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::DoAll;
@@ -407,7 +407,7 @@ TEST_F(MetaOperatorTest, PropostTest_IsNotLeader) {
 }
 
 TEST_F(MetaOperatorTest, PropostTest_RequestCanBypassProcess) {
-  curve::fs::MockLocalFileSystem localFs;
+  curvefs::fs::MockLocalFileSystem localFs;
 
   PoolId poolId = 100;
   CopysetId copysetId = 100;

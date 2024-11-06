@@ -45,7 +45,7 @@ using ::curvefs::metaserver::storage::RocksDBStorage;
 using ::curvefs::metaserver::storage::StorageOptions;
 
 using ROCKSDB_STATUS = ROCKSDB_NAMESPACE::Status;
-using ::curve::fs::MockLocalFileSystem;
+using ::curvefs::fs::MockLocalFileSystem;
 using STORAGE_TYPE = ::curvefs::metaserver::storage::KVStorage::STORAGE_TYPE;
 
 using ::testing::_;
@@ -95,8 +95,8 @@ class RocksDBStorageTest : public testing::Test {
   std::string dbpath_;
   StorageOptions options_;
   std::shared_ptr<KVStorage> kvStorage_;
-  std::shared_ptr<curve::fs::LocalFileSystem> localfs_ =
-      curve::fs::Ext4FileSystemImpl::getInstance();
+  std::shared_ptr<curvefs::fs::LocalFileSystem> localfs_ =
+      curvefs::fs::Ext4FileSystemImpl::getInstance();
 };
 
 TEST_F(RocksDBStorageTest, OpenCloseTest) {
@@ -204,7 +204,7 @@ TEST_F(RocksDBStorageTest, TestRecover) {
 
   // recover should delete previous database
   EXPECT_CALL(mockfs, Delete(_)).WillOnce(Invoke([](const std::string& dir) {
-    return curve::fs::Ext4FileSystemImpl::getInstance()->Delete(dir);
+    return curvefs::fs::Ext4FileSystemImpl::getInstance()->Delete(dir);
   }));
 
   // open first

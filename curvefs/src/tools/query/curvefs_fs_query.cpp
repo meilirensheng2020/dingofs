@@ -42,7 +42,7 @@ int FsQueryTool::Init() {
     return -1;
   }
 
-  curve::common::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  curvefs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 
   // If fsName and fsId exist at the same time, only fsId work
   google::CommandLineFlagInfo info;
@@ -50,9 +50,9 @@ int FsQueryTool::Init() {
   std::vector<std::string> fsNameVec;
   if (!CheckFsNameDefault(&info) && CheckFsIdDefault(&info)) {
     // only use fsName in this case
-    curve::common::SplitString(FLAGS_fsName, ",", &fsNameVec);
+    curvefs::utils::SplitString(FLAGS_fsName, ",", &fsNameVec);
   } else {
-    curve::common::SplitString(FLAGS_fsId, ",", &fsIdVec);
+    curvefs::utils::SplitString(FLAGS_fsId, ",", &fsIdVec);
   }
 
   // fsId

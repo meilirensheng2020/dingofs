@@ -64,7 +64,7 @@ namespace storage {
 #define ERR2STR(code) {DUMPFILE_ERROR::code, #code},
 #define STATUS2STR(code) {DUMPFILE_LOAD_STATUS::code, #code},
 
-using ::curve::common::CRC32;
+using ::curvefs::utils::CRC32;
 
 const std::string DumpFile::kCurvefs_ = "CURVEFS";  // NOLINT
 const uint32_t DumpFile::kEOF_ = 0;
@@ -441,7 +441,7 @@ DUMPFILE_ERROR DumpFile::SaveBackground(std::shared_ptr<Iterator> iter,
     return DUMPFILE_ERROR::BAD_FD;
   }
 
-  auto startTime = ::curve::common::TimeUtility::GetTimeofDayMs();
+  auto startTime = ::curvefs::utils::TimeUtility::GetTimeofDayMs();
   auto proc = [this, iter]() { SaveWorker(iter); };
   pid_t childpid = ::curvefs::common::Process::SpawnProcess(proc);
   if (done != nullptr) {  // child process forked
@@ -453,7 +453,7 @@ DUMPFILE_ERROR DumpFile::SaveBackground(std::shared_ptr<Iterator> iter,
 
   auto retCode = WaitSaveDone(childpid);
 
-  auto endTime = ::curve::common::TimeUtility::GetTimeofDayMs();
+  auto endTime = ::curvefs::utils::TimeUtility::GetTimeofDayMs();
   double elapsed = (endTime - startTime) * 1.0 / 1000;
   LOG(INFO) << "Save background "
             << (retCode == DUMPFILE_ERROR::OK ? "success" : "fail")
@@ -480,7 +480,7 @@ DumpFileIterator::DumpFileIterator(DumpFile* dumpfile)
       nPairs_(0),
       size_(0),
       isValid_(false),
-      startTime_(::curve::common::TimeUtility::GetTimeofDayMs()),
+      startTime_(::curvefs::utils::TimeUtility::GetTimeofDayMs()),
       dumpfile_(dumpfile) {}
 
 bool DumpFileIterator::Valid() { return isValid_; }
@@ -530,7 +530,7 @@ void DumpFileIterator::End() {
   auto status = succ ? DUMPFILE_LOAD_STATUS::COMPLETE
                      : DUMPFILE_LOAD_STATUS::INVALID_CHECKSUM;
 
-  auto endTime = ::curve::common::TimeUtility::GetTimeofDayMs();
+  auto endTime = ::curvefs::utils::TimeUtility::GetTimeofDayMs();
   double elapsed = (endTime - startTime_) * 1.0 / 1000;
   uint8_t version = dumpfile_->GetVersion();
 

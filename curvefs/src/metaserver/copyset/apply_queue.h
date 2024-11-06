@@ -81,7 +81,7 @@ class CURVE_CACHELINE_ALIGNMENT ApplyQueue {
 
     std::atomic<bool> running;
     std::thread worker;
-    curve::common::TaskQueue tasks;
+    curvefs::utils::TaskQueue tasks;
     std::string workerName_;
   };
 

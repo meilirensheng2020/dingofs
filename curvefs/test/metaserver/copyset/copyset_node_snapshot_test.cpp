@@ -35,8 +35,8 @@ namespace curvefs {
 namespace metaserver {
 namespace copyset {
 
-using ::curve::common::UUIDGenerator;
-using ::curve::fs::MockLocalFileSystem;
+using ::curvefs::utils::UUIDGenerator;
+using ::curvefs::fs::MockLocalFileSystem;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;

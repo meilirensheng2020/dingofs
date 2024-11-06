@@ -184,7 +184,7 @@ std::string TopologyStorageCodec::EncodeFs2MemcacheClusterKey(FsIdType fsId) {
 bool TopologyStorageCodec::DecodeFs2MemcacheClusterKey(const std::string& value,
                                                        FsIdType* data) {
   size_t prefixLen = TOPOLOGY_PREFIX_LENGTH;
-  *data = curve::common::DecodeBigEndian(&(value[prefixLen]));
+  *data = curvefs::utils::DecodeBigEndian(&(value[prefixLen]));
   return true;
 }
 

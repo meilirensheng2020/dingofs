@@ -56,9 +56,9 @@ void InodeQueryTool::PrintHelp() {
 
 int InodeQueryTool::Init() {
   std::vector<std::string> fsIds;
-  curve::common::SplitString(FLAGS_fsId, ",", &fsIds);
+  curvefs::utils::SplitString(FLAGS_fsId, ",", &fsIds);
   std::vector<std::string> inodeIds;
-  curve::common::SplitString(FLAGS_inodeId, ",", &inodeIds);
+  curvefs::utils::SplitString(FLAGS_inodeId, ",", &inodeIds);
   if (fsIds.size() != inodeIds.size()) {
     std::cout << "fsId and inodeId must be the same size" << std::endl;
     return -1;
@@ -66,11 +66,11 @@ int InodeQueryTool::Init() {
   for (size_t i = 0; i < fsIds.size(); ++i) {
     InodeBase tmp;
     uint64_t tmpFsId = 0;
-    curve::common::StringToUll(fsIds[i], &tmpFsId);
+    curvefs::utils::StringToUll(fsIds[i], &tmpFsId);
     tmp.set_fsid(tmpFsId);
 
     uint64_t tmpInodeId = 0;
-    curve::common::StringToUll(inodeIds[i], &tmpInodeId);
+    curvefs::utils::StringToUll(inodeIds[i], &tmpInodeId);
     tmp.set_inodeid(tmpInodeId);
 
     inodeBases_.emplace_back(tmp);

@@ -33,13 +33,13 @@ DECLARE_string(cluster_map);
 DECLARE_string(confPath);
 DECLARE_string(op);
 
-using ::curve::common::SplitString;
+using ::curvefs::utils::SplitString;
 
 namespace curvefs {
 namespace mds {
 namespace topology {
 
-void UpdateFlagsFromConf(curve::common::Configuration* conf) {
+void UpdateFlagsFromConf(curvefs::utils::Configuration* conf) {
   LOG_IF(FATAL, !conf->LoadConfig());
   google::CommandLineFlagInfo info;
   if (GetCommandLineFlagInfo("mds_addr", &info) && info.is_default) {
@@ -58,7 +58,7 @@ void UpdateFlagsFromConf(curve::common::Configuration* conf) {
 
 int CurvefsBuildTopologyTool::Init() {
   std::string conf_path = FLAGS_confPath;
-  curve::common::Configuration conf;
+  curvefs::utils::Configuration conf;
   conf.SetConfigPath(conf_path);
   UpdateFlagsFromConf(&conf);
   SplitString(FLAGS_mds_addr, ",", &mdsAddressStr_);

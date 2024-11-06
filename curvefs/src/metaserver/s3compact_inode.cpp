@@ -37,11 +37,11 @@
 #include "curvefs/src/metaserver/copyset/copyset_node_manager.h"
 #include "curvefs/src/metaserver/copyset/meta_operator.h"
 
-using curve::common::Configuration;
-using curve::common::InitS3AdaptorOptionExceptS3InfoOption;
-using curve::common::S3Adapter;
-using curve::common::S3AdapterOption;
-using curve::common::TaskThreadPool;
+using curvefs::utils::Configuration;
+using curvefs::utils::InitS3AdaptorOptionExceptS3InfoOption;
+using curvefs::utils::S3Adapter;
+using curvefs::utils::S3AdapterOption;
+using curvefs::utils::TaskThreadPool;
 using curvefs::metaserver::copyset::GetOrModifyS3ChunkInfoOperator;
 
 namespace curvefs {

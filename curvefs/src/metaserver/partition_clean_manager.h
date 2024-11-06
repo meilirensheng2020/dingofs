@@ -86,7 +86,7 @@ class PartitionCleanManager {
   Atomic<bool> isStop_;
   Thread thread_;
   InterruptibleSleeper sleeper_;
-  curve::common::RWLock rwLock_;
+  curvefs::utils::RWLock rwLock_;
   bvar::Adder<uint32_t> partitionCleanerCount;
 };
 }  // namespace metaserver

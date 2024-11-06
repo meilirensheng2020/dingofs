@@ -32,8 +32,8 @@
 
 #include "curvefs/src/utils/uncopyable.h"
 
-namespace curve {
-namespace common {
+namespace curvefs {
+namespace utils {
 
 class ThreadPool : public Uncopyable {
  public:
@@ -52,7 +52,7 @@ class ThreadPool : public Uncopyable {
   std::atomic<bool> starting_;
 };
 
-}  // namespace common
-}  // namespace curve
+}  // namespace utils
+}  // namespace curvefs
 
 #endif  // SRC_COMMON_CONCURRENT_THREAD_POOL_H_

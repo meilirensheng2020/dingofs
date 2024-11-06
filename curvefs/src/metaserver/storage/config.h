@@ -25,7 +25,7 @@
 
 #include <string>
 
-namespace curve {
+namespace curvefs {
 namespace fs {
 class LocalFileSystem;
 }  // namespace fs
@@ -55,7 +55,7 @@ struct StorageOptions {
   // misc config item
   uint64_t s3MetaLimitSizeInsideInode;
 
-  curve::fs::LocalFileSystem* localFileSystem = nullptr;
+  curvefs::fs::LocalFileSystem* localFileSystem = nullptr;
 };
 
 }  // namespace storage

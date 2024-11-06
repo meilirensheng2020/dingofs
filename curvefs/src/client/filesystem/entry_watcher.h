@@ -33,8 +33,8 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using ::curve::common::LRUCache;
-using ::curve::common::RWLock;
+using ::curvefs::utils::LRUCache;
+using ::curvefs::utils::RWLock;
 
 // remeber regular file's ino which will use nocto flush plolicy
 class EntryWatcher {

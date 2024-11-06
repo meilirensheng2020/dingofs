@@ -42,7 +42,7 @@ USING_FLAG(disk_cache_expire_second);
 USING_FLAG(disk_cache_free_space_ratio);
 
 using ::butil::Timer;
-using ::curve::common::LockGuard;
+using ::curvefs::utils::LockGuard;
 using ::curvefs::base::math::kMiB;
 using ::curvefs::base::string::StrFormat;
 using ::curvefs::base::time::TimeNow;

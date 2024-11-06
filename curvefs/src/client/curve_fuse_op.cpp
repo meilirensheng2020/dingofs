@@ -44,7 +44,7 @@
 #include "curvefs/src/utils/configuration.h"
 #include "curvefs/src/utils/gflags_helper.h"
 
-using ::curve::common::Configuration;
+using ::curvefs::utils::Configuration;
 using ::curvefs::client::CURVEFS_ERROR;
 using ::curvefs::client::FuseClient;
 using ::curvefs::client::FuseS3Client;
@@ -132,7 +132,7 @@ int InitLog(const char* conf_path, const char* argv0) {
     }
   }
 
-  curve::common::GflagsLoadValueFromConfIfCmdNotSet dummy;
+  curvefs::utils::GflagsLoadValueFromConfIfCmdNotSet dummy;
   dummy.Load(&conf, "v", "client.loglevel", &FLAGS_v);
   FLAGS_vlog_level = FLAGS_v;
 
@@ -256,7 +256,7 @@ int Warmup(fuse_ino_t key, const std::string& name, const std::string& value) {
   }
 
   std::vector<std::string> op_type_path;
-  curve::common::SplitString(value, "\n", &op_type_path);
+  curvefs::utils::SplitString(value, "\n", &op_type_path);
   if (op_type_path.size() != curvefs::client::common::kWarmupOpNum) {
     LOG(ERROR) << name << " has invalid xattr value " << value;
     return ERANGE;

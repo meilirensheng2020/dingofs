@@ -42,7 +42,7 @@ DECLARE_bool(supportKVcache);
 
 namespace curvefs {
 namespace client {
-using curve::common::TaskThreadPool;
+using curvefs::utils::TaskThreadPool;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;

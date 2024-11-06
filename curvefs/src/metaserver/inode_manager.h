@@ -34,7 +34,7 @@
 #include "curvefs/src/metaserver/trash.h"
 #include "curvefs/src/utils/concurrent/name_lock.h"
 
-using ::curve::common::NameLock;
+using ::curvefs::utils::NameLock;
 using ::curvefs::metaserver::S3ChunkInfoList;
 
 namespace curvefs {

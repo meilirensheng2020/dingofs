@@ -36,8 +36,8 @@ namespace curvefs {
 namespace client {
 namespace filesystem {
 
-using ::curve::common::ReadLockGuard;
-using ::curve::common::WriteLockGuard;
+using ::curvefs::utils::ReadLockGuard;
+using ::curvefs::utils::WriteLockGuard;
 using ::curvefs::client::InodeWrapper;
 using ::curvefs::client::common::OpenFilesOption;
 

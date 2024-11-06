@@ -28,7 +28,7 @@ namespace curvefs {
 namespace client {
 namespace common {
 
-using curve::common::Configuration;
+using curvefs::utils::Configuration;
 
 void InitVolumeOption(Configuration* conf, VolumeOption* volumeOpt);
 

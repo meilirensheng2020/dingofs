@@ -42,9 +42,9 @@ namespace curvefs {
 namespace metaserver {
 namespace storage {
 
-using ::curve::common::SplitString;
-using ::curve::common::StringToUl;
-using ::curve::common::StringToUll;
+using ::curvefs::utils::SplitString;
+using ::curvefs::utils::StringToUl;
+using ::curvefs::utils::StringToUll;
 using ::curvefs::common::PartitionInfo;
 
 static const char* const kDelimiter = ":";

@@ -34,7 +34,7 @@ namespace curvefs {
 namespace mds {
 namespace topology {
 
-using curve::common::EncodeBigEndian;
+using curvefs::utils::EncodeBigEndian;
 using curvefs::mds::CLUSTERINFOKEY;
 using curvefs::mds::COPYSETKEYEND;
 using curvefs::mds::COPYSETKEYPREFIX;
