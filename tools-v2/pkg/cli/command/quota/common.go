@@ -405,6 +405,9 @@ func GetInodePath(cmd *cobra.Command, fsId uint32, inodeId uint64) (string, erro
 		}
 		inodeId = parentId
 	}
+	if len(names) == 0 { //directory may be deleted
+		return "", nil
+	}
 	names = append(names, "/") // add root
 	reverse(names)
 	return path.Join(names...), nil
