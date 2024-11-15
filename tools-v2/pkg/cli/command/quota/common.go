@@ -3,6 +3,9 @@ package quota
 import (
 	"context"
 	"fmt"
+	"github.com/dingodb/dingofs/tools-v2/proto/curvefs/proto/heartbeat"
+	"github.com/dingodb/dingofs/tools-v2/proto/curvefs/proto/topology"
+	"log"
 	"math"
 	"path"
 	"strings"
@@ -11,8 +14,7 @@ import (
 	cmderror "github.com/dingodb/dingofs/tools-v2/internal/error"
 	cobrautil "github.com/dingodb/dingofs/tools-v2/internal/utils"
 	basecmd "github.com/dingodb/dingofs/tools-v2/pkg/cli/command"
-	"github.com/dingodb/dingofs/tools-v2/pkg/cli/command/list/partition"
-	"github.com/dingodb/dingofs/tools-v2/pkg/cli/command/query/copyset"
+	cmdCommon "github.com/dingodb/dingofs/tools-v2/pkg/cli/command/common"
 	curvefs "github.com/dingodb/dingofs/tools-v2/pkg/cli/command/query/fs"
 	"github.com/dingodb/dingofs/tools-v2/pkg/config"
 	"github.com/dingodb/dingofs/tools-v2/pkg/output"
@@ -28,8 +30,9 @@ import (
 
 var (
 	// metadata cache
-	LeaderInfoMap    map[uint64][]string              = make(map[uint64][]string)              // inodeid->leader address
-	partitionInfoMap map[uint64]*common.PartitionInfo = make(map[uint64]*common.PartitionInfo) //inodeid -> partitioninfo
+	LeaderInfoMap    map[uint32][]string                = make(map[uint32][]string)                // partitionid ->leader address
+	partitionListMap map[uint32][]*common.PartitionInfo = make(map[uint32][]*common.PartitionInfo) // fsid -> partitionListinfo
+	copysetInfoMap   map[uint64]*heartbeat.CopySetInfo  = make(map[uint64]*heartbeat.CopySetInfo)  // copysetkey -> CopySetInfo
 )
 
 // Summary represents the total length and inodes of directory
@@ -161,73 +164,125 @@ func ConvertQuotaToHumanizeValue(capacity uint64, usedBytes int64, maxInodes uin
 	return result
 }
 
+// get partitionList by fsid
+func GetPartitionList(cmd *cobra.Command, fsId uint32) ([]*common.PartitionInfo, error) {
+	if partitionList, ok := partitionListMap[fsId]; ok { // find in cache
+		return partitionList, nil
+	}
+	addrs, addrErr := config.GetFsMdsAddrSlice(cmd)
+	if addrErr.TypeCode() != cmderror.CODE_SUCCESS {
+		return nil, fmt.Errorf(addrErr.Message)
+	}
+	request := &topology.ListPartitionRequest{
+		FsId: &fsId,
+	}
+	listPartitionRpc := &cmdCommon.ListPartitionRpc{
+		Request: request,
+	}
+	timeout := viper.GetDuration(config.VIPER_GLOBALE_RPCTIMEOUT)
+	retrytimes := viper.GetInt32(config.VIPER_GLOBALE_RPCRETRYTIMES)
+	listPartitionRpc.Info = basecmd.NewRpc(addrs, timeout, retrytimes, "ListPartition")
+	listPartitionRpc.Info.RpcDataShow = config.GetFlagBool(cmd, "verbose")
+	result, err := basecmd.GetRpcResponse(listPartitionRpc.Info, listPartitionRpc)
+	if err.TypeCode() != cmderror.CODE_SUCCESS {
+		return nil, err.ToError()
+	}
+	response := result.(*topology.ListPartitionResponse)
+	if response.GetStatusCode() != topology.TopoStatusCode_TOPO_OK {
+		return nil, fmt.Errorf("get partition failed in fs[%d], error[%s]", fsId, response.GetStatusCode().String())
+	}
+	partitionList := response.GetPartitionInfoList()
+	if partitionList == nil {
+		return nil, fmt.Errorf("partition not found in fs[%d]", fsId)
+	}
+	partitionListMap[fsId] = partitionList
+	return partitionList, nil
+}
+
 // get  partition by inodeid
 func GetPartitionInfo(cmd *cobra.Command, fsId uint32, inodeId uint64) (*common.PartitionInfo, error) {
-	if partitionInfo, ok := partitionInfoMap[inodeId]; ok { // find in cache
-		return partitionInfo, nil
+	partitionList, err := GetPartitionList(cmd, fsId)
+	if err != nil {
+		return nil, err
 	}
-	//get partition by fsid
-	cmd.ParseFlags([]string{
-		fmt.Sprintf("--%s", config.CURVEFS_FSID), fmt.Sprintf("%d", fsId),
-	})
-	fsId2PartitionList, errGet := partition.GetFsPartition(cmd)
-	if errGet.TypeCode() != cmderror.CODE_SUCCESS {
-		return nil, errGet.ToError()
-	}
-	partitionInfoList := (*fsId2PartitionList)[fsId]
-	if partitionInfoList == nil {
-		return nil, fmt.Errorf("inode[%d] is not found in fs[%d]", inodeId, fsId)
-	}
-	index := slices.IndexFunc(partitionInfoList,
+	index := slices.IndexFunc(partitionList,
 		func(p *common.PartitionInfo) bool {
 			return p.GetFsId() == fsId && p.GetStart() <= inodeId && p.GetEnd() >= inodeId
 		})
 	if index < 0 {
 		return nil, fmt.Errorf("inode[%d] is not on any partition of fs[%d]", inodeId, fsId)
 	}
-	partitionInfo := partitionInfoList[index]
-	partitionInfoMap[inodeId] = partitionInfo
+	partitionInfo := partitionList[index]
 	return partitionInfo, nil
+}
+
+func GetCopysetInfo(cmd *cobra.Command, poolId uint32, copyetId uint32) (*heartbeat.CopySetInfo, error) {
+	copysetKeyId := cobrautil.GetCopysetKey(uint64(poolId), uint64(copyetId))
+	if copysetInfo, ok := copysetInfoMap[copysetKeyId]; ok { // find in cache
+		return copysetInfo, nil
+	}
+	addrs, addrErr := config.GetFsMdsAddrSlice(cmd)
+	if addrErr.TypeCode() != cmderror.CODE_SUCCESS {
+		return nil, fmt.Errorf(addrErr.Message)
+	}
+	timeout := viper.GetDuration(config.VIPER_GLOBALE_RPCTIMEOUT)
+	retrytimes := viper.GetInt32(config.VIPER_GLOBALE_RPCRETRYTIMES)
+	copysetKey := topology.CopysetKey{
+		PoolId:    &poolId,
+		CopysetId: &copyetId,
+	}
+	request := &topology.GetCopysetsInfoRequest{}
+	request.CopysetKeys = append(request.CopysetKeys, &copysetKey)
+
+	rpc := &cmdCommon.QueryCopysetRpc{
+		Request: request,
+	}
+	rpc.Info = basecmd.NewRpc(addrs, timeout, retrytimes, "GetCopysetsInfo")
+	rpc.Info.RpcDataShow = config.GetFlagBool(cmd, "verbose")
+	result, err := basecmd.GetRpcResponse(rpc.Info, rpc)
+	if err.TypeCode() != cmderror.CODE_SUCCESS {
+		return nil, err.ToError()
+	}
+	response := result.(*topology.GetCopysetsInfoResponse)
+	copysetValues := response.GetCopysetValues()
+	if len(copysetValues) == 0 {
+		return nil, fmt.Errorf("no copysetinfo found")
+	}
+	copysetValue := copysetValues[0] //only one copyset
+	if copysetValue.GetStatusCode() == topology.TopoStatusCode_TOPO_OK {
+		copysetInfo := copysetValue.GetCopysetInfo()
+		copysetInfoMap[copysetKeyId] = copysetInfo
+		return copysetInfo, nil
+	} else {
+		err := cmderror.ErrGetCopysetsInfo(int(copysetValue.GetStatusCode()))
+		return nil, err.ToError()
+	}
 }
 
 // get leader address
 func GetLeaderPeerAddr(cmd *cobra.Command, fsId uint32, inodeId uint64) ([]string, error) {
-	if leadInfo, ok := LeaderInfoMap[inodeId]; ok { // find in cache
-		return leadInfo, nil
-	}
 	//get partition info
 	partitionInfo, partErr := GetPartitionInfo(cmd, fsId, inodeId)
 	if partErr != nil {
 		return nil, partErr
 	}
+	partitionId := partitionInfo.GetPartitionId()
+	if leadInfo, ok := LeaderInfoMap[partitionId]; ok { // find in cache
+		return leadInfo, nil
+	}
 	poolId := partitionInfo.GetPoolId()
 	copyetId := partitionInfo.GetCopysetId()
-	// get addrs
-	if cmd.Flags().Lookup(config.CURVEFS_COPYSETID) == nil {
-		config.AddCopysetidSliceRequiredFlag(cmd)
+	copysetInfo, copysetErr := GetCopysetInfo(cmd, poolId, copyetId)
+	if copysetErr != nil {
+		return nil, copysetErr
 	}
-	if cmd.Flags().Lookup(config.CURVEFS_POOLID) == nil {
-		config.AddPoolidSliceRequiredFlag(cmd)
-	}
-	cmd.ParseFlags([]string{
-		fmt.Sprintf("--%s", config.CURVEFS_COPYSETID), fmt.Sprintf("%d", copyetId),
-		fmt.Sprintf("--%s", config.CURVEFS_POOLID), fmt.Sprintf("%d", poolId),
-	})
-	key2Copyset, errQuery := copyset.QueryCopysetInfo(cmd)
-	if errQuery.TypeCode() != cmderror.CODE_SUCCESS {
-		return nil, fmt.Errorf("query copyset info failed: %s", errQuery.Message)
-	}
-	if len(*key2Copyset) == 0 {
-		return nil, fmt.Errorf("no copysetinfo found")
-	}
-	key := cobrautil.GetCopysetKey(uint64(poolId), uint64(copyetId))
-	leader := (*key2Copyset)[key].Info.GetLeaderPeer()
+	leader := copysetInfo.GetLeaderPeer()
 	addr, peerErr := cobrautil.PeertoAddr(leader)
 	if peerErr.TypeCode() != cmderror.CODE_SUCCESS {
 		return nil, fmt.Errorf("pares leader peer[%s] failed: %s", leader, peerErr.Message)
 	}
 	addrs := []string{addr}
-	LeaderInfoMap[inodeId] = addrs
+	LeaderInfoMap[partitionId] = addrs
 	return addrs, nil
 }
 
@@ -288,7 +343,7 @@ func align512(length uint64) int64 {
 }
 
 // get inode
-func GetInode(cmd *cobra.Command, fsId uint32, inodeId uint64) (*metaserver.Inode, error) {
+func GetInodeAttr(cmd *cobra.Command, fsId uint32, inodeId uint64) (*metaserver.InodeAttr, error) {
 	partitionInfo, partErr := GetPartitionInfo(cmd, fsId, inodeId)
 	if partErr != nil {
 		return nil, partErr
@@ -296,38 +351,39 @@ func GetInode(cmd *cobra.Command, fsId uint32, inodeId uint64) (*metaserver.Inod
 	poolId := partitionInfo.GetPoolId()
 	copyetId := partitionInfo.GetCopysetId()
 	partitionId := partitionInfo.GetPartitionId()
-	supportStream := false
-
-	inodeRequest := &metaserver.GetInodeRequest{
-		PoolId:           &poolId,
-		CopysetId:        &copyetId,
-		PartitionId:      &partitionId,
-		FsId:             &fsId,
-		InodeId:          &inodeId,
-		SupportStreaming: &supportStream,
+	inodeIds := []uint64{inodeId}
+	inodeRequest := &metaserver.BatchGetInodeAttrRequest{
+		PoolId:      &poolId,
+		CopysetId:   &copyetId,
+		PartitionId: &partitionId,
+		FsId:        &fsId,
+		InodeId:     inodeIds,
 	}
-	getInodeRpc := &GetInodeRpc{
+	getInodeRpc := &cmdCommon.GetInodeAttrRpc{
 		Request: inodeRequest,
 	}
-
 	addrs, addrErr := GetLeaderPeerAddr(cmd, fsId, inodeId)
 	if addrErr != nil {
 		return nil, addrErr
 	}
 	timeout := viper.GetDuration(config.VIPER_GLOBALE_RPCTIMEOUT)
 	retrytimes := viper.GetInt32(config.VIPER_GLOBALE_RPCRETRYTIMES)
-	getInodeRpc.Info = basecmd.NewRpc(addrs, timeout, retrytimes, "GetInode")
+	getInodeRpc.Info = basecmd.NewRpc(addrs, timeout, retrytimes, "GetInodeAttr")
 	getInodeRpc.Info.RpcDataShow = config.GetFlagBool(cmd, "verbose")
 
 	inodeResult, err := basecmd.GetRpcResponse(getInodeRpc.Info, getInodeRpc)
 	if err.TypeCode() != cmderror.CODE_SUCCESS {
 		return nil, fmt.Errorf("get inode failed: %s", err.Message)
 	}
-	getInodeResponse := inodeResult.(*metaserver.GetInodeResponse)
+	getInodeResponse := inodeResult.(*metaserver.BatchGetInodeAttrResponse)
 	if getInodeResponse.GetStatusCode() != metaserver.MetaStatusCode_OK {
 		return nil, fmt.Errorf("get inode failed: %s", getInodeResponse.GetStatusCode().String())
 	}
-	return getInodeResponse.GetInode(), nil
+	inodesAttrs := getInodeResponse.GetAttr()
+	if len(inodesAttrs) != 1 {
+		return nil, fmt.Errorf("GetInodeAttr return inodesAttrs size != 1, which is %d", len(inodesAttrs))
+	}
+	return inodesAttrs[0], nil
 }
 
 // ListDentry by inodeid
@@ -348,7 +404,7 @@ func ListDentry(cmd *cobra.Command, fsId uint32, inodeId uint64) ([]*metaserver.
 		DirInodeId:  &inodeId,
 		TxId:        &txId,
 	}
-	listDentryRpc := &ListDentryRpc{
+	listDentryRpc := &cmdCommon.ListDentryRpc{
 		Request: dentryRequest,
 	}
 
@@ -386,7 +442,7 @@ func GetInodePath(cmd *cobra.Command, fsId uint32, inodeId uint64) (string, erro
 	}
 	var names []string
 	for inodeId != config.ROOTINODEID {
-		inode, inodeErr := GetInode(cmd, fsId, inodeId)
+		inode, inodeErr := GetInodeAttr(cmd, fsId, inodeId)
 		if inodeErr != nil {
 			return "", inodeErr
 		}
@@ -491,7 +547,7 @@ func GetDirSummarySize(cmd *cobra.Command, fsId uint32, inode uint64, summary *S
 	for _, entry := range entries {
 		summary.Inodes++
 		if entry.GetType() == metaserver.FsFileType_TYPE_S3 || entry.GetType() == metaserver.FsFileType_TYPE_FILE {
-			inodeAttr, err := GetInode(cmd, fsId, entry.GetInodeId())
+			inodeAttr, err := GetInodeAttr(cmd, fsId, entry.GetInodeId())
 			if err != nil {
 				return err
 			}
@@ -509,8 +565,10 @@ func GetDirSummarySize(cmd *cobra.Command, fsId uint32, inode uint64, summary *S
 
 // get directory size and inodes by path name
 func GetDirectorySizeAndInodes(cmd *cobra.Command, fsId uint32, dirInode uint64) (int64, int64, error) {
+	log.Printf("start to summary directory statistics, inode[%d]", dirInode)
 	summary := &Summary{0, 0}
 	sumErr := GetDirSummarySize(cmd, fsId, dirInode, summary)
+	log.Printf("end summary directory statistics, inode[%d],inodes[%d],size[%d]", dirInode, summary.Inodes, summary.Length)
 	if sumErr != nil {
 		return 0, 0, sumErr
 	}
