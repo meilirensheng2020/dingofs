@@ -25,9 +25,9 @@ package basecmd
 import (
 	"context"
 	"encoding/json"
+	"github.com/dingodb/dingofs/tools-v2/internal/utils/process"
 	"io/ioutil"
 	"log"
-	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -37,14 +37,12 @@ import (
 
 	cmderror "github.com/dingodb/dingofs/tools-v2/internal/error"
 	cobrautil "github.com/dingodb/dingofs/tools-v2/internal/utils"
-	process "github.com/dingodb/dingofs/tools-v2/internal/utils/process"
 	cobratemplate "github.com/dingodb/dingofs/tools-v2/internal/utils/template"
 	config "github.com/dingodb/dingofs/tools-v2/pkg/config"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -58,6 +56,7 @@ type LeaderMetaCache struct {
 
 var (
 	leaderMetaCache *LeaderMetaCache = &LeaderMetaCache{}
+	pool            *ConnectionPool  = NewConnectionPool()
 )
 
 // FinalCurveCmd is the final executable command,
@@ -124,10 +123,10 @@ func NewFinalCurveCli(cli *FinalCurveCmd, funcs FinalCurveCmdFunc) *cobra.Comman
 		Long:    cli.Long,
 		Example: cli.Example,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cmd.SilenceUsage = true
-			err := funcs.Init(cmd, args)
 			show := config.GetFlagBool(cli.Cmd, config.VERBOSE)
 			process.SetShow(show)
+			cmd.SilenceUsage = true
+			err := funcs.Init(cmd, args)
 			if err != nil {
 				return err
 			}
@@ -347,27 +346,20 @@ type Result struct {
 }
 
 func GetRpcResponse(rpc *Rpc, rpcFunc RpcFunc) (interface{}, *cmderror.CmdError) {
-
 	reqAddrs := GetResuestHosts(rpc.Addrs)
 	// start rpc request
 	results := make([]Result, 0)
 	for _, address := range reqAddrs {
-		log.Printf("%s: start to dial", address)
-		ctx, cancel := context.WithTimeout(context.Background(), rpc.RpcTimeout)
-		defer cancel()
-		conn, err := grpc.DialContext(ctx, address,
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithBlock(),
-			grpc.WithInitialConnWindowSize(math.MaxInt32),
-			grpc.WithInitialWindowSize(math.MaxInt32))
+		conn, err := pool.GetConnection(address, rpc.RpcTimeout)
 		if err != nil {
 			errDial := cmderror.ErrRpcDial()
 			errDial.Format(address, err.Error())
 			results = append(results, Result{address, errDial, nil})
-			log.Printf("%s: fail to dial", address)
 		} else {
 			rpcFunc.NewRpcClient(conn)
 			log.Printf("%s: start to rpc [%s]", address, rpc.RpcFuncName)
+			ctx, cancel := context.WithTimeout(context.Background(), rpc.RpcTimeout)
+			defer cancel()
 			res, err := rpcFunc.Stub_Func(ctx)
 			if err != nil {
 				errRpc := cmderror.ErrRpcCall()

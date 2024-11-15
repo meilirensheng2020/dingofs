@@ -34,21 +34,7 @@ type ListQuotaRpc struct {
 	metaServerClient metaserver.MetaServerServiceClient
 }
 
-type GetInodeRpc struct {
-	Info             *basecmd.Rpc
-	Request          *metaserver.GetInodeRequest
-	metaServerClient metaserver.MetaServerServiceClient
-}
-
-type ListDentryRpc struct {
-	Info             *basecmd.Rpc
-	Request          *metaserver.ListDentryRequest
-	metaServerClient metaserver.MetaServerServiceClient
-}
-
-var _ basecmd.RpcFunc = (*ListQuotaRpc)(nil)  // check interface
-var _ basecmd.RpcFunc = (*GetInodeRpc)(nil)   // check interface
-var _ basecmd.RpcFunc = (*ListDentryRpc)(nil) // check interface
+var _ basecmd.RpcFunc = (*ListQuotaRpc)(nil) // check interface
 
 type ListQuotaCommand struct {
 	basecmd.FinalCurveCmd
@@ -64,26 +50,6 @@ func (listQuotaRpc *ListQuotaRpc) NewRpcClient(cc grpc.ClientConnInterface) {
 func (listQuotaRpc *ListQuotaRpc) Stub_Func(ctx context.Context) (interface{}, error) {
 	response, err := listQuotaRpc.metaServerClient.LoadDirQuotas(ctx, listQuotaRpc.Request)
 	output.ShowRpcData(listQuotaRpc.Request, response, listQuotaRpc.Info.RpcDataShow)
-	return response, err
-}
-
-func (getInodeRpc *GetInodeRpc) NewRpcClient(cc grpc.ClientConnInterface) {
-	getInodeRpc.metaServerClient = metaserver.NewMetaServerServiceClient(cc)
-}
-
-func (getInodeRpc *GetInodeRpc) Stub_Func(ctx context.Context) (interface{}, error) {
-	response, err := getInodeRpc.metaServerClient.GetInode(ctx, getInodeRpc.Request)
-	output.ShowRpcData(getInodeRpc.Request, response, getInodeRpc.Info.RpcDataShow)
-	return response, err
-}
-
-func (listDentryRpc *ListDentryRpc) NewRpcClient(cc grpc.ClientConnInterface) {
-	listDentryRpc.metaServerClient = metaserver.NewMetaServerServiceClient(cc)
-}
-
-func (listDentryRpc *ListDentryRpc) Stub_Func(ctx context.Context) (interface{}, error) {
-	response, err := listDentryRpc.metaServerClient.ListDentry(ctx, listDentryRpc.Request)
-	output.ShowRpcData(listDentryRpc.Request, response, listDentryRpc.Info.RpcDataShow)
 	return response, err
 }
 

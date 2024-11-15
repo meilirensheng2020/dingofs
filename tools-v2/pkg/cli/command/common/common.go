@@ -19,6 +19,7 @@ import (
 	basecmd "github.com/dingodb/dingofs/tools-v2/pkg/cli/command"
 	"github.com/dingodb/dingofs/tools-v2/pkg/output"
 	"github.com/dingodb/dingofs/tools-v2/proto/curvefs/proto/metaserver"
+	"github.com/dingodb/dingofs/tools-v2/proto/curvefs/proto/topology"
 	"google.golang.org/grpc"
 )
 
@@ -34,8 +35,36 @@ type SetFsQuotaRpc struct {
 	metaServerClient metaserver.MetaServerServiceClient
 }
 
-var _ basecmd.RpcFunc = (*GetFsQuotaRpc)(nil) // check interface
-var _ basecmd.RpcFunc = (*SetFsQuotaRpc)(nil) // check interface
+type QueryCopysetRpc struct {
+	Info           *basecmd.Rpc
+	Request        *topology.GetCopysetsInfoRequest
+	topologyClient topology.TopologyServiceClient
+}
+
+type ListPartitionRpc struct {
+	Info           *basecmd.Rpc
+	Request        *topology.ListPartitionRequest
+	topologyClient topology.TopologyServiceClient
+}
+
+type GetInodeAttrRpc struct {
+	Info             *basecmd.Rpc
+	Request          *metaserver.BatchGetInodeAttrRequest
+	metaServerClient metaserver.MetaServerServiceClient
+}
+
+type ListDentryRpc struct {
+	Info             *basecmd.Rpc
+	Request          *metaserver.ListDentryRequest
+	metaServerClient metaserver.MetaServerServiceClient
+}
+
+var _ basecmd.RpcFunc = (*GetFsQuotaRpc)(nil)    // check interface
+var _ basecmd.RpcFunc = (*SetFsQuotaRpc)(nil)    // check interface
+var _ basecmd.RpcFunc = (*QueryCopysetRpc)(nil)  // check interface
+var _ basecmd.RpcFunc = (*ListPartitionRpc)(nil) // check interface
+var _ basecmd.RpcFunc = (*GetInodeAttrRpc)(nil)  // check interface
+var _ basecmd.RpcFunc = (*ListDentryRpc)(nil)    // check interface
 
 func (getFsQuotaRpc *GetFsQuotaRpc) NewRpcClient(cc grpc.ClientConnInterface) {
 	getFsQuotaRpc.metaServerClient = metaserver.NewMetaServerServiceClient(cc)
@@ -54,5 +83,45 @@ func (setFsQuotaRpc *SetFsQuotaRpc) NewRpcClient(cc grpc.ClientConnInterface) {
 func (setFsQuotaRpc *SetFsQuotaRpc) Stub_Func(ctx context.Context) (interface{}, error) {
 	response, err := setFsQuotaRpc.metaServerClient.SetFsQuota(ctx, setFsQuotaRpc.Request)
 	output.ShowRpcData(setFsQuotaRpc.Request, response, setFsQuotaRpc.Info.RpcDataShow)
+	return response, err
+}
+
+func (qcRpc *QueryCopysetRpc) NewRpcClient(cc grpc.ClientConnInterface) {
+	qcRpc.topologyClient = topology.NewTopologyServiceClient(cc)
+}
+
+func (qcRpc *QueryCopysetRpc) Stub_Func(ctx context.Context) (interface{}, error) {
+	response, err := qcRpc.topologyClient.GetCopysetsInfo(ctx, qcRpc.Request)
+	output.ShowRpcData(qcRpc.Request, response, qcRpc.Info.RpcDataShow)
+	return response, err
+}
+
+func (lpRp *ListPartitionRpc) NewRpcClient(cc grpc.ClientConnInterface) {
+	lpRp.topologyClient = topology.NewTopologyServiceClient(cc)
+}
+
+func (lpRp *ListPartitionRpc) Stub_Func(ctx context.Context) (interface{}, error) {
+	response, err := lpRp.topologyClient.ListPartition(ctx, lpRp.Request)
+	output.ShowRpcData(lpRp.Request, response, lpRp.Info.RpcDataShow)
+	return response, err
+}
+
+func (getInodeRpc *GetInodeAttrRpc) NewRpcClient(cc grpc.ClientConnInterface) {
+	getInodeRpc.metaServerClient = metaserver.NewMetaServerServiceClient(cc)
+}
+
+func (getInodeRpc *GetInodeAttrRpc) Stub_Func(ctx context.Context) (interface{}, error) {
+	response, err := getInodeRpc.metaServerClient.BatchGetInodeAttr(ctx, getInodeRpc.Request)
+	output.ShowRpcData(getInodeRpc.Request, response, getInodeRpc.Info.RpcDataShow)
+	return response, err
+}
+
+func (listDentryRpc *ListDentryRpc) NewRpcClient(cc grpc.ClientConnInterface) {
+	listDentryRpc.metaServerClient = metaserver.NewMetaServerServiceClient(cc)
+}
+
+func (listDentryRpc *ListDentryRpc) Stub_Func(ctx context.Context) (interface{}, error) {
+	response, err := listDentryRpc.metaServerClient.ListDentry(ctx, listDentryRpc.Request)
+	output.ShowRpcData(listDentryRpc.Request, response, listDentryRpc.Info.RpcDataShow)
 	return response, err
 }
