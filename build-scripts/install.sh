@@ -193,8 +193,9 @@ install_playground() {
 
 download_etcd() {
     local now=`date +"%s%6N"`
-    local nos_url="https://curve-build.nos-eastchina1.126.net"
-    local src="${nos_url}/etcd-${g_etcd_version}-linux-amd64.tar.gz"
+    # local nos_url="https://curve-build.nos-eastchina1.126.net"
+    local download_url="https://storage.googleapis.com/etcd"
+    local src="${download_url}/${g_etcd_version}/etcd-${g_etcd_version}-linux-amd64.tar.gz"
     local tmpfile="/tmp/$now-etcd-${g_etcd_version}-linux-amd64.tar.gz"
     local dst="$1"
 
