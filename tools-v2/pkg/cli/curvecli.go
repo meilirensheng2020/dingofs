@@ -91,9 +91,9 @@ func newCurveCommand() *cobra.Command {
 		},
 	}
 
-	rootCmd.Flags().BoolP("version", "v", false, "print dingo version")
-	rootCmd.PersistentFlags().BoolP("help", "h", false, "print help")
-	rootCmd.PersistentFlags().StringVarP(&config.ConfPath, "conf", "c", "", "config file (default is $HOME/.dingo/dingo.yaml or /etc/dingo/dingo.yaml)")
+	rootCmd.Flags().BoolP("version", "", false, "print dingo version")
+	rootCmd.PersistentFlags().BoolP("help", "", false, "print help")
+	rootCmd.PersistentFlags().StringVarP(&config.ConfPath, "conf", "", "", "config file (default is $HOME/.dingo/dingo.yaml or /etc/dingo/dingo.yaml)")
 	config.AddShowErrorPFlag(rootCmd)
 	rootCmd.PersistentFlags().BoolP("verbose", "", false, "show some extra info")
 	viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
