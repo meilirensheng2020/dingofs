@@ -431,7 +431,7 @@ CURVEFS_ERROR FuseClient::MakeNode(
     return ret;
   }
 
-  VLOG(6) << "inodeManager CreateInode success" << ", parent = " << parent
+  VLOG(6) << "inodeManager CreateInode success, parent = " << parent
           << ", name = " << name << ", mode = " << mode
           << ", inodeId=" << inode_wrapper->GetInodeId();
 
@@ -462,7 +462,7 @@ CURVEFS_ERROR FuseClient::MakeNode(
 
   ret = UpdateParentMCTimeAndNlink(parent, type, NlinkChange::kAddOne);
   if (ret != CURVEFS_ERROR::OK) {
-    LOG(ERROR) << "UpdateParentMCTimeAndNlink failed" << ", parent: " << parent
+    LOG(ERROR) << "UpdateParentMCTimeAndNlink failed, parent: " << parent
                << ", name: " << name << ", type: " << type;
     return ret;
   }
@@ -470,7 +470,7 @@ CURVEFS_ERROR FuseClient::MakeNode(
   fs_->UpdateFsQuotaUsage(0, 1);
   fs_->UpdateDirQuotaUsage(parent, 0, 1);
 
-  VLOG(6) << "dentryManager_ CreateDentry success" << ", parent = " << parent
+  VLOG(6) << "dentryManager_ CreateDentry success, parent = " << parent
           << ", name = " << name << ", mode = " << mode;
 
   return ret;
@@ -616,7 +616,7 @@ CURVEFS_ERROR FuseClient::CreateManageNode(fuse_req_t req, uint64_t parent,
     return ret;
   }
 
-  VLOG(6) << "inodeManager CreateManageNode success" << ", parent = " << parent
+  VLOG(6) << "inodeManager CreateManageNode success, parent = " << parent
           << ", name = " << name << ", mode = " << mode
           << ", inodeId=" << inodeWrapper->GetInodeId();
 
@@ -647,12 +647,12 @@ CURVEFS_ERROR FuseClient::CreateManageNode(fuse_req_t req, uint64_t parent,
 
   ret = UpdateParentMCTimeAndNlink(parent, type, NlinkChange::kAddOne);
   if (ret != CURVEFS_ERROR::OK) {
-    LOG(ERROR) << "UpdateParentMCTimeAndNlink failed" << ", parent: " << parent
+    LOG(ERROR) << "UpdateParentMCTimeAndNlink failed, parent: " << parent
                << ", name: " << name << ", type: " << type;
     return ret;
   }
 
-  VLOG(6) << "dentryManager_ CreateDentry success" << ", parent = " << parent
+  VLOG(6) << "dentryManager_ CreateDentry success, parent = " << parent
           << ", name = " << name << ", mode = " << mode;
 
   inodeWrapper->GetInodeAttrUnLocked(&entryOut->attr);
@@ -1049,6 +1049,11 @@ CURVEFS_ERROR FuseClient::FuseOpSetAttr(fuse_req_t req, fuse_ino_t ino,
                                         struct AttrOut* attr_out) {
   VLOG(1) << "FuseOpSetAttr to_set: " << to_set << ", inodeId=" << ino
           << ", attr: " << *attr;
+  if BAIDU_UNLIKELY ((ino == STATSINODEID)) {
+    InodeAttr attr = GenerateVirtualInodeAttr(STATSINODEID, fsInfo_->fsid());
+    *attr_out = AttrOut(attr);
+    return CURVEFS_ERROR::OK;
+  }
   std::shared_ptr<InodeWrapper> inode_wrapper;
   CURVEFS_ERROR ret = inodeManager_->GetInode(ino, inode_wrapper);
   if (ret != CURVEFS_ERROR::OK) {
@@ -1131,6 +1136,9 @@ CURVEFS_ERROR FuseClient::FuseOpGetXattr(fuse_req_t req, fuse_ino_t ino,
   if (option_.fileSystemOption.disableXAttr && !IsSpecialXAttr(name)) {
     return CURVEFS_ERROR::NODATA;
   }
+  if BAIDU_UNLIKELY ((ino == STATSINODEID)) {
+    return CURVEFS_ERROR::NODATA;
+  }
 
   InodeAttr inodeAttr;
   CURVEFS_ERROR ret = inodeManager_->GetInodeAttr(ino, &inodeAttr);
@@ -1171,6 +1179,9 @@ CURVEFS_ERROR FuseClient::FuseOpSetXattr(fuse_req_t req, fuse_ino_t ino,
           << ", size = " << size << ", strvalue: " << strvalue;
 
   if (option_.fileSystemOption.disableXAttr && !IsSpecialXAttr(name)) {
+    return CURVEFS_ERROR::NODATA;
+  }
+  if BAIDU_UNLIKELY ((ino == STATSINODEID)) {
     return CURVEFS_ERROR::NODATA;
   }
 
@@ -1319,7 +1330,7 @@ CURVEFS_ERROR FuseClient::FuseOpSymlink(fuse_req_t req, const char* link,
   ret = UpdateParentMCTimeAndNlink(parent, FsFileType::TYPE_SYM_LINK,
                                    NlinkChange::kAddOne);
   if (ret != CURVEFS_ERROR::OK) {
-    LOG(ERROR) << "UpdateParentMCTimeAndNlink failed" << ", link:" << link
+    LOG(ERROR) << "UpdateParentMCTimeAndNlink failed, link:" << link
                << ", parent: " << parent << ", name: " << name
                << ", type: " << FsFileType::TYPE_SYM_LINK;
     return ret;
@@ -1515,7 +1526,7 @@ FuseClient::SetMountStatus(const struct MountOption* mountOption) {
   }
 
   LOG(INFO) << "Mount " << fsName << " on " << mountpoint_.ShortDebugString()
-            << " success!" << " enableSumInDir = " << enableSumInDir_.load();
+            << " success! enableSumInDir = " << enableSumInDir_.load();
 
   fsMetric_ = std::make_shared<FSMetric>(fsName);
 
