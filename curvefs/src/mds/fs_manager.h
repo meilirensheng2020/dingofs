@@ -31,6 +31,7 @@
 
 #include "curvefs/proto/mds.pb.h"
 #include "curvefs/proto/topology.pb.h"
+#include "curvefs/src/aws/s3_adapter.h"
 #include "curvefs/src/mds/common/types.h"
 #include "curvefs/src/mds/dlock/dlock.h"
 #include "curvefs/src/mds/fs_info_wrapper.h"
@@ -40,7 +41,6 @@
 #include "curvefs/src/mds/topology/topology_manager.h"
 #include "curvefs/src/utils/concurrent/concurrent.h"
 #include "curvefs/src/utils/interruptible_sleeper.h"
-#include "curvefs/src/aws/s3_adapter.h"
 
 namespace curvefs {
 namespace mds {
@@ -51,9 +51,9 @@ using ::curvefs::mds::topology::PartitionTxId;
 using ::curvefs::mds::topology::Topology;
 using ::curvefs::mds::topology::TopologyManager;
 
+using ::curvefs::aws::S3Adapter;
 using ::curvefs::utils::Atomic;
 using ::curvefs::utils::InterruptibleSleeper;
-using ::curvefs::aws::S3Adapter;
 using ::curvefs::utils::Thread;
 
 using curvefs::common::PartitionInfo;
@@ -183,6 +183,12 @@ class FsManager {
                      GetLatestTxIdResponse* response);
 
   void CommitTx(const CommitTxRequest* request, CommitTxResponse* response);
+
+  void SetFsStats(const SetFsStatsRequest* request,
+                  SetFsStatsResponse* response);
+
+  void GetFsStats(const GetFsStatsRequest* request,
+                  GetFsStatsResponse* response);
 
   // periodically check if the mount point is alive
   void BackEndCheckMountPoint();

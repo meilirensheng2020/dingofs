@@ -67,5 +67,30 @@ std::string FsMountMetric::Key(const Mountpoint& mp) {
          std::to_string(mp.port()) + "_" + mp.path();
 }
 
+// set fs cluster statistics, fsStatsData contains delta statistics since last
+// read
+void FSStatsMetric::SetFsStats(const FsStatsData& fs_stats_data) {
+  totalReadBytes_ << fs_stats_data.readbytes();
+  totalReadQps_ << fs_stats_data.readqps();
+  totalWriteBytes_ << fs_stats_data.writebytes();
+  totalWriteQps_ << fs_stats_data.writeqps();
+  totalS3ReadBytes_ << fs_stats_data.s3readbytes();
+  totalS3ReadQps_ << fs_stats_data.s3readqps();
+  totalS3WriteBytes_ << fs_stats_data.s3writebytes();
+  totalS3WriteQps_ << fs_stats_data.s3writeqps();
+}
+
+// get fs cluster statistics, fsStatsData contains the sum of all the client
+// total amount statistics
+void FSStatsMetric::GetFsStats(FsStatsData* fs_stats_data) {
+  fs_stats_data->set_readbytes(totalReadBytes_.get_value());
+  fs_stats_data->set_readqps(totalReadQps_.get_value());
+  fs_stats_data->set_writebytes(totalWriteBytes_.get_value());
+  fs_stats_data->set_writeqps(totalWriteQps_.get_value());
+  fs_stats_data->set_s3readbytes(totalS3ReadBytes_.get_value());
+  fs_stats_data->set_s3readqps(totalS3ReadQps_.get_value());
+  fs_stats_data->set_s3writebytes(totalS3WriteBytes_.get_value());
+  fs_stats_data->set_s3writeqps(totalS3WriteQps_.get_value());
+}
 }  // namespace mds
 }  // namespace curvefs

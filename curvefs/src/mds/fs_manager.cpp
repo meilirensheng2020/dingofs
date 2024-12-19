@@ -402,7 +402,8 @@ FSStatusCode FsManager::CreateFs(const ::curvefs::mds::CreateFsRequest* request,
         child_status = fsStorage_->Delete(fs_name);
         if (child_status != FSStatusCode::OK) {
           LOG(ERROR) << "CreateFs fail, " << error_map[failure_stage]
-                     << ", then delete fs fail" << ", fsName = " << fs_name
+                     << ", then delete fs fail"
+                     << ", fsName = " << fs_name
                      << ", ret = " << FSStatusCode_Name(child_status);
           return child_status;
         }
@@ -978,6 +979,20 @@ void FsManager::CommitTx(const CommitTxRequest* request,
   dlock_->UnLock(fs_name, uuid);
 }
 
+// set fs cluster statistics
+void FsManager::SetFsStats(const SetFsStatsRequest* request,
+                           SetFsStatsResponse* response) {
+  FsMetric::GetInstance().SetFsStats(request->fsname(), request->fsstatsdata());
+  response->set_statuscode(FSStatusCode::OK);
+}
+
+// get fs cluster statistics
+void FsManager::GetFsStats(const GetFsStatsRequest* request,
+                           GetFsStatsResponse* response) {
+  FSStatusCode ret = FsMetric::GetInstance().GetFsStats(
+      request->fsname(), response->mutable_fsstatsdata());
+  response->set_statuscode(ret);
+}
 // after mds restart need rebuild mountpoint ttl recorder
 void FsManager::RebuildTimeRecorder() {
   std::vector<FsInfoWrapper> fs_infos;

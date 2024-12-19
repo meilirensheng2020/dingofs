@@ -90,6 +90,16 @@ class MdsServiceImpl : public MdsService {
                 const CommitTxRequest* request, CommitTxResponse* response,
                 ::google::protobuf::Closure* done);
 
+  void SetFsStats(::google::protobuf::RpcController* controller,
+                  const SetFsStatsRequest* request,
+                  SetFsStatsResponse* response,
+                  ::google::protobuf::Closure* done);
+
+  void GetFsStats(::google::protobuf::RpcController* controller,
+                  const GetFsStatsRequest* request,
+                  GetFsStatsResponse* response,
+                  ::google::protobuf::Closure* done);
+
  private:
   std::shared_ptr<FsManager> fsManager_;
   std::shared_ptr<ChunkIdAllocator> chunkIdAllocator_;

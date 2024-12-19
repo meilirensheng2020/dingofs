@@ -24,9 +24,12 @@
 
 #include <vector>
 
+#include "curvefs/src/mds/metric/metric.h"
+
 namespace curvefs {
 namespace mds {
 
+using mds::FSStatsMetric;
 using mds::Mountpoint;
 
 void MdsServiceImpl::CreateFs(::google::protobuf::RpcController* controller,
@@ -283,6 +286,28 @@ void MdsServiceImpl::CommitTx(::google::protobuf::RpcController* controller,
   VLOG(3) << "CommitTx [request]: " << request->DebugString();
   fsManager_->CommitTx(request, response);
   VLOG(3) << "CommitTx [response]: " << response->DebugString();
+}
+
+void MdsServiceImpl::SetFsStats(::google::protobuf::RpcController* controller,
+                                const SetFsStatsRequest* request,
+                                SetFsStatsResponse* response,
+                                ::google::protobuf::Closure* done) {
+  (void)controller;
+  brpc::ClosureGuard guard(done);
+  VLOG(9) << "SetFsStats [request]: " << request->DebugString();
+  fsManager_->SetFsStats(request, response);
+  VLOG(9) << "SetFsStats [response]: " << response->DebugString();
+}
+
+void MdsServiceImpl::GetFsStats(::google::protobuf::RpcController* controller,
+                                const GetFsStatsRequest* request,
+                                GetFsStatsResponse* response,
+                                ::google::protobuf::Closure* done) {
+  (void)controller;
+  brpc::ClosureGuard guard(done);
+  VLOG(9) << "GetFsStats [request]: " << request->DebugString();
+  fsManager_->GetFsStats(request, response);
+  VLOG(9) << "GetFsStats [response]: " << response->DebugString();
 }
 
 }  // namespace mds

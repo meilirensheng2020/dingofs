@@ -68,6 +68,34 @@ class FsMountMetric {
   MountPointMetric mps_;
 };
 
+class FSStatsMetric {
+ public:
+  explicit FSStatsMetric(const std::string& fsname)
+      : fsname_(fsname),
+        totalReadBytes_("fs_", fsname + "_total_read_bytes"),
+        totalReadQps_("fs_", fsname + "_total_read_qps"),
+        totalWriteBytes_("fs_", fsname + "_total_write_bytes"),
+        totalWriteQps_("fs_", fsname + "_total_write_qps"),
+        totalS3ReadBytes_("fs_", fsname + "_total_s3_read_bytes"),
+        totalS3ReadQps_("fs_", fsname + "_total_s3_read_qps"),
+        totalS3WriteBytes_("fs_", fsname + "_total_s3_write_bytes"),
+        totalS3WriteQps_("fs_", fsname + "_total_s3_write_qps") {}
+
+  void SetFsStats(const FsStatsData& fs_stats_data);
+
+  void GetFsStats(FsStatsData* fs_stats_data);
+
+ private:
+  std::string fsname_;
+  bvar::Adder<uint64_t> totalReadBytes_;
+  bvar::Adder<uint64_t> totalReadQps_;
+  bvar::Adder<uint64_t> totalWriteBytes_;
+  bvar::Adder<uint64_t> totalWriteQps_;
+  bvar::Adder<uint64_t> totalS3ReadBytes_;
+  bvar::Adder<uint64_t> totalS3ReadQps_;
+  bvar::Adder<uint64_t> totalS3WriteBytes_;
+  bvar::Adder<uint64_t> totalS3WriteQps_;
+};
 }  // namespace mds
 }  // namespace curvefs
 

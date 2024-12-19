@@ -225,6 +225,35 @@ message CommitTxResponse {
     required FSStatusCode statusCode = 1;
 }
 
+message FsStatsData {
+    optional uint64 readBytes= 1;
+    optional uint64 readQps = 2;
+    optional uint64 writeBytes= 3;
+    optional uint64 writeQps = 4;
+    optional uint64 s3ReadBytes= 5;
+    optional uint64 s3ReadQps = 6;
+    optional uint64 s3WriteBytes= 7;
+    optional uint64 s3WriteQps = 8;
+}
+
+message SetFsStatsRequest {
+    required string fsname = 1;
+    required FsStatsData fsStatsData = 2;
+}
+
+message SetFsStatsResponse {
+    required FSStatusCode statusCode = 1;
+}
+
+message GetFsStatsRequest {
+    required string fsname = 1;
+}
+
+message GetFsStatsResponse {
+    required FSStatusCode statusCode = 1;
+    optional FsStatsData fsStatsData = 2;
+}
+
 service MdsService {
     // fs interface
     rpc CreateFs(CreateFsRequest) returns (CreateFsResponse);
@@ -242,4 +271,7 @@ service MdsService {
 
     // client lease
     rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse);
+    // fs statistics
+    rpc SetFsStats(SetFsStatsRequest) returns (SetFsStatsResponse);
+    rpc GetFsStats(GetFsStatsRequest) returns (GetFsStatsResponse);
 }

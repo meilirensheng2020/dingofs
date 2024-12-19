@@ -43,6 +43,9 @@ class FsMetric {
 
   void OnMount(const std::string& fsname, const Mountpoint& mp);
   void OnUnMount(const std::string& fsname, const Mountpoint& mp);
+  void SetFsStats(const std::string& fsname, const FsStatsData& fs_stats_data);
+  FSStatusCode GetFsStats(const std::string& fsname,
+                          FsStatsData* fs_stats_data);
 
  private:
   FsMetric() = default;
@@ -54,6 +57,8 @@ class FsMetric {
  private:
   Mutex mtx_;
   std::unordered_map<std::string, std::unique_ptr<FsMountMetric>> metrics_;
+  std::unordered_map<std::string, std::unique_ptr<FSStatsMetric>>
+      fsStatsMetrics_;
 };
 
 }  // namespace mds
