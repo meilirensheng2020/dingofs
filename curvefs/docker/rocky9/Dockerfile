@@ -1,5 +1,4 @@
-# FROM dingodatabase/dingofs-base:rocky9
-FROM harbor.zetyun.cn/dingofs/dingofs-base:rocky9
+FROM dingodatabase/dingofs-base:rocky9
 
 COPY entrypoint.sh /
 COPY dingofs /dingofs

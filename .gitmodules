@@ -72,4 +72,4 @@
 	url = https://github.com/nlohmann/json.git
 [submodule "dingo-eureka"]
 	path = dingo-eureka
-	url = git@github.com:dingodb/dingo-eureka.git
+	url = https://github.com/dingodb/dingo-eureka.git

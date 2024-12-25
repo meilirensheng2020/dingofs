@@ -2,8 +2,8 @@
 
 # $1: os
 
-# g_image_base="dingodatabase/dingofs-base"
-g_image_base="harbor.zetyun.cn/dingofs/dingofs-base"
+g_image_base="dingodatabase/dingofs-base"
+# g_image_base="harbor.zetyun.cn/dingofs/dingofs-base"
 
 ############################  BASIC FUNCTIONS
 msg() {
