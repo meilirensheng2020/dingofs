@@ -56,7 +56,7 @@ include_directories(${THIRD_PARTY_INSTALL_PATH}/include)
 include_directories(${PROJECT_SOURCE_DIR}/thirdparties/etcdclient)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
+add_definitions(-DUSE_BTHREAD_MUTEX)
 find_package(FUSE3 REQUIRED)
 message("Using FUSE3 ${FUSE3_VERSION}, include_dir:${FUSE3_INCLUDE_DIR}")
 include_directories(${FUSE3_INCLUDE_DIR})

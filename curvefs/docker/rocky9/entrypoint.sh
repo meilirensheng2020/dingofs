@@ -8,7 +8,7 @@ g_args=""
 g_prefix=""
 g_binary=""
 g_start_args=""
-g_preexec="/curvefs/tools-v2/sbin/daemon"
+g_preexec="/dingofs/tools-v2/sbin/daemon"
 
 ############################  BASIC FUNCTIONS
 function msg() {
@@ -68,7 +68,7 @@ function get_options() {
 }
 
 function prepare() {
-    g_prefix="/curvefs/$g_role"
+    g_prefix="/dingofs/$g_role"
     conf_path="$g_prefix/conf/$g_role.conf"
 
     case $g_role in
@@ -77,11 +77,11 @@ function prepare() {
             g_start_args="--config-file $conf_path"
             ;;
         mds)
-            g_binary="$g_prefix/sbin/curvefs-mds"
+            g_binary="$g_prefix/sbin/dingo-mds"
             g_start_args="--confPath $conf_path"
             ;;
         metaserver)
-            g_binary="$g_prefix/sbin/curvefs-metaserver"
+            g_binary="$g_prefix/sbin/dingo-metaserver"
             g_start_args="--confPath $conf_path"
             ;;
         client)

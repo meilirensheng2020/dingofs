@@ -106,6 +106,7 @@ curvefs/BUILD_MODE
 curvefs/monitor/prometheus/target.json
 
 curvefs/docker/*/curvefs
+curvefs/docker/*/dingofs
 curvefs/docker/curvefs
 curvefs/docker/base/*
 curvefs/docker/debian*/*so*
@@ -155,3 +156,5 @@ third-party/installed
 curvefs_python/BUILD
 include/etcdclient/etcdclient.h
 build
+
+dingo-eureka/*

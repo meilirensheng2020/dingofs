@@ -60,7 +60,7 @@ bash build_thirdparties.sh
 
 ### Build 
 ```sh
-mkdir builld
+mkdir build
 cd build
 cmake ..
 make -j 32
