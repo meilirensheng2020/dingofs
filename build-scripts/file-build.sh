@@ -123,7 +123,7 @@ get_options() {
 }
 
 build_target() {
-    (rm -rf build && mkdir build && cd build && cmake .. && make -j $(nproc))
+    (rm -rf build && mkdir build && cd build && cmake -DTHIRD_PARTY_INSTALL_PATH=/root/.local/dingo-eureka .. && make -j $(nproc))
 
     if [ $? -eq 0 ]; then
         success "build dingofs success\n"
