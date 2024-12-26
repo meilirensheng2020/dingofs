@@ -19,5 +19,5 @@ add_library(stub_common
 
 target_link_libraries(stub_common
     curvefs_utils
-    brpc
+    brpc::brpc
 )
