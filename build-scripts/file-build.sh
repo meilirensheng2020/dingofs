@@ -123,13 +123,13 @@ get_options() {
 }
 
 build_target() {
-    #(rm -rf build && mkdir build && cd build && cmake .. && make -j 32)
+    (rm -rf build && mkdir build && cd build && cmake .. && make -j $(nproc))
 
-    #if [ $? -eq 0 ]; then
-    #    success "build dingofs success\n"
-    #else
-    #    die "build dingofs failed\n"
-    #fi
+    if [ $? -eq 0 ]; then
+        success "build dingofs success\n"
+    else
+        die "build dingofs failed\n"
+    fi
     
     # build tools-v2
     g_toolsv2_root="tools-v2"
@@ -153,8 +153,6 @@ build_requirements() {
         echo "Error: Failed to update git submodules"
         exit 1
     fi
-	# (cd third-party && rm -rf build installed && cmake -S . -B build && cmake --build build -j 16)
-	(cd dingo-eureka && rm -rf build && mkdir build && cd build && cmake .. && make -j 32)
     g_etcdclient_root="thirdparties/etcdclient"
     (cd ${g_etcdclient_root} && make clean && make all)
 }
