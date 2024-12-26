@@ -43,11 +43,11 @@ target_link_libraries(fuse_client_lib
     aws_s3_adapter
     client_common
     curvefs_threading
-    brpc
     gflags
     glog
     fmt
     spdlog
+    brpc::brpc
     absl::memory
     absl::strings
     absl::synchronization

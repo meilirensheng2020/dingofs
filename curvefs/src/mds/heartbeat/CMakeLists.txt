@@ -26,7 +26,7 @@ target_link_libraries(mds_heartbeat
     mds_topology
     curvefs_utils
     curvefs_concurrent
-    brpc
+    brpc::brpc
     gflags
     glog
 )

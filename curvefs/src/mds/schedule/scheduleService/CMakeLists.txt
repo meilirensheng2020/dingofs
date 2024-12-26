@@ -18,6 +18,6 @@ add_library(mds_schedule_service
 target_link_libraries(mds_schedule_service
     mds_schedule
     PROTO_OBJS
-    brpc
+    brpc::brpc
     glog
 )

@@ -17,7 +17,7 @@ add_library(curvefs_auth
 )
 target_link_libraries(curvefs_auth
     curvefs_concurrent
-    brpc
+    brpc::brpc
     glog
 )
 
@@ -36,6 +36,6 @@ add_library(curvefs_utils
 target_link_libraries(curvefs_utils
     curvefs_concurrent
     uuid_static
-    brpc
+    brpc::brpc
     glog
 )

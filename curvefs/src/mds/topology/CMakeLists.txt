@@ -29,5 +29,5 @@ target_link_libraries(mds_topology
     curvefs_concurrent
     glog
     jsoncpp
-    brpc
+    brpc::brpc
 )

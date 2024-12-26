@@ -19,5 +19,5 @@ add_library(stub_metric
 target_link_libraries(stub_metric
     curvefs_utils
     gflags
-    brpc
+    brpc::brpc
 )

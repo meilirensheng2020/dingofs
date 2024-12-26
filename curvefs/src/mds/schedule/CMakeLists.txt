@@ -24,7 +24,7 @@ target_link_libraries(mds_schedule
     PROTO_OBJS
     mds_topology
     curvefs_utils
-    brpc
+    brpc::brpc
     gflags
     glog
 )

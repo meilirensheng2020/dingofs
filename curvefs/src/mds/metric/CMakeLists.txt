@@ -20,5 +20,5 @@ add_library(mds_metric
 target_link_libraries(mds_metric
     PROTO_OBJS
     curvefs_utils
-    brpc
+    brpc::brpc
 )

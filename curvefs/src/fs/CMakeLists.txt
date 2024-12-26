@@ -21,5 +21,5 @@ add_library(local_fs
 target_link_libraries(local_fs
     curvefs_utils
     glog
-    brpc
+    brpc::brpc
 )

@@ -17,5 +17,5 @@ add_library(curvefs_concurrent
 )
 target_link_libraries(curvefs_concurrent
     glog
-    brpc
+    brpc::brpc
 )

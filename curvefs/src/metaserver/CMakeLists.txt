@@ -40,9 +40,9 @@ target_link_libraries(metaserver_lib
     curvefs_threading
     metaserver_s3
     curvefs_base_lib
-    braft
-    brpc
-    rocksdb
+    braft::braft
+    brpc::brpc
+    RocksDB::rocksdb
     absl::log_internal_message
     absl::cleanup
     absl::btree

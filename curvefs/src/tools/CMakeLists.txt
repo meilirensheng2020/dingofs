@@ -35,7 +35,7 @@ target_link_libraries(tools_lib
     curvefs_common
     curvefs_utils
     jsoncpp
-    brpc
+    brpc::brpc
     protobuf::libprotobuf
     absl::cleanup
     absl::strings

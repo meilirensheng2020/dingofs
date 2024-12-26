@@ -32,7 +32,7 @@ target_link_libraries(curvefs_base_lib
     curvefs_threading
     glog
     gflags
-    brpc
+    brpc::brpc
     absl::strings
     absl::str_format
 )

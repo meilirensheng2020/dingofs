@@ -27,7 +27,7 @@ add_library(dynamic_vlog
     dynamic_vlog.cpp
 )
 target_link_libraries(dynamic_vlog
-    brpc
+    brpc::brpc
     gflags
     glog
 )

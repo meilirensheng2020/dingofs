@@ -20,7 +20,7 @@ target_link_libraries(client_lease
     PROTO_OBJS
     rpcclient
     client_common
-    brpc
+    brpc::brpc
     gflags
     glog
 )

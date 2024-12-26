@@ -29,6 +29,9 @@ message("SYSTEM: ${CMAKE_HOST_SYSTEM_NAME} ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
+set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+message("CMAKE_FIND_LIBRARY_SUFFIXES: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
+
 # bin output dir
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(TEST_EXECUTABLE_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}/test)
@@ -86,10 +89,6 @@ set(ZLIB_USE_STATIC_LIBS "ON")
 find_package(ZLIB REQUIRED)
 message("Using zlib ${ZLIB_VERSION}, include_dir:${ZLIB_INCLUDE_DIR}")
 
-set(ZLIB_USE_STATIC_LIBS "ON")
-find_package(ZLIB REQUIRED)
-message("Using zlib ${ZLIB_VERSION}, include_dir:${ZLIB_INCLUDE_DIR}")
-
 find_package (glog REQUIRED)
 # used for glog 0.7.0
 add_compile_definitions(GLOG_USE_GLOG_EXPORT)
@@ -120,48 +119,8 @@ message("Using opentelemetry-cpp ${opentelemetry-cpp_VERSION}")
 find_package(jsoncpp REQUIRED)
 message("Using jsoncpp ${jsoncpp_VERSION}")
 
-# NOTE: order is important, please not use this directly, use brpc
-set(BRPC_DEPS_LIBS
-    ${OPENSSL_LIBRARIES}
-    leveldb
-    gflags
-    Snappy::snappy
-    ZLIB::ZLIB
-    fmt::fmt
-    glog::glog
-    protobuf::libprotobuf
-) 
-message("BRPC_DEPS_LIBS: ${BRPC_DEPS_LIBS}")
-find_library(BRPC_LIBRARY NAMES brpc)
-add_library(brpc STATIC IMPORTED)
-set_target_properties(brpc PROPERTIES
-    IMPORTED_LOCATION ${BRPC_LIBRARY}
-    INTERFACE_INCLUDE_DIRECTORIES ${THIRD_PARTY_INSTALL_PATH}/include
-    INTERFACE_LINK_LIBRARIES "${BRPC_DEPS_LIBS}"
-)
-
-set(BRAFT_DEPS_LIBS
-    brpc
-) 
-find_library(BRAFT_LIBRARY NAMES braft)
-add_library(braft STATIC IMPORTED)
-set_target_properties(braft PROPERTIES
-    IMPORTED_LOCATION ${BRAFT_LIBRARY}
-    INTERFACE_INCLUDE_DIRECTORIES ${THIRD_PARTY_INSTALL_PATH}/include
-    INTERFACE_LINK_LIBRARIES "${BRAFT_DEPS_LIBS}"
-)
-
-set(ROCKSDB_DEPS_LIBS
-    Snappy::snappy
-    ZLIB::ZLIB
-    gflags
-)
-find_library(ROCKSDB_LIBRARY NAMES rocksdb)
-add_library(rocksdb STATIC IMPORTED)
-set_target_properties(rocksdb PROPERTIES
-    IMPORTED_LOCATION ${ROCKSDB_LIBRARY}
-    INTERFACE_INCLUDE_DIRECTORIES ${THIRD_PARTY_INSTALL_PATH}/include
-    INTERFACE_LINK_LIBRARIES "${ROCKSDB_DEPS_LIBS}"
-)
+find_package(brpc REQUIRED)
+find_package(braft REQUIRED)
+find_package(RocksDB REQUIRED)
 
 add_subdirectory(curvefs)

@@ -28,7 +28,7 @@ target_link_libraries(rpcclient
     stub_metric
     curvefs_utils
     curvefs_common
-    brpc
+    brpc::brpc
     gflags
     glog
     fmt

@@ -25,7 +25,7 @@ target_link_libraries(client_common
     aws_s3_adapter
     curvefs_utils
     curvefs_base_lib
-    brpc
+    brpc::brpc
     gflags
     glog
 )

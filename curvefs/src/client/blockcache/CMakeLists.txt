@@ -27,7 +27,7 @@ target_link_libraries(client_blockcache
     stub_metric
     glog
     gflags
-    brpc
+    brpc::brpc
     spdlog
     absl::cleanup
 )

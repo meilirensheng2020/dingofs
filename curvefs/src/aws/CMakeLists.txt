@@ -22,6 +22,6 @@ target_link_libraries(aws_s3_adapter
     opentelemetry_lib
     curvefs_utils
     glog
-    brpc
+    brpc::brpc
     ${AWSSDK_LIBRARIES}
 )

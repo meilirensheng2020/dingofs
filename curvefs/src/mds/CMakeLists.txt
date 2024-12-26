@@ -50,7 +50,7 @@ target_link_libraries(mds_lib
     curvefs_utils
     aws_s3_adapter
     curvefs_concurrent
-    brpc
+    brpc::brpc
     gflags
     glog
 )

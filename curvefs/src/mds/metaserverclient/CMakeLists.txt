@@ -18,5 +18,5 @@ add_library(mds_metaserverclient
 
 target_link_libraries(mds_metaserverclient
     PROTO_OBJS
-    brpc
+    brpc::brpc
 )

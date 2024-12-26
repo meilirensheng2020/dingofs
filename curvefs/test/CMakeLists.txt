@@ -18,7 +18,7 @@ set(TEST_DEPS
     GTest::gtest_main
     glog
     gflags
-    brpc
+    brpc::brpc
 )
 
 add_subdirectory(base)
