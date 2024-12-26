@@ -52,6 +52,13 @@ tar -xjvf jemalloc-5.3.0.tar.bz2
 cd jemalloc-5.3.0 && ./configure && make && make install
 ```
 
+### Download dep 
+
+```sh
+git submodule sync
+git submodule update --init --recursive
+```
+
 ### Build Etcd Client
 
 ```sh
