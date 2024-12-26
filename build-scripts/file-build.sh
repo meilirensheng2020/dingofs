@@ -123,13 +123,13 @@ get_options() {
 }
 
 build_target() {
-    (rm -rf build && mkdir build && cd build && cmake .. && make -j 32)
+    #(rm -rf build && mkdir build && cd build && cmake .. && make -j 32)
 
-    if [ $? -eq 0 ]; then
-        success "build dingofs success\n"
-    else
-        die "build dingofs failed\n"
-    fi
+    #if [ $? -eq 0 ]; then
+    #    success "build dingofs success\n"
+    #else
+    #    die "build dingofs failed\n"
+    #fi
     
     # build tools-v2
     g_toolsv2_root="tools-v2"
