@@ -189,7 +189,7 @@ void S3Adapter::Init(const S3AdapterOption& option) {
             exporter_options);
 
     clientCfg_->telemetryProvider =
-        mithy::components::tracing::OtelTelemetryProvider::CreateOtelProvider(
+        smithy::components::tracing::OtelTelemetryProvider::CreateOtelProvider(
             std::move(span_exporter), std::move(push_exporter));
   }
 
