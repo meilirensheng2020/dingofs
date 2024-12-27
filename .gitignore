@@ -55,14 +55,6 @@ build.log
 *.pb.h
 *.pb.cc
 
-# bazel
-bazel-*
-bazel-bin
-bazel-curve
-bazel-genfiles
-bazel-out
-bazel-testlogs
-
 # vscode
 .vscode
 
@@ -78,8 +70,6 @@ runlog/
 
 .clang-format
 .clangd
-!curve-snapshotcloneserver-nginx/app/lib
-!nebd/nebd-package/usr/bin
 
 # mac
 .DS_Store
@@ -94,51 +84,30 @@ docker/debian*/*so*
 !docker/base/Dockerfile
 !docker/base/Makefile
 
-# curvefs
-curvefs/devops/projects/
-curvefs/devops/ssh/
-curvefs/devops/inventory
-curvefs/BUILD_MODE
+# dingofs
+dingofs/devops/projects/
+dingofs/devops/ssh/
+dingofs/devops/inventory
+dingofs/BUILD_MODE
 *.pyc
 .facts/
 *retry
 # monitor
-curvefs/monitor/prometheus/target.json
+dingofs/monitor/prometheus/target.json
 
-curvefs/docker/*/curvefs
-curvefs/docker/*/dingofs
-curvefs/docker/curvefs
-curvefs/docker/base/*
-curvefs/docker/debian*/*so*
-!curvefs/docker/base/Dockerfile
-!curvefs/docker/base/Makefile
-curvefs/BUILD_MODE
+dingofs/docker/*/dingofs
+dingofs/docker/*/dingofs
+dingofs/docker/dingofs
+dingofs/docker/base/*
+dingofs/docker/debian*/*so*
+!dingofs/docker/base/Dockerfile
+!dingofs/docker/base/Makefile
 
-.BUILD_MODE
 __not_found__
 
 # thirdparties
 thirdparties/etcdclient/tmp/
 thirdparties/etcdclient/*.h
-
-/external
-/bazel-*
-/compile_commands.json
-/.cache/
-
-docker/curvebs
-docker/*/curvebs
-
-curvefs/docker/curvefs
-curvefs/docker/*/curvefs
-storage_*
-
-tools-v2/sbin/*
-tools-v2/proto/proto/*
-tools-v2/proto/curvefs/*
-tools-v2/*/*.test
-tools-v2/__debug_bin
-tools-v2/vendor/
 
 .test
 .note
@@ -153,7 +122,6 @@ core.*
 third-party/build
 third-party/installed
 
-curvefs_python/BUILD
 include/etcdclient/etcdclient.h
 build
 
