@@ -120,6 +120,10 @@ message("Using nlohmann_json ${nlohmann_json_VERSION}")
 find_package(opentelemetry-cpp CONFIG REQUIRED)
 message("Using opentelemetry-cpp ${opentelemetry-cpp_VERSION}")
 
+# depends by rocksdb
+find_package(uring)
+message("Using uring ${uring_VERSION}")
+
 find_package(jsoncpp REQUIRED)
 message("Using jsoncpp ${jsoncpp_VERSION}")
 
