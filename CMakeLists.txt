@@ -131,4 +131,4 @@ find_package(brpc REQUIRED)
 find_package(braft REQUIRED)
 find_package(RocksDB REQUIRED)
 
-add_subdirectory(curvefs)
+add_subdirectory(dingofs)
