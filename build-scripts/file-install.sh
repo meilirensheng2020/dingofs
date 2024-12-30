@@ -266,6 +266,8 @@ install_tools-v2() {
     mkdir -p $project_prefix/conf
     wget -O "$project_prefix/sbin/dingo" $tools_v2_dingo_file
     wget -O "$project_prefix/sbin/daemon" $tools_v2_daemo_file
+    chmod +x "$project_prefix/sbin/dingo"
+    chmod +x "$project_prefix/sbin/daemon"
     copy_file "$project_name/conf/dingo.yaml" "$g_prefix/conf"
 }
 
