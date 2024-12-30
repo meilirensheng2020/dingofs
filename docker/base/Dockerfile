@@ -16,7 +16,7 @@ RUN sed -e 's|^mirrorlist=|#mirrorlist=|g' \
 # Step 2: Install necessary packages and set up the environment
 RUN dnf update -y  \
     && dnf install -y epel-release  \
-    && dnf install -y wget tar git gcc-toolset-13* perl flex bison patch fuse3-devel  libnl3-devel libunwind-devel python3-devel net-tools iproute bzip2 vim \
+    && dnf install -y wget tar git gcc-toolset-13* perl flex bison patch fuse3-devel  libnl3-devel libunwind-devel python3-devel net-tools iproute bzip2 vim autoconf automake libtool \
     && dnf clean all \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo ${TZ} > /etc/timezone

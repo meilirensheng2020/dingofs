@@ -78,7 +78,6 @@ test/client/configs/*
 !test/client/configs/.gitkeep
 
 projects/*
-docker/curvebs
 docker/base/*
 docker/debian*/*so*
 !docker/base/Dockerfile
@@ -125,4 +124,4 @@ third-party/installed
 include/etcdclient/etcdclient.h
 build
 
-dingo-eureka/*
+curvefs

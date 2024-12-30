@@ -33,14 +33,14 @@ Usage:
 Usage:
     make install prefix=PREFIX only=TARGET
 Examples:
-    make install prefix=/usr/local/curvefs only=etcd
+    make install prefix=/usr/local/dingofs only=etcd
 
 
 ## image
 Usage:
     make image tag=TAG os=OS
 Examples:
-    make image tag=dingodb/curvefs:v1.2 os=rocky9
+    make image tag=dingodb/dingofs:v1.2 os=rocky9
 endef
 export help_msg
 

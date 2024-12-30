@@ -10,6 +10,8 @@ g_util_dir="$(dirname $(realpath $0))" # /path/to/project/build-scripts
 g_dingo_dir="$(dirname $g_util_dir)" # /path/to/project
 g_build_dir="$g_dingo_dir/build/bin" # /path/to/project/build/bin
 g_build_release=0
+tools_v2_dingo_file="https://github.com/dingodb/dingofs-tools/releases/download/latest/dingo"
+tools_v2_daemo_file="https://github.com/dingodb/dingofs-tools/releases/download/latest/daemon"
 
 g_color_yellow=`printf '\033[33m'`
 g_color_red=`printf '\033[31m'`
@@ -49,7 +51,7 @@ get_options() {
     do
         case "$1" in
             -p|--prefix)
-                g_prefix=$2 # /path/to/project/curvefs/docker/rocky9/dingofs
+                g_prefix=$2 # /path/to/project/dingofs/docker/rocky9/dingofs
                 shift 2
                 ;;
             -o|--only)
@@ -164,7 +166,7 @@ install_dingofs() {
                 g_project_name=$project_name
                 ;;
         esac
-        local project_prefix="$g_prefix/$g_project_name"  # ex: /path/to/project/curvefs/docker/rocky9/dingofs/metaserver
+        local project_prefix="$g_prefix/$g_project_name"  # ex: /path/to/project/dingofs/docker/rocky9/dingofs/metaserver
         
         local binary="$g_build_dir/$project_bin_filename"
 
@@ -250,21 +252,21 @@ install_monitor() {
     if [ "$g_stor" == "bs" ]; then
         local dst="monitor"
     else
-        local dst="curvefs/monitor"
+        local dst="dingofs/monitor"
     fi
     copy_file $dst $g_prefix
     success "install $project_name success\n"
 }
 
 install_tools-v2() {
-    local project_name="tools-v2"
+    local project_name="dingofs"
     g_project_name=$project_name
     project_prefix="$g_prefix/tools-v2"
     mkdir -p $project_prefix/sbin
     mkdir -p $project_prefix/conf
-    copy_file "$project_name/sbin/dingo" "$project_prefix/sbin"
-    copy_file "$project_name/pkg/config/dingo.yaml" "$g_prefix/conf"
-    copy_file "$project_name/sbin/daemon" "$project_prefix/sbin"
+    wget -O "$project_prefix/sbin/dingo" $tools_v2_dingo_file
+    wget -O "$project_prefix/sbin/daemon" $tools_v2_daemo_file
+    copy_file "$project_name/conf/dingo.yaml" "$g_prefix/conf"
 }
 
 main() {

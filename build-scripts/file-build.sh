@@ -34,11 +34,11 @@ get_version() {
     if [ -z ${tag_version} ]
     then
         echo "not found version info"
-        curve_version=${commit_id}${debug}
+        dingofs_version=${commit_id}${debug}
     else
-        curve_version=${tag_version}+${commit_id}${debug}
+        dingofs_version=${tag_version}+${commit_id}${debug}
     fi
-    echo "version: ${curve_version}"
+    echo "version: ${dingofs_version}"
 }
 
 msg() {
@@ -132,18 +132,18 @@ build_target() {
     fi
     
     # build tools-v2
-    g_toolsv2_root="tools-v2"
-    if [ $g_release -eq 1 ]
-    then
-        (cd ${g_toolsv2_root} && make build version=${curve_version})
-    else
-        (cd ${g_toolsv2_root} && make debug version=${curve_version})
-    fi
-    if [ $? -eq 0 ]; then
-        success "build tools-v2 success\n"
-    else
-        die "build tools-v2 failed\n"
-    fi
+    # g_toolsv2_root="tools-v2"
+    # if [ $g_release -eq 1 ]
+    # then
+    #     (cd ${g_toolsv2_root} && make build version=${dingofs_version})
+    # else
+    #     (cd ${g_toolsv2_root} && make debug version=${dingofs_version})
+    # fi
+    # if [ $? -eq 0 ]; then
+    #     success "build tools-v2 success\n"
+    # else
+    #     die "build tools-v2 failed\n"
+    # fi
 }
 
 

@@ -31,9 +31,12 @@ jobs:
         elif [ "${{ github.event_name }}" == "push" ]; then
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             echo "tag" > event.txt
-            echo "${{ github.ref }}" | sed 's/refs\/tags\///' > tag_name.txt
+            tagInfo=echo "${{ github.ref }}" | sed 's/refs\/tags\///'
+            echo "$tagInfo" > tag_name.txt
+            echo "TAG_NAME=$tagInfo" >> $GITHUB_ENV
           else
             echo "push" > event.txt
+            echo "TAG_NAME=latest" >> $GITHUB_ENV
           fi
         fi
     
@@ -59,7 +62,7 @@ jobs:
       run: make file_dep
  
     - name: Build dingofs
-      run: make file_build only=//curvefs/src/* release=1
+      run: make file_build only=//dingofs/src/* release=1
 
     - name: Install dingofs
       run: |
@@ -67,7 +70,7 @@ jobs:
 
     - name: Archive the dingofs directory
       run: |
-        tar -czvf dingofs.tar.gz -C curvefs/docker/rocky9 dingofs
+        tar -czvf dingofs.tar.gz -C dingofs/docker/rocky9 dingofs
 
     - name: Copy artifactory to another workflow
       uses: actions/upload-artifact@v4
@@ -75,4 +78,13 @@ jobs:
           name: dingofs
           path: ./dingofs.tar.gz
           compression-level: 0
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: ${{ github.event_name == 'push'}}
+      with:
+        files: dingofs.tar.gz
+        name: dingofs
+        tag_name: ${{ env.TAG_NAME }}
+        token: ${{ secrets.GH_TOKEN }}
 
