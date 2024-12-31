@@ -31,17 +31,19 @@
 #include "dingofs/src/mds/topology/topology.h"
 #include "dingofs/src/mds/topology/topology_item.h"
 
-using ::dingofs::mds::heartbeat::ConfigChangeInfo;
-using ::dingofs::mds::schedule::Coordinator;
-using ::dingofs::mds::topology::CopySetInfo;
-using ::dingofs::mds::topology::MetaServer;
-using ::dingofs::mds::topology::MetaServerIdType;
-using ::dingofs::mds::topology::Topology;
-using ::std::chrono::steady_clock;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
+
+using std::chrono::steady_clock;
+
+using mds::schedule::Coordinator;
+using mds::topology::CopySetInfo;
+using mds::topology::MetaServer;
+using mds::topology::MetaServerIdType;
+using mds::topology::Topology;
+
+using pb::mds::heartbeat::ConfigChangeInfo;
 class CopysetConfGenerator {
  public:
   CopysetConfGenerator(std::shared_ptr<Topology> topo,
@@ -64,11 +66,10 @@ class CopysetConfGenerator {
    *
    * @return true if there's any configuration, false if not
    */
-  bool GenCopysetConf(
-      MetaServerIdType report_id,
-      const ::dingofs::mds::topology::CopySetInfo& report_copy_set_info,
-      const ::dingofs::mds::heartbeat::ConfigChangeInfo& config_ch_info,
-      ::dingofs::mds::heartbeat::CopySetConf* copyset_conf);
+  bool GenCopysetConf(MetaServerIdType report_id,
+                      const mds::topology::CopySetInfo& report_copy_set_info,
+                      const mds::heartbeat::ConfigChangeInfo& config_ch_info,
+                      pb::mds::heartbeat::CopySetConf* copyset_conf);
 
  private:
   /*
@@ -79,14 +80,14 @@ class CopysetConfGenerator {
    * @param[in] configChInfo configuration changes reported by the heartbeat
    * @param[out] copysetConf new configuration that the scheduler generate
    *
-   * @return ::dingofs::mds::topology::UNINITIALIZE_ID if there isn't any
+   * @return mds::topology::UNINITIALIZE_ID if there isn't any
    *           configuration to dispatch，otherwise other value
    *           apart from UNINITIALIZE_ID
    */
   MetaServerIdType LeaderGenCopysetConf(
-      const ::dingofs::mds::topology::CopySetInfo& copy_set_info,
-      const ::dingofs::mds::heartbeat::ConfigChangeInfo& config_ch_info,
-      ::dingofs::mds::heartbeat::CopySetConf* copyset_conf);
+      const mds::topology::CopySetInfo& copy_set_info,
+      const mds::heartbeat::ConfigChangeInfo& config_ch_info,
+      pb::mds::heartbeat::CopySetConf* copyset_conf);
 
   /*
    * @brief FollowerGenCopysetConf deal with follower copyset info.
@@ -104,9 +105,9 @@ class CopysetConfGenerator {
    */
   bool FollowerGenCopysetConf(
       MetaServerIdType report_id,
-      const ::dingofs::mds::topology::CopySetInfo& report_copy_set_info,
-      const ::dingofs::mds::topology::CopySetInfo& record_copy_set_info,
-      ::dingofs::mds::heartbeat::CopySetConf* copyset_conf);
+      const mds::topology::CopySetInfo& report_copy_set_info,
+      const mds::topology::CopySetInfo& record_copy_set_info,
+      pb::mds::heartbeat::CopySetConf* copyset_conf);
 
   /*
    * @brief BuildPeerByMetaserverId generate a string in the format of

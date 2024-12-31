@@ -39,13 +39,12 @@ namespace dingofs {
 namespace tools {
 namespace copyset {
 
-using CopysetStatusType = dingofs::metaserver::copyset::CopysetStatus;
+using CopysetStatusType = pb::metaserver::copyset::CopysetStatus;
 
 class GetCopysetStatusTool
-    : public CurvefsToolRpc<
-          dingofs::metaserver::copyset::CopysetsStatusRequest,
-          dingofs::metaserver::copyset::CopysetsStatusResponse,
-          dingofs::metaserver::copyset::CopysetService_Stub> {
+    : public CurvefsToolRpc<pb::metaserver::copyset::CopysetsStatusRequest,
+                            pb::metaserver::copyset::CopysetsStatusResponse,
+                            pb::metaserver::copyset::CopysetService_Stub> {
  public:
   explicit GetCopysetStatusTool(const std::string& cmd = kNoInvokeCmd,
                                 bool show = true)

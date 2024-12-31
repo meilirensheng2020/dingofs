@@ -27,28 +27,20 @@
 #include <string>
 
 #include "dingofs/src/aws/s3_adapter.h"
-#include "dingofs/src/base/time/time.h"
 #include "dingofs/src/client/blockcache/error.h"
 
 namespace dingofs {
 namespace client {
 namespace blockcache {
 
-using ::dingofs::aws::GetObjectAsyncContext;
-using ::dingofs::aws::PutObjectAsyncContext;
-using ::dingofs::aws::S3Adapter;
-using ::dingofs::aws::S3AdapterOption;
-using ::dingofs::base::time::TimeNow;
-
 class S3Client {
  public:
   // retry if callback return true
   using RetryCallback = std::function<bool(int code)>;
 
- public:
   virtual ~S3Client() = default;
 
-  virtual void Init(const S3AdapterOption& option) = 0;
+  virtual void Init(const aws::S3AdapterOption& option) = 0;
 
   virtual void Destroy() = 0;
 
@@ -61,9 +53,11 @@ class S3Client {
   virtual void AsyncPut(const std::string& key, const char* buffer,
                         size_t length, RetryCallback callback) = 0;
 
-  virtual void AsyncPut(std::shared_ptr<PutObjectAsyncContext> context) = 0;
+  virtual void AsyncPut(
+      std::shared_ptr<aws::PutObjectAsyncContext> context) = 0;
 
-  virtual void AsyncGet(std::shared_ptr<GetObjectAsyncContext> context) = 0;
+  virtual void AsyncGet(
+      std::shared_ptr<aws::GetObjectAsyncContext> context) = 0;
 };
 
 class S3ClientImpl : public S3Client {
@@ -74,10 +68,9 @@ class S3ClientImpl : public S3Client {
     return instance;
   }
 
- public:
   ~S3ClientImpl() override = default;
 
-  void Init(const S3AdapterOption& option) override;
+  void Init(const aws::S3AdapterOption& option) override;
 
   void Destroy() override;
 
@@ -88,17 +81,16 @@ class S3ClientImpl : public S3Client {
                      char* buffer) override;
 
   void AsyncPut(const std::string& key, const char* buffer, size_t length,
-                RetryCallback callback) override;
+                RetryCallback retry) override;
 
-  void AsyncPut(std::shared_ptr<PutObjectAsyncContext> context) override;
+  void AsyncPut(std::shared_ptr<aws::PutObjectAsyncContext> context) override;
 
-  void AsyncGet(std::shared_ptr<GetObjectAsyncContext> context) override;
-
- private:
-  Aws::String S3Key(const std::string& key);
+  void AsyncGet(std::shared_ptr<aws::GetObjectAsyncContext> context) override;
 
  private:
-  std::unique_ptr<S3Adapter> client_;
+  static Aws::String S3Key(const std::string& key);
+
+  std::unique_ptr<::dingofs::aws::S3Adapter> client_;
 };
 
 }  // namespace blockcache

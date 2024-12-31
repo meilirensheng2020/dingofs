@@ -27,7 +27,6 @@
 #include <unordered_map>
 
 #include "dingofs/src/client/filesystem/defer_sync.h"
-#include "dingofs/src/client/filesystem/dir_cache.h"
 #include "dingofs/src/client/filesystem/meta.h"
 #include "dingofs/src/client/filesystem/metric.h"
 #include "dingofs/src/client/inode_wrapper.h"
@@ -35,11 +34,6 @@
 namespace dingofs {
 namespace client {
 namespace filesystem {
-
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::WriteLockGuard;
-using ::dingofs::client::InodeWrapper;
-using ::dingofs::client::common::OpenFilesOption;
 
 struct OpenFile {
   explicit OpenFile(std::shared_ptr<InodeWrapper> inode)
@@ -53,7 +47,7 @@ class OpenFiles {
  public:
   // option not used, but keeped here, we can turn on/off openfiles cache in the
   // future like juicefs
-  explicit OpenFiles(OpenFilesOption option,
+  explicit OpenFiles(common::OpenFilesOption option,
                      std::shared_ptr<DeferSync> defer_sync);
 
   void Open(Ino ino, std::shared_ptr<InodeWrapper> inode);
@@ -64,11 +58,11 @@ class OpenFiles {
 
   void CloseAll();
 
-  bool GetFileAttr(Ino ino, InodeAttr* attr);
+  bool GetFileAttr(Ino ino, pb::metaserver::InodeAttr* attr);
 
  private:
-  RWLock rwlock_;
-  OpenFilesOption option_;
+  utils::RWLock rwlock_;
+  common::OpenFilesOption option_;
   std::shared_ptr<DeferSync> deferSync_;
   std::unordered_map<Ino, std::unique_ptr<OpenFile>> files_;
   std::shared_ptr<OpenfilesMetric> metric_;

@@ -40,10 +40,6 @@
 #include "dingofs/src/utils/concurrent/concurrent.h"
 #include "dingofs/src/utils/timeutility.h"
 
-using ::dingofs::metaserver::Inode;
-using ::dingofs::metaserver::S3ChunkInfo;
-using ::dingofs::metaserver::S3ChunkInfoList;
-
 namespace dingofs {
 namespace client {
 
@@ -51,15 +47,7 @@ constexpr int kAccessTime = 1 << 0;
 constexpr int kChangeTime = 1 << 1;
 constexpr int kModifyTime = 1 << 2;
 
-using common::NlinkChange;
 using filesystem::DINGOFS_ERROR;
-
-using dingofs::utils::TimeUtility;
-
-using dingofs::stub::metric::S3ChunkInfoMetric;
-using dingofs::stub::rpcclient::MetaServerClient;
-using dingofs::stub::rpcclient::MetaServerClientDone;
-using dingofs::stub::rpcclient::MetaServerClientImpl;
 
 enum class InodeStatus {
   kNormal = 0,
@@ -68,15 +56,18 @@ enum class InodeStatus {
 
 std::ostream& operator<<(std::ostream& os, const struct stat& attr);
 void AppendS3ChunkInfoToMap(
-    uint64_t chunkIndex, const S3ChunkInfo& info,
-    google::protobuf::Map<uint64_t, S3ChunkInfoList>* s3ChunkInfoMap);
+    uint64_t chunkIndex, const pb::metaserver::S3ChunkInfo& info,
+    google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>*
+        s3ChunkInfoMap);
 
 extern bvar::Adder<int64_t> g_alive_inode_count;
 
 class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
  public:
-  InodeWrapper(Inode inode, std::shared_ptr<MetaServerClient> metaClient,
-               std::shared_ptr<S3ChunkInfoMetric> s3ChunkInfoMetric = nullptr,
+  InodeWrapper(pb::metaserver::Inode inode,
+               std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient,
+               std::shared_ptr<stub::metric::S3ChunkInfoMetric>
+                   s3ChunkInfoMetric = nullptr,
                int64_t maxDataSize = LONG_MAX,
                uint32_t refreshDataInterval = UINT_MAX)
       : inode_(std::move(inode)),
@@ -84,12 +75,12 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
         baseMaxDataSize_(maxDataSize),
         maxDataSize_(maxDataSize),
         refreshDataInterval_(refreshDataInterval),
-        lastRefreshTime_(TimeUtility::GetTimeofDaySec()),
+        lastRefreshTime_(utils::TimeUtility::GetTimeofDaySec()),
         s3ChunkInfoAddSize_(0),
         metaClient_(std::move(metaClient)),
         s3ChunkInfoMetric_(std::move(s3ChunkInfoMetric)),
         dirty_(false),
-        time_(TimeUtility::GetTimeofDaySec()) {
+        time_(utils::TimeUtility::GetTimeofDaySec()) {
     UpdateS3ChunkInfoMetric(CalS3ChunkInfoSize());
     g_alive_inode_count << 1;
   }
@@ -103,7 +94,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
 
   uint32_t GetFsId() const { return inode_.fsid(); }
 
-  FsFileType GetType() const { return inode_.type(); }
+  pb::metaserver::FsFileType GetType() const { return inode_.type(); }
 
   std::string GetSymlinkStr() const {
     dingofs::utils::UniqueLock lg(mtx_);
@@ -121,7 +112,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
     dirty_ = true;
   }
 
-  void SetType(FsFileType type) {
+  void SetType(pb::metaserver::FsFileType type) {
     inode_.set_type(type);
     dirtyAttr_.set_type(type);
     dirty_ = true;
@@ -152,7 +143,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
     dirty_ = true;
   }
 
-  Inode GetInode() const {
+  pb::metaserver::Inode GetInode() const {
     dingofs::utils::UniqueLock lg(mtx_);
     return inode_;
   }
@@ -161,7 +152,7 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   //
   // The const return value is used to forbid modify inode through this
   // interface, all modification operations should using `SetXXX()`.
-  const Inode* GetInodeLocked() const { return &inode_; }
+  const pb::metaserver::Inode* GetInodeLocked() const { return &inode_; }
 
   // Update timestamp of inode.
   //
@@ -175,12 +166,12 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   void MergeXAttrLocked(
       const google::protobuf::Map<std::string, std::string>& xattrs);
 
-  DINGOFS_ERROR GetInodeAttrUnLocked(InodeAttr* attr);
+  DINGOFS_ERROR GetInodeAttrUnLocked(pb::metaserver::InodeAttr* attr);
 
-  void GetInodeAttr(InodeAttr* attr);
+  void GetInodeAttr(pb::metaserver::InodeAttr* attr);
 
-  XAttr GetXattr() const {
-    XAttr ret;
+  pb::metaserver::XAttr GetXattr() const {
+    pb::metaserver::XAttr ret;
     dingofs::utils::UniqueLock lg(mtx_);
     ret.set_fsid(inode_.fsid());
     ret.set_inodeid(inode_.inodeid());
@@ -216,13 +207,16 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
 
   DINGOFS_ERROR SyncS3(bool internal = false);
 
-  void Async(MetaServerClientDone* done, bool internal = false);
+  void Async(stub::rpcclient::MetaServerClientDone* done,
+             bool internal = false);
 
-  void AsyncS3(MetaServerClientDone* done, bool internal = false);
+  void AsyncS3(stub::rpcclient::MetaServerClientDone* done,
+               bool internal = false);
 
   DINGOFS_ERROR SyncAttr(bool internal = false);
 
-  void AsyncFlushAttr(MetaServerClientDone* done, bool internal);
+  void AsyncFlushAttr(stub::rpcclient::MetaServerClientDone* done,
+                      bool internal);
 
   void FlushS3ChunkInfoAsync();
 
@@ -249,11 +243,12 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
 
   uint32_t GetNlinkLocked() { return inode_.nlink(); }
 
-  void UpdateNlinkLocked(NlinkChange nlink) {
+  void UpdateNlinkLocked(common::NlinkChange nlink) {
     inode_.set_nlink(inode_.nlink() + static_cast<int32_t>(nlink));
   }
 
-  void AppendS3ChunkInfo(uint64_t chunkIndex, const S3ChunkInfo& info) {
+  void AppendS3ChunkInfo(uint64_t chunkIndex,
+                         const pb::metaserver::S3ChunkInfo& info) {
     dingofs::utils::UniqueLock lg(mtx_);
     AppendS3ChunkInfoToMap(chunkIndex, info, &s3ChunkInfoAdd_);
     AppendS3ChunkInfoToMap(chunkIndex, info, inode_.mutable_s3chunkinfomap());
@@ -262,7 +257,8 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
     UpdateS3ChunkInfoMetric(2);
   }
 
-  google::protobuf::Map<uint64_t, S3ChunkInfoList>* GetChunkInfoMap() {
+  google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>*
+  GetChunkInfoMap() {
     return inode_.mutable_s3chunkinfomap();
   }
 
@@ -302,6 +298,11 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   uint32_t GetCachedTime() const { return time_; }
 
  private:
+  friend class UpdateVolumeExtentClosure;
+  friend class UpdateInodeAttrAndExtentClosure;
+
+  FRIEND_TEST(TestInodeWrapper, TestUpdateInodeAttrIncrementally);
+
   DINGOFS_ERROR SyncS3ChunkInfo(bool internal = false);
 
   int64_t CalS3ChunkInfoSize() {
@@ -337,19 +338,13 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
 
   // Flush inode attributes and extents asynchronously.
   // REQUIRES: |mtx_| is held
-  void AsyncFlushAttrAndExtents(MetaServerClientDone* done, bool internal);
+  void AsyncFlushAttrAndExtents(stub::rpcclient::MetaServerClientDone* done,
+                                bool internal);
 
- private:
-  friend class UpdateVolumeExtentClosure;
-  friend class UpdateInodeAttrAndExtentClosure;
-
- private:
-  FRIEND_TEST(TestInodeWrapper, TestUpdateInodeAttrIncrementally);
-
-  Inode inode_;
+  pb::metaserver::Inode inode_;
 
   // dirty attributes, and needs update to metaserver
-  InodeAttr dirtyAttr_;
+  pb::metaserver::InodeAttr dirtyAttr_;
 
   InodeStatus status_;
   int64_t baseMaxDataSize_;
@@ -357,19 +352,20 @@ class InodeWrapper : public std::enable_shared_from_this<InodeWrapper> {
   uint32_t refreshDataInterval_;
   uint64_t lastRefreshTime_;
 
-  google::protobuf::Map<uint64_t, S3ChunkInfoList> s3ChunkInfoAdd_;
+  google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>
+      s3ChunkInfoAdd_;
   int64_t s3ChunkInfoAddSize_;
   int64_t s3ChunkInfoSize_;
 
-  std::shared_ptr<MetaServerClient> metaClient_;
-  std::shared_ptr<S3ChunkInfoMetric> s3ChunkInfoMetric_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
+  std::shared_ptr<stub::metric::S3ChunkInfoMetric> s3ChunkInfoMetric_;
   bool dirty_;
-  mutable ::dingofs::utils::Mutex mtx_;
+  mutable utils::Mutex mtx_;
 
-  mutable ::dingofs::utils::Mutex syncingInodeMtx_;
-  mutable ::dingofs::utils::Mutex syncingS3ChunkInfoMtx_;
+  mutable utils::Mutex syncingInodeMtx_;
+  mutable utils::Mutex syncingS3ChunkInfoMtx_;
 
-  mutable ::dingofs::utils::Mutex syncingVolumeExtentsMtx_;
+  mutable utils::Mutex syncingVolumeExtentsMtx_;
 
   // timestamp when put in cache
   uint64_t time_;

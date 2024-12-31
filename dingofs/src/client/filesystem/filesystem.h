@@ -30,7 +30,6 @@
 #include <string>
 
 #include "dingofs/src/base/timer/timer.h"
-#include "dingofs/src/base/timer/timer_impl.h"
 #include "dingofs/src/client/common/config.h"
 #include "dingofs/src/client/filesystem/attr_watcher.h"
 #include "dingofs/src/client/filesystem/defer_sync.h"
@@ -50,10 +49,6 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::base::timer::Timer;
-using ::dingofs::base::timer::TimerImpl;
-using ::dingofs::client::common::FileSystemOption;
-
 struct FileSystemMember {
   FileSystemMember(std::shared_ptr<DeferSync> deferSync,
                    std::shared_ptr<OpenFiles> openFiles,
@@ -72,7 +67,8 @@ struct FileSystemMember {
 
 class FileSystem {
  public:
-  FileSystem(uint32_t fs_id, FileSystemOption option, ExternalMember member);
+  FileSystem(uint32_t fs_id, common::FileSystemOption option,
+             ExternalMember member);
 
   void Run();
 
@@ -149,7 +145,7 @@ class FileSystem {
   // if find, then return the nearest dir quota ino
   bool NearestDirQuota(Ino ino, Ino& out_quota_ino);
 
-  Quota GetFsQuota();
+  pb::metaserver::Quota GetFsQuota();
 
  private:
   FRIEND_TEST(FileSystemTest, Attr2Stat);
@@ -158,18 +154,17 @@ class FileSystem {
   FRIEND_TEST(FileSystemTest, SetAttrTimeout);
 
   // utility: convert to system type.
-  void Attr2Stat(InodeAttr* attr, struct stat* stat);
+  void Attr2Stat(pb::metaserver::InodeAttr* attr, struct stat* stat);
 
-  void Entry2Param(EntryOut* entryOut, fuse_entry_param* e);
+  void Entry2Param(EntryOut* entry_out, fuse_entry_param* e);
 
   // utility: set entry/attribute timeout
-  void SetEntryTimeout(EntryOut* entryOut);
+  void SetEntryTimeout(EntryOut* entry_out);
 
-  void SetAttrTimeout(AttrOut* attrOut);
+  void SetAttrTimeout(AttrOut* attr_out);
 
- private:
   uint32_t fs_id_;
-  FileSystemOption option_;
+  common::FileSystemOption option_;
   ExternalMember member;
   std::shared_ptr<DeferSync> deferSync_;
   std::shared_ptr<LookupCache> negative_;
@@ -183,7 +178,7 @@ class FileSystem {
   std::shared_ptr<DirParentWatcher> dir_parent_watcher_;
   // NOTE: filesytem own this timer, when destroy or stop, first stop
   // stat_timer_, then stop fs_stat_manager_  and dir_quota_manager_
-  std::shared_ptr<Timer> stat_timer_;
+  std::shared_ptr<base::timer::Timer> stat_timer_;
   std::shared_ptr<FsStatManager> fs_stat_manager_;
   std::shared_ptr<DirQuotaManager> dir_quota_manager_;
 };

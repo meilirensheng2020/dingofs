@@ -31,8 +31,6 @@ namespace dingofs {
 namespace metaserver {
 namespace storage {
 
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::WriteLockGuard;
 using UnorderedContainerType = MemoryStorage::UnorderedContainerType;
 using UnorderedSeralizedContainerType =
     MemoryStorage::UnorderedSeralizedContainerType;
@@ -40,9 +38,14 @@ using OrderedContainerType = MemoryStorage::OrderedContainerType;
 using OrderedSeralizedContainerType =
     MemoryStorage::OrderedSeralizedContainerType;
 
+using utils::ReadLockGuard;
+using utils::WriteLockGuard;
+
 MemoryStorage::MemoryStorage(StorageOptions options) : options_(options) {}
 
-STORAGE_TYPE MemoryStorage::Type() { return STORAGE_TYPE::MEMORY_STORAGE; }
+KVStorage::STORAGE_TYPE MemoryStorage::Type() {
+  return STORAGE_TYPE::MEMORY_STORAGE;
+}
 
 bool MemoryStorage::Open() { return true; }
 

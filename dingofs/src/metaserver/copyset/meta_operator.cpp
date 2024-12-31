@@ -44,8 +44,65 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-using ::dingofs::utils::TimeUtility;
-using ::dingofs::common::StreamConnection;
+using pb::metaserver::BatchGetInodeAttrRequest;
+using pb::metaserver::BatchGetInodeAttrResponse;
+using pb::metaserver::BatchGetXAttrRequest;
+using pb::metaserver::BatchGetXAttrResponse;
+using pb::metaserver::CreateDentryRequest;
+using pb::metaserver::CreateDentryResponse;
+using pb::metaserver::CreateInodeRequest;
+using pb::metaserver::CreateInodeResponse;
+using pb::metaserver::CreateManageInodeRequest;
+using pb::metaserver::CreateManageInodeResponse;
+using pb::metaserver::CreatePartitionRequest;
+using pb::metaserver::CreatePartitionResponse;
+using pb::metaserver::CreateRootInodeRequest;
+using pb::metaserver::CreateRootInodeResponse;
+using pb::metaserver::DeleteDentryRequest;
+using pb::metaserver::DeleteDentryResponse;
+using pb::metaserver::DeleteDirQuotaRequest;
+using pb::metaserver::DeleteDirQuotaResponse;
+using pb::metaserver::DeleteInodeRequest;
+using pb::metaserver::DeleteInodeResponse;
+using pb::metaserver::DeletePartitionRequest;
+using pb::metaserver::DeletePartitionResponse;
+using pb::metaserver::FlushDirUsagesRequest;
+using pb::metaserver::FlushDirUsagesResponse;
+using pb::metaserver::FlushFsUsageRequest;
+using pb::metaserver::FlushFsUsageResponse;
+using pb::metaserver::GetDentryRequest;
+using pb::metaserver::GetDentryResponse;
+using pb::metaserver::GetDirQuotaRequest;
+using pb::metaserver::GetDirQuotaResponse;
+using pb::metaserver::GetFsQuotaRequest;
+using pb::metaserver::GetFsQuotaResponse;
+using pb::metaserver::GetInodeRequest;
+using pb::metaserver::GetInodeResponse;
+using pb::metaserver::GetOrModifyS3ChunkInfoRequest;
+using pb::metaserver::GetOrModifyS3ChunkInfoResponse;
+using pb::metaserver::GetVolumeExtentRequest;
+using pb::metaserver::GetVolumeExtentResponse;
+using pb::metaserver::ListDentryRequest;
+using pb::metaserver::ListDentryResponse;
+using pb::metaserver::LoadDirQuotasRequest;
+using pb::metaserver::LoadDirQuotasResponse;
+using pb::metaserver::PrepareRenameTxRequest;
+using pb::metaserver::PrepareRenameTxResponse;
+using pb::metaserver::SetDirQuotaRequest;
+using pb::metaserver::SetDirQuotaResponse;
+using pb::metaserver::SetFsQuotaRequest;
+using pb::metaserver::SetFsQuotaResponse;
+using pb::metaserver::UpdateInodeRequest;
+using pb::metaserver::UpdateInodeResponse;
+using pb::metaserver::UpdateVolumeExtentRequest;
+using pb::metaserver::UpdateVolumeExtentResponse;
+
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::VolumeExtentList;
+
+using common::StreamConnection;
+using storage::Iterator;
+using utils::TimeUtility;
 
 MetaOperator::~MetaOperator() {
   if (ownRequest_ && request_) {
@@ -114,11 +171,11 @@ void MetaOperator::FastApplyTask() {
 #define OPERATOR_CAN_BYPASS_PROPOSE(TYPE) \
   bool TYPE##Operator::CanBypassPropose() const { return false; }
 
-#define READONLY_OPERATOR_CAN_BYPASS_PROPOSE(TYPE)           \
-  bool TYPE##Operator::CanBypassPropose() const {            \
-    auto* req = static_cast<const TYPE##Request*>(request_); \
-    return req->has_appliedindex() &&                        \
-           node_->GetAppliedIndex() >= req->appliedindex();  \
+#define READONLY_OPERATOR_CAN_BYPASS_PROPOSE(TYPE)                           \
+  bool TYPE##Operator::CanBypassPropose() const {                            \
+    auto* req = static_cast<const pb::metaserver::TYPE##Request*>(request_); \
+    return req->has_appliedindex() &&                                        \
+           node_->GetAppliedIndex() >= req->appliedindex();                  \
   }
 
 OPERATOR_CAN_BYPASS_PROPOSE(SetFsQuota);
@@ -174,9 +231,9 @@ bool GetVolumeExtentOperator::CanBypassPropose() const {
     uint64_t timeUs = TimeUtility::GetTimeofDayUs();                           \
     node_->GetMetric()->WaitInQueueLatency(OperatorType::TYPE,                 \
                                            timeUs - startTimeUs);              \
-    auto status = node_->GetMetaStore()                                        \
-                      -> TYPE(static_cast<const TYPE##Request*>(request_),     \
-                              static_cast<TYPE##Response*>(response_));        \
+    auto status = node_->GetMetaStore()->TYPE(                                 \
+        static_cast<const TYPE##Request*>(request_),                           \
+        static_cast<TYPE##Response*>(response_));                              \
     uint64_t executeTime = TimeUtility::GetTimeofDayUs() - timeUs;             \
     node_->GetMetric()->ExecuteLatency(OperatorType::TYPE, executeTime);       \
     if (status == MetaStatusCode::OK) {                                        \
@@ -324,7 +381,7 @@ void GetVolumeExtentOperator::OnApply(int64_t index,
   void TYPE##Operator::OnApplyFromLog(uint64_t startTimeUs) {            \
     std::unique_ptr<TYPE##Operator> selfGuard(this);                     \
     TYPE##Response response;                                             \
-    auto status = node_->GetMetaStore() -> TYPE(                         \
+    auto status = node_->GetMetaStore()->TYPE(                           \
         static_cast<const TYPE##Request*>(request_), &response);         \
     node_->GetMetric()->OnOperatorCompleteFromLog(                       \
         OperatorType::TYPE, TimeUtility::GetTimeofDayUs() - startTimeUs, \

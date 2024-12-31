@@ -31,17 +31,19 @@
 #include "dingofs/src/metaserver/s3compact_worker.h"
 #include "dingofs/src/utils/string_util.h"
 
-using dingofs::aws::InitS3AdaptorOptionExceptS3InfoOption;
-using dingofs::aws::S3Adapter;
-using dingofs::aws::S3AdapterOption;
-
-using dingofs::utils::Configuration;
-using dingofs::utils::ReadLockGuard;
-using dingofs::utils::TaskThreadPool;
-using dingofs::utils::WriteLockGuard;
-
 namespace dingofs {
 namespace metaserver {
+
+using aws::InitS3AdaptorOptionExceptS3InfoOption;
+using aws::S3Adapter;
+using aws::S3AdapterOption;
+using pb::common::S3Info;
+using utils::Configuration;
+using utils::InterruptibleSleeper;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::TaskThreadPool;
+using utils::WriteLockGuard;
 
 void S3AdapterManager::Init() {
   std::lock_guard<std::mutex> lock(mtx_);

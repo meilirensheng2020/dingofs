@@ -28,9 +28,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
-#include <iterator>
 #include <list>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -39,34 +37,27 @@
 #include <utility>
 #include <vector>
 
+#include "dingofs/src/aws/s3_adapter.h"
 #include "dingofs/src/client/blockcache/block_cache.h"
 #include "dingofs/src/client/common/common.h"
 #include "dingofs/src/client/dentry_cache_manager.h"
 #include "dingofs/src/client/fuse_common.h"
 #include "dingofs/src/client/inode_cache_manager.h"
 #include "dingofs/src/client/kvclient/kvclient_manager.h"
-#include "dingofs/src/stub/metric/metric.h"
-#include "dingofs/src/stub/rpcclient/metaserver_client.h"
 #include "dingofs/src/client/s3/client_s3_adaptor.h"
 #include "dingofs/src/client/s3/client_s3_cache_manager.h"
 #include "dingofs/src/common/task_thread_pool.h"
+#include "dingofs/src/stub/metric/metric.h"
+#include "dingofs/src/stub/rpcclient/metaserver_client.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
 #include "dingofs/src/utils/concurrent/rw_lock.h"
-#include "dingofs/src/aws/s3_adapter.h"
 
 namespace dingofs {
 namespace client {
 namespace warmup {
 
-using common::FuseClientOption;
-using ::dingofs::client::blockcache::BlockKey;
-using ::dingofs::aws::GetObjectAsyncContext;
-
 using ThreadPool = dingofs::common::TaskThreadPool2<bthread::Mutex,
                                                     bthread::ConditionVariable>;
-using dingofs::utils::BthreadRWLock;
-
-using dingofs::client::common::WarmupStorageType;
 
 class WarmupFile {
  public:
@@ -109,8 +100,8 @@ using FuseOpReadFunctionType =
 class WarmupProgress {
  public:
   explicit WarmupProgress(
-      WarmupStorageType type =
-          dingofs::client::common::WarmupStorageType::kWarmupStorageTypeUnknown)
+      common::WarmupStorageType type =
+          common::WarmupStorageType::kWarmupStorageTypeUnknown)
       : total_(0), finished_(0), error_(0), storageType_(type) {}
 
   WarmupProgress(const WarmupProgress& wp)
@@ -164,14 +155,14 @@ class WarmupProgress {
            ",error:" + std::to_string(error_);
   }
 
-  WarmupStorageType GetStorageType() { return storageType_; }
+  common::WarmupStorageType GetStorageType() { return storageType_; }
 
  private:
   uint64_t total_;
   std::mutex totalMutex_;
   uint64_t finished_;
   std::mutex finishedMutex_;
-  WarmupStorageType storageType_;
+  common::WarmupStorageType storageType_;
   uint64_t error_;  // TODO may be better to use atomic types
   std::mutex errorMutex_;
 };
@@ -180,18 +171,18 @@ class WarmupManager {
  public:
   WarmupManager()
       : mounted_(false),
-        metaClient_(std::make_shared<MetaServerClientImpl>()),
+        metaClient_(std::make_shared<stub::rpcclient::MetaServerClientImpl>()),
         inodeManager_(std::make_shared<InodeCacheManagerImpl>(metaClient_)),
         dentryManager_(std::make_shared<DentryCacheManagerImpl>(metaClient_)) {
     kvClientManager_ = nullptr;
   }
 
-  explicit WarmupManager(std::shared_ptr<MetaServerClient> metaClient,
-                         std::shared_ptr<InodeCacheManager> inodeManager,
-                         std::shared_ptr<DentryCacheManager> dentryManager,
-                         std::shared_ptr<FsInfo> fsInfo,
-                         FuseOpReadFunctionType readFunc,
-                         std::shared_ptr<KVClientManager> kvClientManager)
+  explicit WarmupManager(
+      std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient,
+      std::shared_ptr<InodeCacheManager> inodeManager,
+      std::shared_ptr<DentryCacheManager> dentryManager,
+      std::shared_ptr<pb::mds::FsInfo> fsInfo, FuseOpReadFunctionType readFunc,
+      std::shared_ptr<KVClientManager> kvClientManager)
       : mounted_(false),
         metaClient_(std::move(metaClient)),
         inodeManager_(std::move(inodeManager)),
@@ -200,18 +191,23 @@ class WarmupManager {
         fuseOpRead_(std::move(readFunc)),
         kvClientManager_(std::move(kvClientManager)) {}
 
-  virtual void Init(const FuseClientOption& option) { option_ = option; }
+  virtual void Init(const common::FuseClientOption& option) {
+    option_ = option;
+  }
   virtual void UnInit() { ClearWarmupProcess(); }
 
-  virtual bool AddWarmupFilelist(fuse_ino_t key, WarmupStorageType type) = 0;
+  virtual bool AddWarmupFilelist(fuse_ino_t key,
+                                 common::WarmupStorageType type) = 0;
   virtual bool AddWarmupFile(fuse_ino_t key, const std::string& path,
-                             WarmupStorageType type) = 0;
+                             common::WarmupStorageType type) = 0;
 
   void SetMounted(bool mounted) {
     mounted_.store(mounted, std::memory_order_release);
   }
 
-  void SetFsInfo(const std::shared_ptr<FsInfo>& fsinfo) { fsInfo_ = fsinfo; }
+  void SetFsInfo(const std::shared_ptr<pb::mds::FsInfo>& fsinfo) {
+    fsInfo_ = fsinfo;
+  }
 
   void SetFuseOpRead(const FuseOpReadFunctionType& read) { fuseOpRead_ = read; }
 
@@ -229,7 +225,7 @@ class WarmupManager {
    */
   bool QueryWarmupProgress(fuse_ino_t key, WarmupProgress* progress) {
     bool ret = true;
-    ReadLockGuard lock(inode2ProgressMutex_);
+    utils::ReadLockGuard lock(inode2ProgressMutex_);
     auto iter = FindWarmupProgressByKeyLocked(key);
     if (iter != inode2Progress_.end()) {
       *progress = iter->second;
@@ -239,7 +235,8 @@ class WarmupManager {
     return ret;
   }
 
-  void CollectMetrics(InterfaceMetric* interface, int count, uint64_t start);
+  void CollectMetrics(stub::metric::InterfaceMetric* interface, int count,
+                      uint64_t start);
 
  protected:
   /**
@@ -248,8 +245,9 @@ class WarmupManager {
    * @return true
    * @return false warmupProcess has been added
    */
-  virtual bool AddWarmupProcess(fuse_ino_t key, WarmupStorageType type) {
-    WriteLockGuard lock(inode2ProgressMutex_);
+  virtual bool AddWarmupProcess(fuse_ino_t key,
+                                common::WarmupStorageType type) {
+    utils::WriteLockGuard lock(inode2ProgressMutex_);
     auto ret = inode2Progress_.emplace(key, WarmupProgress(type));
     return ret.second;
   }
@@ -266,7 +264,7 @@ class WarmupManager {
   }
 
   virtual void ClearWarmupProcess() {
-    WriteLockGuard lock(inode2ProgressMutex_);
+    utils::WriteLockGuard lock(inode2ProgressMutex_);
     inode2Progress_.clear();
   }
 
@@ -274,7 +272,7 @@ class WarmupManager {
   std::atomic<bool> mounted_;
 
   // metaserver client
-  std::shared_ptr<MetaServerClient> metaClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
 
   // inode cache manager
   std::shared_ptr<InodeCacheManager> inodeManager_;
@@ -283,27 +281,27 @@ class WarmupManager {
   std::shared_ptr<DentryCacheManager> dentryManager_;
 
   // filesystem info
-  std::shared_ptr<FsInfo> fsInfo_;
+  std::shared_ptr<pb::mds::FsInfo> fsInfo_;
 
   // FuseOpRead
   FuseOpReadFunctionType fuseOpRead_;
 
   // warmup progress
   std::unordered_map<fuse_ino_t, WarmupProgress> inode2Progress_;
-  BthreadRWLock inode2ProgressMutex_;
+  utils::BthreadRWLock inode2ProgressMutex_;
 
   std::shared_ptr<KVClientManager> kvClientManager_ = nullptr;
 
-  FuseClientOption option_;
+  common::FuseClientOption option_;
 };
 
 class WarmupManagerS3Impl : public WarmupManager {
  public:
   explicit WarmupManagerS3Impl(
-      std::shared_ptr<MetaServerClient> metaClient,
+      std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient,
       std::shared_ptr<InodeCacheManager> inodeManager,
       std::shared_ptr<DentryCacheManager> dentryManager,
-      std::shared_ptr<FsInfo> fsInfo, FuseOpReadFunctionType readFunc,
+      std::shared_ptr<pb::mds::FsInfo> fsInfo, FuseOpReadFunctionType readFunc,
       std::shared_ptr<S3ClientAdaptor> s3Adaptor,
       std::shared_ptr<KVClientManager> kvClientManager)
       : WarmupManager(std::move(metaClient), std::move(inodeManager),
@@ -311,11 +309,12 @@ class WarmupManagerS3Impl : public WarmupManager {
                       std::move(readFunc), std::move(kvClientManager)),
         s3Adaptor_(std::move(s3Adaptor)) {}
 
-  bool AddWarmupFilelist(fuse_ino_t key, WarmupStorageType type) override;
+  bool AddWarmupFilelist(fuse_ino_t key,
+                         common::WarmupStorageType type) override;
   bool AddWarmupFile(fuse_ino_t key, const std::string& path,
-                     WarmupStorageType type) override;
+                     common::WarmupStorageType type) override;
 
-  void Init(const FuseClientOption& option) override;
+  void Init(const common::FuseClientOption& option) override;
   void UnInit() override;
 
  private:
@@ -386,21 +385,23 @@ class WarmupManagerS3Impl : public WarmupManager {
 
   void FetchDataEnqueue(fuse_ino_t key, fuse_ino_t ino);
 
-  using S3ChunkInfoMapType = google::protobuf::Map<uint64_t, S3ChunkInfoList>;
+  using S3ChunkInfoMapType =
+      google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>;
 
   // travel all chunks
   void TravelChunks(fuse_ino_t key, fuse_ino_t ino,
                     const S3ChunkInfoMapType& s3ChunkInfoMap);
 
-  using ObjectListType = std::list<std::pair<BlockKey, uint64_t>>;
+  using ObjectListType = std::list<std::pair<blockcache::BlockKey, uint64_t>>;
   // travel and download all objs belong to the chunk
-  void TravelChunk(fuse_ino_t ino, const S3ChunkInfoList& chunkInfo,
+  void TravelChunk(fuse_ino_t ino,
+                   const pb::metaserver::S3ChunkInfoList& chunkInfo,
                    ObjectListType* prefetchObjs);
 
   // warmup all the prefetchObjs
   void WarmUpAllObjs(
       fuse_ino_t ino,
-      const std::list<std::pair<BlockKey, uint64_t>>& prefetchObjs);
+      const std::list<std::pair<blockcache::BlockKey, uint64_t>>& prefetchObjs);
 
   /**
    * @brief Whether the warmup task[key] is completed (or terminated)
@@ -424,24 +425,25 @@ class WarmupManagerS3Impl : public WarmupManager {
 
   void AddFetchS3objectsTask(fuse_ino_t key, std::function<void()> task);
 
-  void PutObjectToCache(fuse_ino_t ino,
-                        const std::shared_ptr<GetObjectAsyncContext>& context);
+  void PutObjectToCache(
+      fuse_ino_t ino,
+      const std::shared_ptr<aws::GetObjectAsyncContext>& context);
 
  protected:
   std::deque<WarmupFilelist> warmupFilelistDeque_;
-  mutable RWLock warmupFilelistDequeMutex_;
+  mutable utils::RWLock warmupFilelistDequeMutex_;
 
   bool initbgFetchThread_ = false;
-  Thread bgFetchThread_;
+  utils::Thread bgFetchThread_;
   std::atomic<bool> bgFetchStop_;
 
   // TODO(chengyi01): limit thread nums
   std::unordered_map<fuse_ino_t, std::unique_ptr<ThreadPool>>
       inode2FetchDentryPool_;
-  mutable RWLock inode2FetchDentryPoolMutex_;
+  mutable utils::RWLock inode2FetchDentryPoolMutex_;
 
   std::deque<WarmupInodes> warmupInodesDeque_;
-  mutable RWLock warmupInodesDequeMutex_;
+  mutable utils::RWLock warmupInodesDequeMutex_;
 
   // s3 adaptor
   std::shared_ptr<S3ClientAdaptor> s3Adaptor_;
@@ -449,7 +451,7 @@ class WarmupManagerS3Impl : public WarmupManager {
   // TODO(chengyi01): limit thread nums
   std::unordered_map<fuse_ino_t, std::unique_ptr<ThreadPool>>
       inode2FetchS3ObjectsPool_;
-  mutable RWLock inode2FetchS3ObjectsPoolMutex_;
+  mutable utils::RWLock inode2FetchS3ObjectsPoolMutex_;
 
   dingofs::stub::metric::WarmupManagerS3Metric warmupS3Metric_;
 };

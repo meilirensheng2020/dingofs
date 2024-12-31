@@ -29,7 +29,6 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
-#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/storage/common.h"
 #include "dingofs/src/metaserver/storage/iterator.h"
 #include "dingofs/src/metaserver/storage/storage.h"
@@ -40,14 +39,6 @@
 namespace dingofs {
 namespace metaserver {
 namespace storage {
-
-using ::dingofs::utils::RWLock;
-using ::dingofs::utils::StringStartWith;
-using ::dingofs::metaserver::Dentry;
-using ::dingofs::metaserver::Inode;
-using ::dingofs::metaserver::S3ChunkInfoList;
-using ::dingofs::metaserver::VolumeExtentSlice;
-using STORAGE_TYPE = KVStorage::STORAGE_TYPE;
 
 class MemoryStorage : public KVStorage, public StorageTransaction {
  public:
@@ -117,7 +108,7 @@ class MemoryStorage : public KVStorage, public StorageTransaction {
   bool Recover(const std::string& dir) override;
 
  private:
-  RWLock rwLock_;
+  utils::RWLock rwLock_;
   StorageOptions options_;
 
   std::unordered_map<std::string, std::shared_ptr<UnorderedContainerType>>
@@ -156,7 +147,7 @@ class MemoryStorageIterator : public Iterator {
     } else if (current_ == container_->end()) {
       return false;
     } else if (prefixChecking_ && prefix_.size() > 0 &&
-               !StringStartWith(current_->first, prefix_)) {
+               !utils::StringStartWith(current_->first, prefix_)) {
       return false;
     }
     return true;

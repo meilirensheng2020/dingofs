@@ -30,11 +30,14 @@ namespace dingofs {
 namespace client {
 namespace blockcache {
 
-using ::dingofs::stub::metric::MetricGuard;
-using ::dingofs::stub::metric::S3Metric;
+using aws::GetObjectAsyncContext;
+using aws::PutObjectAsyncContext;
+using aws::S3AdapterOption;
+using stub::metric::MetricGuard;
+using stub::metric::S3Metric;
 
 void S3ClientImpl::Init(const S3AdapterOption& option) {
-  client_ = std::make_unique<S3Adapter>();
+  client_ = std::make_unique<aws::S3Adapter>();
   client_->Init(option);
 }
 

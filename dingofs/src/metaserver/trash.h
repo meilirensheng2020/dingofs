@@ -28,24 +28,14 @@
 #include <memory>
 #include <unordered_map>
 
-#include "dingofs/src/stub/rpcclient/mds_client.h"
 #include "dingofs/src/metaserver/inode_storage.h"
 #include "dingofs/src/metaserver/s3/metaserver_s3_adaptor.h"
+#include "dingofs/src/stub/rpcclient/mds_client.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
 #include "dingofs/src/utils/configuration.h"
-#include "dingofs/src/utils/interruptible_sleeper.h"
 
 namespace dingofs {
 namespace metaserver {
-
-using ::dingofs::utils::Atomic;
-using ::dingofs::utils::Configuration;
-using ::dingofs::utils::InterruptibleSleeper;
-using ::dingofs::utils::LockGuard;
-using ::dingofs::utils::Mutex;
-using ::dingofs::utils::Thread;
-using ::dingofs::stub::rpcclient::MdsClient;
-using ::dingofs::stub::rpcclient::MdsClientImpl;
 
 struct TrashItem {
   uint32_t fsId;
@@ -58,14 +48,14 @@ struct TrashOption {
   uint32_t scanPeriodSec;
   uint32_t expiredAfterSec;
   std::shared_ptr<S3ClientAdaptor> s3Adaptor;
-  std::shared_ptr<MdsClient> mdsClient;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient;
   TrashOption()
       : scanPeriodSec(0),
         expiredAfterSec(0),
         s3Adaptor(nullptr),
         mdsClient(nullptr) {}
 
-  void InitTrashOptionFromConf(std::shared_ptr<Configuration> conf);
+  void InitTrashOptionFromConf(std::shared_ptr<utils::Configuration> conf);
 };
 
 class Trash {
@@ -108,23 +98,22 @@ class TrashImpl : public Trash {
  private:
   bool NeedDelete(const TrashItem& item);
 
-  MetaStatusCode DeleteInodeAndData(const TrashItem& item);
+  pb::metaserver::MetaStatusCode DeleteInodeAndData(const TrashItem& item);
 
   uint64_t GetFsRecycleTimeHour(uint32_t fsId);
 
- private:
   std::shared_ptr<InodeStorage> inodeStorage_;
   std::shared_ptr<S3ClientAdaptor> s3Adaptor_;
-  std::shared_ptr<MdsClient> mdsClient_;
-  std::unordered_map<uint32_t, FsInfo> fsInfoMap_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
+  std::unordered_map<uint32_t, pb::mds::FsInfo> fsInfoMap_;
 
   std::list<TrashItem> trashItems_;
 
-  mutable Mutex itemsMutex_;
+  mutable utils::Mutex itemsMutex_;
 
   TrashOption options_;
 
-  mutable Mutex scanMutex_;
+  mutable utils::Mutex scanMutex_;
 
   bool isStop_;
 };

@@ -41,7 +41,7 @@ namespace tools {
 namespace query {
 
 InodeBase TraslateInodeBase(
-    const dingofs::metaserver::GetOrModifyS3ChunkInfoRequest& source) {
+    const pb::metaserver::GetOrModifyS3ChunkInfoRequest& source) {
   InodeBase target;
   target.set_poolid(source.poolid());
   target.set_copysetid(source.copysetid());
@@ -101,7 +101,7 @@ int InodeS3InfoMapTool::Init() {
   }
 
   for (size_t i = 0; i < poolsId.size(); ++i) {
-    dingofs::metaserver::GetOrModifyS3ChunkInfoRequest request;
+    pb::metaserver::GetOrModifyS3ChunkInfoRequest request;
     request.set_poolid(std::stoul((poolsId[i])));
     request.set_copysetid(std::stoul((copysetsId[i])));
     request.set_partitionid(std::stoul((partitionId[i])));
@@ -113,10 +113,10 @@ int InodeS3InfoMapTool::Init() {
     AddRequest(request);
   }
 
-  service_stub_func_ = std::bind(
-      &dingofs::metaserver::MetaServerService_Stub::GetOrModifyS3ChunkInfo,
-      service_stub_.get(), std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3, nullptr);
+  service_stub_func_ =
+      std::bind(&pb::metaserver::MetaServerService_Stub::GetOrModifyS3ChunkInfo,
+                service_stub_.get(), std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3, nullptr);
   SetReceiveCallback();
   return 0;
 }
@@ -124,12 +124,11 @@ int InodeS3InfoMapTool::Init() {
 bool InodeS3InfoMapTool::AfterSendRequestToHost(const std::string& host) {
   bool ret = false;
   if (controller_->Failed()) {
-    errorOutput_ << "send request "
-                 << " to metaserver: " << host
+    errorOutput_ << "send request " << " to metaserver: " << host
                  << " failed, errorcode= " << controller_->ErrorCode()
                  << ", error text " << controller_->ErrorText() << "\n";
   } else {
-    if (response_->statuscode() == metaserver::MetaStatusCode::OK) {
+    if (response_->statuscode() == pb::metaserver::MetaStatusCode::OK) {
       if (!isStreaming_) {
         if (response_->s3chunkinfomap_size() == 0) {
           UpdateInode2S3ChunkInfoList_(TraslateInodeBase(requestQueue_.front()),

@@ -35,8 +35,18 @@ namespace dingofs {
 
 namespace client {
 
-using ::dingofs::client::blockcache::BCACHE_ERROR;
-using ::dingofs::client::datastream::DataStream;
+using blockcache::BCACHE_ERROR;
+using blockcache::BlockCache;
+using blockcache::S3Client;
+using common::S3ClientAdaptorOption;
+using datastream::DataStream;
+using filesystem::FileSystem;
+using stub::rpcclient::MdsClient;
+using utils::Thread;
+
+using pb::mds::FSStatusCode;
+using pb::metaserver::S3ChunkInfo;
+using pb::metaserver::S3ChunkInfoList;
 
 DINGOFS_ERROR
 S3ClientAdaptorImpl::Init(const S3ClientAdaptorOption& option,

@@ -33,34 +33,35 @@
 namespace dingofs {
 namespace mds {
 
-using dingofs::common::PartitionInfo;
-using dingofs::common::PartitionStatus;
 using dingofs::mds::topology::BuildPeerIdWithAddr;
 using dingofs::mds::topology::SplitPeerId;
-using dingofs::metaserver::CreateDentryRequest;
-using dingofs::metaserver::CreateDentryResponse;
-using dingofs::metaserver::CreateManageInodeRequest;
-using dingofs::metaserver::CreateManageInodeResponse;
-using dingofs::metaserver::CreateRootInodeRequest;
-using dingofs::metaserver::CreateRootInodeResponse;
-using dingofs::metaserver::DeleteDentryRequest;
-using dingofs::metaserver::DeleteDentryResponse;
-using dingofs::metaserver::DeleteInodeRequest;
-using dingofs::metaserver::DeleteInodeResponse;
-using dingofs::metaserver::Dentry;
-using dingofs::metaserver::FsFileType;
-using dingofs::metaserver::ManageInodeType;
-using dingofs::metaserver::MetaServerService_Stub;
-using dingofs::metaserver::MetaStatusCode;
-using dingofs::metaserver::Time;
 
-using dingofs::metaserver::copyset::CliService2_Stub;
-using dingofs::metaserver::copyset::COPYSET_OP_STATUS;
-using dingofs::metaserver::copyset::CopysetService_Stub;
-using dingofs::metaserver::copyset::CreateCopysetRequest;
-using dingofs::metaserver::copyset::CreateCopysetResponse;
-using dingofs::metaserver::copyset::GetLeaderRequest2;
-using dingofs::metaserver::copyset::GetLeaderResponse2;
+using dingofs::pb::common::PartitionInfo;
+using dingofs::pb::common::PartitionStatus;
+
+using dingofs::pb::metaserver::CreateDentryRequest;
+using dingofs::pb::metaserver::CreateDentryResponse;
+using dingofs::pb::metaserver::CreateManageInodeRequest;
+using dingofs::pb::metaserver::CreateManageInodeResponse;
+using dingofs::pb::metaserver::CreateRootInodeRequest;
+using dingofs::pb::metaserver::CreateRootInodeResponse;
+using dingofs::pb::metaserver::DeleteDentryRequest;
+using dingofs::pb::metaserver::DeleteDentryResponse;
+using dingofs::pb::metaserver::DeleteInodeRequest;
+using dingofs::pb::metaserver::DeleteInodeResponse;
+using dingofs::pb::metaserver::Dentry;
+using dingofs::pb::metaserver::FsFileType;
+using dingofs::pb::metaserver::ManageInodeType;
+using dingofs::pb::metaserver::MetaServerService_Stub;
+using dingofs::pb::metaserver::MetaStatusCode;
+using dingofs::pb::metaserver::Time;
+using dingofs::pb::metaserver::copyset::CliService2_Stub;
+using dingofs::pb::metaserver::copyset::COPYSET_OP_STATUS;
+using dingofs::pb::metaserver::copyset::CopysetService_Stub;
+using dingofs::pb::metaserver::copyset::CreateCopysetRequest;
+using dingofs::pb::metaserver::copyset::CreateCopysetResponse;
+using dingofs::pb::metaserver::copyset::GetLeaderRequest2;
+using dingofs::pb::metaserver::copyset::GetLeaderResponse2;
 
 template <typename T, typename Request, typename Response>
 FSStatusCode MetaserverClient::SendRpc2MetaServer(
@@ -406,8 +407,8 @@ FSStatusCode MetaserverClient::CreatePartition(
     uint32_t fs_id, uint32_t pool_id, uint32_t copyset_id,
     uint32_t partition_id, uint64_t id_start, uint64_t id_end,
     const std::set<std::string>& addrs) {
-  dingofs::metaserver::CreatePartitionRequest request;
-  dingofs::metaserver::CreatePartitionResponse response;
+  pb::metaserver::CreatePartitionRequest request;
+  pb::metaserver::CreatePartitionResponse response;
   PartitionInfo* partition = request.mutable_partition();
   partition->set_fsid(fs_id);
   partition->set_poolid(pool_id);
@@ -454,8 +455,8 @@ FSStatusCode MetaserverClient::CreatePartition(
 FSStatusCode MetaserverClient::DeletePartition(
     uint32_t pool_id, uint32_t copyset_id, uint32_t partition_id,
     const std::set<std::string>& addrs) {
-  dingofs::metaserver::DeletePartitionRequest request;
-  dingofs::metaserver::DeletePartitionResponse response;
+  dingofs::pb::metaserver::DeletePartitionRequest request;
+  dingofs::pb::metaserver::DeletePartitionResponse response;
   request.set_poolid(pool_id);
   request.set_copysetid(copyset_id);
   request.set_partitionid(partition_id);

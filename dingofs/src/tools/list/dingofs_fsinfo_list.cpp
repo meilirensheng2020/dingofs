@@ -54,11 +54,11 @@ int FsInfoListTool::Init() {
   dingofs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::MdsService_Stub::ListClusterFsInfo,
+      std::bind(&pb::mds::MdsService_Stub::ListClusterFsInfo,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
 
-  dingofs::mds::ListClusterFsInfoRequest request;
+  pb::mds::ListClusterFsInfoRequest request;
   AddRequest(request);
 
   controller_->set_timeout_ms(FLAGS_rpcTimeoutMs);

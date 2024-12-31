@@ -42,14 +42,12 @@
 #include "dingofs/src/client/fuse_common.h"
 #include "dingofs/src/client/inode_cache_manager.h"
 #include "dingofs/src/client/lease/lease_excutor.h"
-#include "dingofs/src/client/s3/client_s3_adaptor.h"
 #include "dingofs/src/client/warmup/warmup_manager.h"
 #include "dingofs/src/client/xattr_manager.h"
 #include "dingofs/src/stub/metric/metric.h"
 #include "dingofs/src/stub/rpcclient/mds_client.h"
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
-#include "dingofs/src/utils/fast_align.h"
 #include "dingofs/src/utils/throttle.h"
 
 #define PORT_LIMIT 65535
@@ -59,41 +57,13 @@
 namespace dingofs {
 namespace client {
 
-namespace warmup {
-class WarmupManager;
-}
-
-using common::FuseClientOption;
-using ::dingofs::client::filesystem::AttrOut;
-using ::dingofs::client::filesystem::EntryOut;
-using ::dingofs::client::filesystem::FileOut;
-using ::dingofs::client::filesystem::FileSystem;
-using ::dingofs::common::FSType;
-using ::dingofs::metaserver::DentryFlag;
-using ::dingofs::metaserver::ManageInodeType;
-using ::dingofs::utils::Atomic;
-using ::dingofs::utils::InterruptibleSleeper;
-using ::dingofs::utils::Thread;
-using ::dingofs::utils::Throttle;
-
-using ::dingofs::stub::metric::FSMetric;
-using dingofs::stub::rpcclient::MDSBaseClient;
-using dingofs::stub::rpcclient::MdsClient;
-using dingofs::stub::rpcclient::MdsClientImpl;
-using dingofs::stub::rpcclient::MetaServerClient;
-using dingofs::stub::rpcclient::MetaServerClientImpl;
-
-using dingofs::utils::is_aligned;
-
 const uint32_t kMaxHostNameLength = 255u;
-
-using mds::Mountpoint;
 
 class FuseClient {
  public:
   FuseClient()
-      : mdsClient_(std::make_shared<MdsClientImpl>()),
-        metaClient_(std::make_shared<MetaServerClientImpl>()),
+      : mdsClient_(std::make_shared<stub::rpcclient::MdsClientImpl>()),
+        metaClient_(std::make_shared<stub::rpcclient::MetaServerClientImpl>()),
         inodeManager_(std::make_shared<InodeCacheManagerImpl>(metaClient_)),
         dentryManager_(std::make_shared<DentryCacheManagerImpl>(metaClient_)),
         fsInfo_(nullptr),
@@ -105,11 +75,12 @@ class FuseClient {
 
   virtual ~FuseClient() = default;
 
-  FuseClient(const std::shared_ptr<MdsClient>& mdsClient,
-             const std::shared_ptr<MetaServerClient>& metaClient,
-             const std::shared_ptr<InodeCacheManager>& inodeManager,
-             const std::shared_ptr<DentryCacheManager>& dentryManager,
-             const std::shared_ptr<warmup::WarmupManager>& warmupManager)
+  FuseClient(
+      const std::shared_ptr<stub::rpcclient::MdsClient>& mdsClient,
+      const std::shared_ptr<stub::rpcclient::MetaServerClient>& metaClient,
+      const std::shared_ptr<InodeCacheManager>& inodeManager,
+      const std::shared_ptr<DentryCacheManager>& dentryManager,
+      const std::shared_ptr<warmup::WarmupManager>& warmupManager)
       : mdsClient_(mdsClient),
         metaClient_(metaClient),
         inodeManager_(inodeManager),
@@ -121,7 +92,7 @@ class FuseClient {
         mdsBase_(nullptr),
         isStop_(true) {}
 
-  virtual DINGOFS_ERROR Init(const FuseClientOption& option);
+  virtual DINGOFS_ERROR Init(const common::FuseClientOption& option);
 
   virtual void UnInit();
 
@@ -136,30 +107,32 @@ class FuseClient {
   virtual DINGOFS_ERROR FuseOpWrite(fuse_req_t req, fuse_ino_t ino,
                                     const char* buf, size_t size, off_t off,
                                     struct fuse_file_info* fi,
-                                    FileOut* file_out) = 0;
+                                    filesystem::FileOut* file_out) = 0;
 
   virtual DINGOFS_ERROR FuseOpRead(fuse_req_t req, fuse_ino_t ino, size_t size,
                                    off_t off, struct fuse_file_info* fi,
                                    char* buffer, size_t* rSize) = 0;
 
   virtual DINGOFS_ERROR FuseOpLookup(fuse_req_t req, fuse_ino_t parent,
-                                     const char* name, EntryOut* entryOut);
+                                     const char* name,
+                                     filesystem::EntryOut* entryOut);
 
   virtual DINGOFS_ERROR FuseOpOpen(fuse_req_t req, fuse_ino_t ino,
-                                   struct fuse_file_info* fi, FileOut* fileOut);
+                                   struct fuse_file_info* fi,
+                                   filesystem::FileOut* fileOut);
 
   virtual DINGOFS_ERROR FuseOpCreate(fuse_req_t req, fuse_ino_t parent,
                                      const char* name, mode_t mode,
                                      struct fuse_file_info* fi,
-                                     EntryOut* entryOut) = 0;
+                                     filesystem::EntryOut* entryOut) = 0;
 
   virtual DINGOFS_ERROR FuseOpMkNod(fuse_req_t req, fuse_ino_t parent,
                                     const char* name, mode_t mode, dev_t rdev,
-                                    EntryOut* entryOut) = 0;
+                                    filesystem::EntryOut* entryOut) = 0;
 
   virtual DINGOFS_ERROR FuseOpMkDir(fuse_req_t req, fuse_ino_t parent,
                                     const char* name, mode_t mode,
-                                    EntryOut* entryOut);
+                                    filesystem::EntryOut* entryOut);
 
   virtual DINGOFS_ERROR FuseOpUnlink(fuse_req_t req, fuse_ino_t parent,
                                      const char* name) = 0;
@@ -185,12 +158,12 @@ class FuseClient {
 
   virtual DINGOFS_ERROR FuseOpGetAttr(fuse_req_t req, fuse_ino_t ino,
                                       struct fuse_file_info* fi,
-                                      struct AttrOut* out);
+                                      struct filesystem::AttrOut* out);
 
   virtual DINGOFS_ERROR FuseOpSetAttr(fuse_req_t req, fuse_ino_t ino,
                                       struct stat* attr, int to_set,
                                       struct fuse_file_info* fi,
-                                      struct AttrOut* attr_out);
+                                      struct filesystem::AttrOut* attr_out);
 
   virtual DINGOFS_ERROR FuseOpGetXattr(fuse_req_t req, fuse_ino_t ino,
                                        const char* name, std::string* value,
@@ -206,11 +179,11 @@ class FuseClient {
 
   virtual DINGOFS_ERROR FuseOpSymlink(fuse_req_t req, const char* link,
                                       fuse_ino_t parent, const char* name,
-                                      EntryOut* entry_out);
+                                      filesystem::EntryOut* entry_out);
 
   virtual DINGOFS_ERROR FuseOpLink(fuse_req_t req, fuse_ino_t ino,
                                    fuse_ino_t newparent, const char* newname,
-                                   EntryOut* entryOut) = 0;
+                                   filesystem::EntryOut* entryOut) = 0;
 
   virtual DINGOFS_ERROR FuseOpReadLink(fuse_req_t req, fuse_ino_t ino,
                                        std::string* linkStr);
@@ -234,7 +207,7 @@ class FuseClient {
 
   virtual DINGOFS_ERROR Truncate(InodeWrapper* inode, uint64_t length) = 0;
 
-  void SetFsInfo(const std::shared_ptr<FsInfo>& fsInfo) {
+  void SetFsInfo(const std::shared_ptr<pb::mds::FsInfo>& fsInfo) {
     fsInfo_ = fsInfo;
     init_ = true;
   }
@@ -245,9 +218,9 @@ class FuseClient {
     }
   }
 
-  std::shared_ptr<FsInfo> GetFsInfo() { return fsInfo_; }
+  std::shared_ptr<pb::mds::FsInfo> GetFsInfo() { return fsInfo_; }
 
-  std::shared_ptr<FileSystem> GetFileSystem() { return fs_; }
+  std::shared_ptr<filesystem::FileSystem> GetFileSystem() { return fs_; }
 
   virtual void FlushAll();
 
@@ -255,7 +228,7 @@ class FuseClient {
   void SetEnableSumInDir(bool enable) { enableSumInDir_ = enable; }
 
   bool PutWarmFilelistTask(fuse_ino_t key, common::WarmupStorageType type) {
-    if (fsInfo_->fstype() == FSType::TYPE_S3) {
+    if (fsInfo_->fstype() == pb::common::FSType::TYPE_S3) {
       return warmupManager_->AddWarmupFilelist(key, type);
     }  // only support s3
     return true;
@@ -263,14 +236,14 @@ class FuseClient {
 
   bool PutWarmFileTask(fuse_ino_t key, const std::string& path,
                        common::WarmupStorageType type) {
-    if (fsInfo_->fstype() == FSType::TYPE_S3) {
+    if (fsInfo_->fstype() == pb::common::FSType::TYPE_S3) {
       return warmupManager_->AddWarmupFile(key, path, type);
     }  // only support s3
     return true;
   }
 
   bool GetWarmupProgress(fuse_ino_t key, warmup::WarmupProgress* progress) {
-    if (fsInfo_->fstype() == FSType::TYPE_S3) {
+    if (fsInfo_->fstype() == pb::common::FSType::TYPE_S3) {
       return warmupManager_->QueryWarmupProgress(key, progress);
     }
     return false;
@@ -284,33 +257,36 @@ class FuseClient {
 
  protected:
   DINGOFS_ERROR MakeNode(fuse_req_t req, fuse_ino_t parent, const char* name,
-                         mode_t mode, FsFileType type, dev_t rdev,
-                         bool internal,
+                         mode_t mode, pb::metaserver::FsFileType type,
+                         dev_t rdev, bool internal,
                          std::shared_ptr<InodeWrapper>& inode_wrapper);
 
   DINGOFS_ERROR OpUnlink(fuse_req_t req, fuse_ino_t parent, const char* name,
-                         FsFileType type);
+                         pb::metaserver::FsFileType type);
 
   DINGOFS_ERROR OpLink(fuse_req_t req, fuse_ino_t ino, fuse_ino_t newparent,
-                       const char* newname, FsFileType type,
-                       EntryOut* entry_out);
+                       const char* newname, pb::metaserver::FsFileType type,
+                       filesystem::EntryOut* entry_out);
 
   DINGOFS_ERROR CreateManageNode(fuse_req_t req, uint64_t parent,
                                  const char* name, mode_t mode,
-                                 ManageInodeType manageType,
-                                 EntryOut* entryOut);
+                                 pb::metaserver::ManageInodeType manageType,
+                                 filesystem::EntryOut* entryOut);
 
-  DINGOFS_ERROR GetOrCreateRecycleDir(fuse_req_t req, Dentry* out);
+  DINGOFS_ERROR GetOrCreateRecycleDir(fuse_req_t req,
+                                      pb::metaserver::Dentry* out);
 
   DINGOFS_ERROR MoveToRecycle(fuse_req_t req, fuse_ino_t ino, fuse_ino_t parent,
-                              const char* name, FsFileType type);
+                              const char* name,
+                              pb::metaserver::FsFileType type);
 
   bool ShouldMoveToRecycle(fuse_ino_t parent);
 
   DINGOFS_ERROR HandleOpenFlags(fuse_req_t req, fuse_ino_t ino,
-                                struct fuse_file_info* fi, FileOut* fileOut);
+                                struct fuse_file_info* fi,
+                                filesystem::FileOut* fileOut);
 
-  int SetHostPortInMountPoint(Mountpoint* out) {
+  int SetHostPortInMountPoint(pb::mds::Mountpoint* out) {
     char hostname[kMaxHostNameLength];
     int ret = gethostname(hostname, kMaxHostNameLength);
     if (ret < 0) {
@@ -328,8 +304,9 @@ class FuseClient {
  private:
   virtual void FlushData() = 0;
 
-  DINGOFS_ERROR UpdateParentMCTimeAndNlink(fuse_ino_t parent, FsFileType type,
-                                           NlinkChange nlink);
+  DINGOFS_ERROR UpdateParentMCTimeAndNlink(fuse_ino_t parent,
+                                           pb::metaserver::FsFileType type,
+                                           common::NlinkChange nlink);
 
   std::string GenerateNewRecycleName(fuse_ino_t ino, fuse_ino_t parent,
                                      const char* name) {
@@ -343,14 +320,15 @@ class FuseClient {
     return newName;
   }
 
-  InodeAttr GenerateVirtualInodeAttr(fuse_ino_t ino, uint32_t fsid) {
-    InodeAttr attr;
+  pb::metaserver::InodeAttr GenerateVirtualInodeAttr(fuse_ino_t ino,
+                                                     uint32_t fsid) {
+    pb::metaserver::InodeAttr attr;
 
     attr.set_inodeid(ino);
     attr.set_fsid(fsid);
     attr.set_nlink(1);
     attr.set_mode(S_IFREG | 0444);
-    attr.set_type(FsFileType::TYPE_S3);
+    attr.set_type(pb::metaserver::FsFileType::TYPE_S3);
     // attr.set_uid(0);
     // attr.set_gid(0);
     attr.set_length(0);
@@ -368,10 +346,10 @@ class FuseClient {
 
  protected:
   // mds client
-  std::shared_ptr<MdsClient> mdsClient_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
 
   // metaserver client
-  std::shared_ptr<MetaServerClient> metaClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
 
   // inode cache manager
   std::shared_ptr<InodeCacheManager> inodeManager_;
@@ -385,9 +363,9 @@ class FuseClient {
   std::shared_ptr<LeaseExecutor> leaseExecutor_;
 
   // filesystem info
-  std::shared_ptr<FsInfo> fsInfo_;
+  std::shared_ptr<pb::mds::FsInfo> fsInfo_;
 
-  FuseClientOption option_;
+  common::FuseClientOption option_;
 
   // init flags
   bool init_;
@@ -395,23 +373,23 @@ class FuseClient {
   // enable record summary info in dir inode xattr
   std::atomic<bool> enableSumInDir_;
 
-  std::shared_ptr<FSMetric> fsMetric_;
+  std::shared_ptr<stub::metric::FSMetric> fsMetric_;
 
-  Mountpoint mountpoint_;
+  pb::mds::Mountpoint mountpoint_;
 
   // warmup manager
   std::shared_ptr<warmup::WarmupManager> warmupManager_;
 
-  std::shared_ptr<FileSystem> fs_;
+  std::shared_ptr<filesystem::FileSystem> fs_;
 
  private:
-  MDSBaseClient* mdsBase_;
+  stub::rpcclient::MDSBaseClient* mdsBase_;
 
-  Atomic<bool> isStop_;
+  utils::Atomic<bool> isStop_;
 
   dingofs::utils::Mutex renameMutex_;
 
-  Throttle throttle_;
+  utils::Throttle throttle_;
 
   bthread_timer_t throttleTimer_;
 };

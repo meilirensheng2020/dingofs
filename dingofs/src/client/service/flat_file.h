@@ -28,8 +28,6 @@
 namespace dingofs {
 namespace client {
 
-using ::dingofs::metaserver::S3ChunkInfo;
-
 class FlatFile;
 
 struct FlatFileSlice {
@@ -94,7 +92,8 @@ struct BlockObjSlice {
 
 class S3ChunkHoler {
  public:
-  S3ChunkHoler(const S3ChunkInfo& chunk_info, uint64_t block_size)
+  S3ChunkHoler(const pb::metaserver::S3ChunkInfo& chunk_info,
+               uint64_t block_size)
       : chunk_info_(chunk_info), block_size_(block_size) {
     Init();
   }
@@ -194,7 +193,7 @@ class S3ChunkHoler {
     }
   }
 
-  S3ChunkInfo chunk_info_;
+  pb::metaserver::S3ChunkInfo chunk_info_;
   uint64_t block_size_;
   std::map<uint64_t, BlockObj> offset_to_block_;
 };
@@ -206,7 +205,8 @@ class FlatFile {
 
   ~FlatFile() = default;
 
-  void InsertChunkInfo(uint64_t chunk_index, const S3ChunkInfo& chunk_info) {
+  void InsertChunkInfo(uint64_t chunk_index,
+                       const pb::metaserver::S3ChunkInfo& chunk_info) {
     CHECK(chunk_id_to_s3_chunk_holer_
               .insert(
                   {chunk_info.chunkid(), S3ChunkHoler(chunk_info, block_size_)})
@@ -235,24 +235,13 @@ class FlatFile {
   std::string FormatStringWithHeader(bool use_delimiter = false) const {
     std::ostringstream os;
     if (use_delimiter) {
-      os << std::left << "file_offset"
-         << "|"
-         << "len"
-         << "|"
-         << "block_offset"
-         << "|"
-         << "block_name"
-         << "|"
-         << "block_len"
-         << "|"
-         << "zero"
-         << "\n";
+      os << std::left << "file_offset" << "|" << "len" << "|" << "block_offset"
+         << "|" << "block_name" << "|" << "block_len" << "|" << "zero" << "\n";
     } else {
       os << std::left << std::setw(20) << "file_offset" << std::setw(15)
          << "len" << std::setw(15) << "block_offset" << std::setw(100)
          << "block_name" << std::setw(15) << "block_len" << std::setw(10)
-         << "zero"
-         << "\n";
+         << "zero" << "\n";
     }
 
     for (const auto& flat_file_chunk_iter : chunk_index_flat_file_chunk_) {

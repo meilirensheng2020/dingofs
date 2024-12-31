@@ -57,10 +57,13 @@ namespace copyset {
 namespace {
 
 using ::google::protobuf::util::MessageDifferencer;
+using pb::common::Peer;
 
 struct OnAddPeerReturned : public braft::Closure {
-  OnAddPeerReturned(brpc::Controller* cntl, const AddPeerRequest2* request,
-                    AddPeerResponse2* response, std::vector<Peer>&& oldPeers,
+  OnAddPeerReturned(brpc::Controller* cntl,
+                    const pb::metaserver::copyset::AddPeerRequest2* request,
+                    pb::metaserver::copyset::AddPeerResponse2* response,
+                    std::vector<Peer>&& oldPeers,
                     google::protobuf::Closure* done)
       : cntl(cntl),
         request(request),
@@ -89,18 +92,18 @@ struct OnAddPeerReturned : public braft::Closure {
   }
 
   brpc::Controller* cntl;
-  const AddPeerRequest2* request;
-  AddPeerResponse2* response;
+  const pb::metaserver::copyset::AddPeerRequest2* request;
+  pb::metaserver::copyset::AddPeerResponse2* response;
   std::vector<Peer> oldPeers;
   google::protobuf::Closure* done;
 };
 
 struct OnRemovePeerReturned : public braft::Closure {
-  OnRemovePeerReturned(brpc::Controller* cntl,
-                       const RemovePeerRequest2* request,
-                       RemovePeerResponse2* response,
-                       std::vector<Peer>&& oldPeers,
-                       google::protobuf::Closure* done)
+  OnRemovePeerReturned(
+      brpc::Controller* cntl,
+      const pb::metaserver::copyset::RemovePeerRequest2* request,
+      pb::metaserver::copyset::RemovePeerResponse2* response,
+      std::vector<Peer>&& oldPeers, google::protobuf::Closure* done)
       : cntl(cntl),
         request(request),
         response(response),
@@ -123,19 +126,19 @@ struct OnRemovePeerReturned : public braft::Closure {
   }
 
   brpc::Controller* cntl;
-  const RemovePeerRequest2* request;
-  RemovePeerResponse2* response;
+  const pb::metaserver::copyset::RemovePeerRequest2* request;
+  pb::metaserver::copyset::RemovePeerResponse2* response;
   std::vector<Peer> oldPeers;
   google::protobuf::Closure* done;
 };
 
 struct OnChangePeersReturned : public braft::Closure {
-  OnChangePeersReturned(brpc::Controller* cntl,
-                        const ChangePeersRequest2* request,
-                        ChangePeersResponse2* response,
-                        std::vector<Peer>&& oldPeers,
-                        const std::vector<Peer>& newPeers,
-                        google::protobuf::Closure* done)
+  OnChangePeersReturned(
+      brpc::Controller* cntl,
+      const pb::metaserver::copyset::ChangePeersRequest2* request,
+      pb::metaserver::copyset::ChangePeersResponse2* response,
+      std::vector<Peer>&& oldPeers, const std::vector<Peer>& newPeers,
+      google::protobuf::Closure* done)
       : cntl(cntl),
         request(request),
         response(response),
@@ -155,8 +158,8 @@ struct OnChangePeersReturned : public braft::Closure {
   }
 
   brpc::Controller* cntl;
-  const ChangePeersRequest2* request;
-  ChangePeersResponse2* response;
+  const pb::metaserver::copyset::ChangePeersRequest2* request;
+  pb::metaserver::copyset::ChangePeersResponse2* response;
   std::vector<Peer> oldPeers;
   std::vector<Peer> newPeers;
   google::protobuf::Closure* done;
@@ -167,10 +170,11 @@ struct OnChangePeersReturned : public braft::Closure {
 RaftCliService2::RaftCliService2(CopysetNodeManager* nodeManager)
     : nodeManager_(nodeManager) {}
 
-void RaftCliService2::GetLeader(google::protobuf::RpcController* controller,
-                                const GetLeaderRequest2* request,
-                                GetLeaderResponse2* response,
-                                google::protobuf::Closure* done) {
+void RaftCliService2::GetLeader(
+    google::protobuf::RpcController* controller,
+    const pb::metaserver::copyset::GetLeaderRequest2* request,
+    pb::metaserver::copyset::GetLeaderResponse2* response,
+    google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
 
@@ -195,10 +199,11 @@ void RaftCliService2::GetLeader(google::protobuf::RpcController* controller,
   cntl->SetFailed(EAGAIN, "Unknown leader");
 }
 
-void RaftCliService2::AddPeer(google::protobuf::RpcController* controller,
-                              const AddPeerRequest2* request,
-                              AddPeerResponse2* response,
-                              google::protobuf::Closure* done) {
+void RaftCliService2::AddPeer(
+    google::protobuf::RpcController* controller,
+    const pb::metaserver::copyset::AddPeerRequest2* request,
+    pb::metaserver::copyset::AddPeerResponse2* response,
+    google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
 
@@ -219,10 +224,11 @@ void RaftCliService2::AddPeer(google::protobuf::RpcController* controller,
   return node->AddPeer(request->addpeer(), addPeerDone);
 }
 
-void RaftCliService2::RemovePeer(google::protobuf::RpcController* controller,
-                                 const RemovePeerRequest2* request,
-                                 RemovePeerResponse2* response,
-                                 google::protobuf::Closure* done) {
+void RaftCliService2::RemovePeer(
+    google::protobuf::RpcController* controller,
+    const pb::metaserver::copyset::RemovePeerRequest2* request,
+    pb::metaserver::copyset::RemovePeerResponse2* response,
+    google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
 
@@ -243,10 +249,11 @@ void RaftCliService2::RemovePeer(google::protobuf::RpcController* controller,
   return node->RemovePeer(request->removepeer(), removePeerDone);
 }
 
-void RaftCliService2::ChangePeers(google::protobuf::RpcController* controller,
-                                  const ChangePeersRequest2* request,
-                                  ChangePeersResponse2* response,
-                                  google::protobuf::Closure* done) {
+void RaftCliService2::ChangePeers(
+    google::protobuf::RpcController* controller,
+    const pb::metaserver::copyset::ChangePeersRequest2* request,
+    pb::metaserver::copyset::ChangePeersResponse2* response,
+    google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
 
@@ -273,8 +280,9 @@ void RaftCliService2::ChangePeers(google::protobuf::RpcController* controller,
 
 void RaftCliService2::TransferLeader(
     google::protobuf::RpcController* controller,
-    const TransferLeaderRequest2* request,
-    TransferLeaderResponse2* /* response */, google::protobuf::Closure* done) {
+    const pb::metaserver::copyset::TransferLeaderRequest2* request,
+    pb::metaserver::copyset::TransferLeaderResponse2* /* response */,
+    google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
 

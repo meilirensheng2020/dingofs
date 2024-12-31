@@ -30,34 +30,37 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-class CopysetServiceImpl : public CopysetService {
+class CopysetServiceImpl : public pb::metaserver::copyset::CopysetService {
  public:
   explicit CopysetServiceImpl(CopysetNodeManager* manager)
       : manager_(manager) {}
 
-  void CreateCopysetNode(google::protobuf::RpcController* controller,
-                         const CreateCopysetRequest* request,
-                         CreateCopysetResponse* response,
-                         google::protobuf::Closure* done) override;
+  void CreateCopysetNode(
+      google::protobuf::RpcController* controller,
+      const pb::metaserver::copyset::CreateCopysetRequest* request,
+      pb::metaserver::copyset::CreateCopysetResponse* response,
+      google::protobuf::Closure* done) override;
 
-  void GetCopysetStatus(google::protobuf::RpcController* controller,
-                        const CopysetStatusRequest* request,
-                        CopysetStatusResponse* response,
-                        google::protobuf::Closure* done) override;
+  void GetCopysetStatus(
+      google::protobuf::RpcController* controller,
+      const pb::metaserver::copyset::CopysetStatusRequest* request,
+      pb::metaserver::copyset::CopysetStatusResponse* response,
+      google::protobuf::Closure* done) override;
 
-  void GetCopysetsStatus(google::protobuf::RpcController* controller,
-                         const CopysetsStatusRequest* request,
-                         CopysetsStatusResponse* response,
-                         google::protobuf::Closure* done) override;
-
- private:
-  COPYSET_OP_STATUS CreateOneCopyset(
-      const CreateCopysetRequest::Copyset& copyset);
-
-  void GetOneCopysetStatus(const CopysetStatusRequest& request,
-                           CopysetStatusResponse* response);
+  void GetCopysetsStatus(
+      google::protobuf::RpcController* controller,
+      const pb::metaserver::copyset::CopysetsStatusRequest* request,
+      pb::metaserver::copyset::CopysetsStatusResponse* response,
+      google::protobuf::Closure* done) override;
 
  private:
+  pb::metaserver::copyset::COPYSET_OP_STATUS CreateOneCopyset(
+      const pb::metaserver::copyset::CreateCopysetRequest::Copyset& copyset);
+
+  void GetOneCopysetStatus(
+      const pb::metaserver::copyset::CopysetStatusRequest& request,
+      pb::metaserver::copyset::CopysetStatusResponse* response);
+
   CopysetNodeManager* manager_;
 };
 

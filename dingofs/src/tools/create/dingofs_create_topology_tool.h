@@ -41,8 +41,9 @@
 #include "dingofs/src/utils/configuration.h"
 
 namespace dingofs {
-namespace mds {
+namespace tools {
 namespace topology {
+
 struct Server {
   std::string name;
   std::string internalIp;
@@ -95,7 +96,7 @@ class CurvefsBuildTopologyTool : public dingofs::tools::CurvefsTool {
   int Run() override {
     if (Init() < 0) {
       LOG(ERROR) << "CurvefsBuildTopologyTool init error.";
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
     int ret = InitTopoData();
     if (ret < 0) {
@@ -129,19 +130,21 @@ class CurvefsBuildTopologyTool : public dingofs::tools::CurvefsTool {
 
   int DealFailedRet(int ret, std::string operation);
 
-  int ListPool(std::list<PoolInfo>* pool_infos);
+  int ListPool(std::list<pb::mds::topology::PoolInfo>* pool_infos);
 
-  int GetZonesInPool(PoolIdType poolid, std::list<ZoneInfo>* zone_infos);
+  int GetZonesInPool(mds::topology::PoolIdType poolid,
+                     std::list<pb::mds::topology::ZoneInfo>* zone_infos);
 
-  int GetServersInZone(ZoneIdType zoneid, std::list<ServerInfo>* server_infos);
+  int GetServersInZone(mds::topology::ZoneIdType zoneid,
+                       std::list<pb::mds::topology::ServerInfo>* server_infos);
 
   std::list<Server> serverDatas_;
   std::list<Zone> zoneDatas_;
   std::list<Pool> poolDatas_;
 
-  std::list<ServerIdType> serverToDel_;
-  std::list<ZoneIdType> zoneToDel_;
-  std::list<PoolIdType> poolToDel_;
+  std::list<mds::topology::ServerIdType> serverToDel_;
+  std::list<mds::topology::ZoneIdType> zoneToDel_;
+  std::list<mds::topology::PoolIdType> poolToDel_;
 
   std::vector<std::string> mdsAddressStr_;
   int mdsAddressIndex_;
@@ -150,7 +153,7 @@ class CurvefsBuildTopologyTool : public dingofs::tools::CurvefsTool {
 };
 
 }  // namespace topology
-}  // namespace mds
+}  // namespace tools
 }  // namespace dingofs
 
 #endif  // DINGOFS_SRC_TOOLS_CREATE_DINGOFS_CREATE_TOPOLOGY_TOOL_H_

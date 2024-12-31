@@ -25,16 +25,12 @@
 #include <memory>
 #include <string>
 
-#include "dingofs/src/mds/kvstorageclient/etcd_client.h"
 #include "dingofs/src/mds/common/storage_key.h"
+#include "dingofs/src/mds/kvstorageclient/etcd_client.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
-#include "dingofs/src/utils/string_util.h"
 
 namespace dingofs {
 namespace mds {
-
-using ::dingofs::utils::StringToUll;
-using ::dingofs::kvstorage::KVStorageClient;
 
 const uint64_t CHUNKIDINITIALIZE = 0;
 const uint64_t CHUNKBUNDLEALLOCATED = 1000;
@@ -61,17 +57,18 @@ class ChunkIdAllocator {
    * @details
    */
   virtual void Init(
-      const std::shared_ptr<KVStorageClient>& client = nullptr,
+      const std::shared_ptr<kvstorage::KVStorageClient>& client = nullptr,
       const std::string& chunkIdStoreKey = CHUNKID_NAME_KEY_PREFIX,
       uint64_t bundleSize = CHUNKBUNDLEALLOCATED) = 0;
 };
 
 class ChunkIdAllocatorImpl : public ChunkIdAllocator {
  public:
-  ChunkIdAllocatorImpl(std::shared_ptr<KVStorageClient> client = nullptr,
-                       std::string storeKey = CHUNKID_NAME_KEY_PREFIX,
-                       uint64_t initId = CHUNKIDINITIALIZE,
-                       uint64_t bundleSize = CHUNKBUNDLEALLOCATED)
+  ChunkIdAllocatorImpl(
+      std::shared_ptr<kvstorage::KVStorageClient> client = nullptr,
+      std::string storeKey = CHUNKID_NAME_KEY_PREFIX,
+      uint64_t initId = CHUNKIDINITIALIZE,
+      uint64_t bundleSize = CHUNKBUNDLEALLOCATED)
       : ChunkIdAllocator(),
         client_(client),
         storeKey_(storeKey),
@@ -102,7 +99,7 @@ class ChunkIdAllocatorImpl : public ChunkIdAllocator {
    * until the chunkIds in the current bundle is exhausted.
    */
   virtual void Init(
-      const std::shared_ptr<KVStorageClient>& client = nullptr,
+      const std::shared_ptr<kvstorage::KVStorageClient>& client = nullptr,
       const std::string& chunkIdStoreKey = CHUNKID_NAME_KEY_PREFIX,
       uint64_t bundleSize = CHUNKBUNDLEALLOCATED) override;
   /**
@@ -130,13 +127,12 @@ class ChunkIdAllocatorImpl : public ChunkIdAllocator {
   };
 
  private:
-  std::shared_ptr<KVStorageClient> client_;  // the etcd client
+  std::shared_ptr<kvstorage::KVStorageClient> client_;  // the etcd client
   std::string storeKey_;  // the key of ChunkId stored in etcd
   uint64_t nextId_;       // the next ChunkId can be allocated in this bunlde
   uint64_t lastId_;       // the last ChunkId can be allocated in this bunlde
   uint64_t bundleSize_;   // get the numnber of ChunkId at a time
-  ::dingofs::utils::RWLock
-      nextIdRWlock_;  // guarantee the uniqueness of the ChunkId
+  utils::RWLock nextIdRWlock_;  // guarantee the uniqueness of the ChunkId
 };
 
 }  // namespace mds

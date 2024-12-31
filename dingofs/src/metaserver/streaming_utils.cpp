@@ -30,6 +30,10 @@
 namespace dingofs {
 namespace metaserver {
 
+using common::StreamConnection;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::VolumeExtentList;
+
 MetaStatusCode StreamingSendVolumeExtent(StreamConnection* connection,
                                          const VolumeExtentList& extents) {
   VLOG(9) << "StreamingSendVolumeExtent, extents: "

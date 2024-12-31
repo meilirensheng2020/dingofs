@@ -32,14 +32,17 @@
 #include "dingofs/src/mds/common/types.h"
 #include "dingofs/src/mds/topology/topology.h"
 
-using ::dingofs::mds::topology::MetaServerIdType;
-using ::dingofs::mds::topology::OnlineState;
-using ::dingofs::mds::topology::Topology;
-using ::std::chrono::steady_clock;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
+
+using ::std::chrono::steady_clock;
+
+using mds::topology::MetaServerIdType;
+using mds::topology::Topology;
+
+using pb::mds::topology::OnlineState;
+
 struct HeartbeatOption {
   HeartbeatOption() : HeartbeatOption(0, 0, 0) {}
   HeartbeatOption(uint64_t heartbeatInterval, uint64_t heartbeatMissTimeout,

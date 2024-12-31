@@ -38,12 +38,13 @@ namespace dingofs {
 namespace mds {
 namespace dlock {
 
-using ::dingofs::utils::EncodeBigEndian;
-using ::dingofs::utils::NameLockGuard;
-using ::dingofs::utils::TimeUtility;
-using ::dingofs::mds::DLOCK_KEY_PREFIX;
-using ::dingofs::mds::DLOCK_PREFIX_LENGTH;
-using ::dingofs::mds::DLockValue;
+using dingofs::pb::mds::DLockValue;
+
+using dingofs::mds::DLOCK_KEY_PREFIX;
+using dingofs::mds::DLOCK_PREFIX_LENGTH;
+using dingofs::utils::EncodeBigEndian;
+using dingofs::utils::NameLockGuard;
+using dingofs::utils::TimeUtility;
 
 std::ostream& operator<<(std::ostream& os, OWNER_STATUS status) {
   switch (status) {
@@ -137,8 +138,7 @@ OWNER_STATUS DLock::GetOwner(const std::string& name, std::string* owner) {
   if (rc == EtcdErrCode::EtcdKeyNotExist) {
     return OWNER_STATUS::NOT_EXIST;
   } else if (rc != EtcdErrCode::EtcdOK) {
-    LOG(ERROR) << "Get dlock value from etcd failed"
-               << ", retCode=" << rc;
+    LOG(ERROR) << "Get dlock value from etcd failed" << ", retCode=" << rc;
     return OWNER_STATUS::ERROR;
   } else if (!value.ParseFromString(svalue)) {
     LOG(ERROR) << "Parase dlock value from string failed";
@@ -179,8 +179,7 @@ bool DLock::ClearOwner(const std::string& name) {
   std::string skey = EncodeKey(name);
   int rc = etcdClient_->Delete(skey);
   if (rc != EtcdErrCode::EtcdOK) {
-    LOG(ERROR) << "Delete dlock value from etcd failed"
-               << ", retCode=" << rc;
+    LOG(ERROR) << "Delete dlock value from etcd failed" << ", retCode=" << rc;
     return false;
   }
   return true;

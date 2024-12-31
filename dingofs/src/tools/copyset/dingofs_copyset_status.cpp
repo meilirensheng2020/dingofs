@@ -52,7 +52,7 @@ int GetCopysetStatusTool::Init() {
     std::cerr << "copysets not match pools." << std::endl;
     return -1;
   }
-  dingofs::metaserver::copyset::CopysetsStatusRequest request;
+  pb::metaserver::copyset::CopysetsStatusRequest request;
   for (size_t i = 0; i < poolsId.size(); ++i) {
     auto copysetKey = request.add_copysets();
     auto poolId = std::stoul(poolsId[i]);
@@ -64,7 +64,7 @@ int GetCopysetStatusTool::Init() {
   AddRequest(request);
 
   service_stub_func_ = std::bind(
-      &dingofs::metaserver::copyset::CopysetService_Stub::GetCopysetsStatus,
+      &pb::metaserver::copyset::CopysetService_Stub::GetCopysetsStatus,
       service_stub_.get(), std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3, nullptr);
   return 0;

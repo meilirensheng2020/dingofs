@@ -36,8 +36,6 @@ namespace dingofs {
 
 namespace client {
 
-using dingofs::mds::topology::MemcacheClusterInfo;
-
 /**
  * only the threadpool will operate the kvclient,
  * for threadsafe and fast, we can make every thread has a client.
@@ -81,7 +79,7 @@ class MemCachedClient : public KVClient {
   explicit MemCachedClient(memcached_st* cli) : client_(cli) {}
   ~MemCachedClient() { UnInit(); }
 
-  bool Init(const MemcacheClusterInfo& kvcachecluster) {
+  bool Init(const pb::mds::topology::MemcacheClusterInfo& kvcachecluster) {
     client_ = memcached(nullptr, 0);
 
     for (int i = 0; i < kvcachecluster.servers_size(); i++) {
@@ -195,9 +193,9 @@ class MemCachedClient : public KVClient {
   }
 
  private:
-    using KVClient::Init;
-    memcached_server_st *server_;
-    memcached_st *client_;
+  using KVClient::Init;
+  memcached_server_st* server_;
+  memcached_st* client_;
 };
 
 }  //  namespace client

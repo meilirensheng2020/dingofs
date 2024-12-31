@@ -43,10 +43,12 @@
 namespace dingofs {
 namespace mds {
 
-using ::dingofs::common::FSType;
-using ::dingofs::mds::dlock::LOCK_STATUS;
-using ::dingofs::mds::topology::TopoStatusCode;
 using ::google::protobuf::util::MessageDifferencer;
+
+using mds::dlock::LOCK_STATUS;
+using mds::topology::TopoStatusCode;
+using utils::Thread;
+
 using NameLockGuard = ::dingofs::utils::GenericNameLockGuard<Mutex>;
 
 bool FsManager::Init() {
@@ -86,7 +88,7 @@ void FsManager::Uninit() {
 }
 
 bool FsManager::DeletePartiton(std::string fs_name,
-                               const PartitionInfo& partition) {
+                               const pb::common::PartitionInfo& partition) {
   LOG(INFO) << "delete fs partition, fsName = " << fs_name
             << ", partitionId = " << partition.partitionid();
   // send rpc to metaserver, get copyset members
@@ -114,11 +116,12 @@ bool FsManager::DeletePartiton(std::string fs_name,
   return true;
 }
 
-bool FsManager::SetPartitionToDeleting(const PartitionInfo& partition) {
+bool FsManager::SetPartitionToDeleting(
+    const pb::common::PartitionInfo& partition) {
   LOG(INFO) << "set partition status to deleting, partitionId = "
             << partition.partitionid();
   TopoStatusCode ret = topoManager_->UpdatePartitionStatus(
-      partition.partitionid(), PartitionStatus::DELETING);
+      partition.partitionid(), pb::common::PartitionStatus::DELETING);
   if (ret != TopoStatusCode::TOPO_OK) {
     LOG(ERROR) << "set partition to deleting fail, partitionId = "
                << partition.partitionid();
@@ -128,17 +131,17 @@ bool FsManager::SetPartitionToDeleting(const PartitionInfo& partition) {
 }
 
 void FsManager::ScanFs(const FsInfoWrapper& wrapper) {
-  if (wrapper.GetStatus() != FsStatus::DELETING) {
+  if (wrapper.GetStatus() != pb::mds::FsStatus::DELETING) {
     return;
   }
 
-  std::list<PartitionInfo> partition_list;
+  std::list<pb::common::PartitionInfo> partition_list;
   topoManager_->ListPartitionOfFs(wrapper.GetFsId(), &partition_list);
   if (partition_list.empty()) {
     LOG(INFO) << "fs has no partition, delete fs record, fsName = "
               << wrapper.GetFsName() << ", fsId = " << wrapper.GetFsId();
 
-    if (wrapper.GetFsType() == FSType::TYPE_VOLUME) {
+    if (wrapper.GetFsType() == pb::common::FSType::TYPE_VOLUME) {
       LOG(FATAL) << "delete FSType::TYPE_VOLUME space not supported";
       return;
     }
@@ -152,8 +155,8 @@ void FsManager::ScanFs(const FsInfoWrapper& wrapper) {
     return;
   }
 
-  for (const PartitionInfo& partition : partition_list) {
-    if (partition.status() != PartitionStatus::DELETING) {
+  for (const pb::common::PartitionInfo& partition : partition_list) {
+    if (partition.status() != pb::common::PartitionStatus::DELETING) {
       if (!DeletePartiton(wrapper.GetFsName(), partition)) {
         continue;
       }
@@ -244,8 +247,8 @@ bool FsManager::CheckFsName(const std::string& fs_name) {
   return true;
 }
 
-FSStatusCode FsManager::CreateFs(const ::dingofs::mds::CreateFsRequest* request,
-                                 FsInfo* fs_info) {
+FSStatusCode FsManager::CreateFs(const pb::mds::CreateFsRequest* request,
+                                 pb::mds::FsInfo* fs_info) {
   const auto& fs_name = request->fsname();
   const auto& block_size = request->blocksize();
   const auto& fs_type = request->fstype();
@@ -327,7 +330,7 @@ FSStatusCode FsManager::CreateFs(const ::dingofs::mds::CreateFsRequest* request,
   uint32_t gid = 0;                 // TODO(cw123)
   uint32_t mode = S_IFDIR | 01777;  // TODO(cw123)
 
-  PartitionInfo partition;
+  pb::common::PartitionInfo partition;
   std::set<std::string> addrs;
 
   // handle create fs error
@@ -476,7 +479,7 @@ FSStatusCode FsManager::CreateFs(const ::dingofs::mds::CreateFsRequest* request,
     }
   }
 
-  wrapper.SetStatus(FsStatus::INITED);
+  wrapper.SetStatus(pb::mds::FsStatus::INITED);
 
   // for persistence consider
   ret = fsStorage_->Update(wrapper);
@@ -514,11 +517,11 @@ FSStatusCode FsManager::DeleteFs(const std::string& fs_name) {
   }
 
   // 3. check fs status
-  FsStatus status = wrapper.GetStatus();
-  if (status == FsStatus::NEW || status == FsStatus::INITED) {
+  pb::mds::FsStatus status = wrapper.GetStatus();
+  if (status == pb::mds::FsStatus::NEW || status == pb::mds::FsStatus::INITED) {
     FsInfoWrapper new_wrapper = wrapper;
     // update fs status to deleting
-    new_wrapper.SetStatus(FsStatus::DELETING);
+    new_wrapper.SetStatus(pb::mds::FsStatus::DELETING);
     // change fs name to oldname+"_deleting_"+fsid+deletetime
     uint64_t now = ::dingofs::utils::TimeUtility::GetTimeofDaySec();
     new_wrapper.SetFsName(fs_name + "_deleting_" +
@@ -533,7 +536,7 @@ FSStatusCode FsManager::DeleteFs(const std::string& fs_name) {
       return ret;
     }
     return FSStatusCode::OK;
-  } else if (status == FsStatus::DELETING) {
+  } else if (status == pb::mds::FsStatus::DELETING) {
     LOG(WARNING) << "DeleteFs already in deleting, fsName = " << fs_name;
     return FSStatusCode::UNDER_DELETING;
   } else {
@@ -546,7 +549,8 @@ FSStatusCode FsManager::DeleteFs(const std::string& fs_name) {
 }
 
 FSStatusCode FsManager::MountFs(const std::string& fs_name,
-                                const Mountpoint& mountpoint, FsInfo* fs_info) {
+                                const Mountpoint& mountpoint,
+                                pb::mds::FsInfo* fs_info) {
   NameLockGuard lock(nameLock_, fs_name);
 
   // query fs
@@ -559,15 +563,15 @@ FSStatusCode FsManager::MountFs(const std::string& fs_name,
   }
 
   // check fs status
-  FsStatus status = wrapper.GetStatus();
+  pb::mds::FsStatus status = wrapper.GetStatus();
   switch (status) {
-    case FsStatus::NEW:
+    case pb::mds::FsStatus::NEW:
       LOG(WARNING) << "MountFs fs is not inited, fsName = " << fs_name;
       return FSStatusCode::NOT_INITED;
-    case FsStatus::INITED:
+    case pb::mds::FsStatus::INITED:
       // inited status, go on process
       break;
-    case FsStatus::DELETING:
+    case pb::mds::FsStatus::DELETING:
       LOG(WARNING) << "MountFs fs is in deleting, fsName = " << fs_name;
       return FSStatusCode::UNDER_DELETING;
     default:
@@ -591,7 +595,7 @@ FSStatusCode FsManager::MountFs(const std::string& fs_name,
   }
 
   // If this is the first mountpoint, init space,
-  if (wrapper.GetFsType() == FSType::TYPE_VOLUME &&
+  if (wrapper.GetFsType() == pb::common::FSType::TYPE_VOLUME &&
       wrapper.IsMountPointEmpty()) {
     LOG(FATAL) << "MountFs fail, FSType::TYPE_VOLUME init space not supported";
   }
@@ -652,7 +656,7 @@ FSStatusCode FsManager::UmountFs(const std::string& fs_name,
   DeleteClientAliveTime(mountpath);
 
   // 3. if no mount point exist, uninit space
-  if (wrapper.GetFsType() == FSType::TYPE_VOLUME &&
+  if (wrapper.GetFsType() == pb::common::FSType::TYPE_VOLUME &&
       wrapper.IsMountPointEmpty()) {
     LOG(FATAL) << "UmountFs fail, FSType::TYPE_VOLUME not supported";
   }
@@ -671,7 +675,8 @@ FSStatusCode FsManager::UmountFs(const std::string& fs_name,
   return FSStatusCode::OK;
 }
 
-FSStatusCode FsManager::GetFsInfo(const std::string& fs_name, FsInfo* fs_info) {
+FSStatusCode FsManager::GetFsInfo(const std::string& fs_name,
+                                  pb::mds::FsInfo* fs_info) {
   // 1. query fs
   FsInfoWrapper wrapper;
   FSStatusCode ret = fsStorage_->Get(fs_name, &wrapper);
@@ -685,7 +690,7 @@ FSStatusCode FsManager::GetFsInfo(const std::string& fs_name, FsInfo* fs_info) {
   return FSStatusCode::OK;
 }
 
-FSStatusCode FsManager::GetFsInfo(uint32_t fs_id, FsInfo* fs_info) {
+FSStatusCode FsManager::GetFsInfo(uint32_t fs_id, pb::mds::FsInfo* fs_info) {
   // 1. query fs
   FsInfoWrapper wrapper;
   FSStatusCode ret = fsStorage_->Get(fs_id, &wrapper);
@@ -700,7 +705,7 @@ FSStatusCode FsManager::GetFsInfo(uint32_t fs_id, FsInfo* fs_info) {
 }
 
 FSStatusCode FsManager::GetFsInfo(const std::string& fs_name, uint32_t fs_id,
-                                  FsInfo* fs_info) {
+                                  pb::mds::FsInfo* fs_info) {
   // 1. query fs by fsName
   FsInfoWrapper wrapper;
   FSStatusCode ret = fsStorage_->Get(fs_name, &wrapper);
@@ -722,13 +727,13 @@ FSStatusCode FsManager::GetFsInfo(const std::string& fs_name, uint32_t fs_id,
   return FSStatusCode::OK;
 }
 
-int FsManager::IsExactlySameOrCreateUnComplete(const std::string& fs_name,
-                                               FSType fs_type,
-                                               uint64_t blocksize,
-                                               const FsDetail& detail) {
+int FsManager::IsExactlySameOrCreateUnComplete(
+    const std::string& fs_name, pb::common::FSType fs_type, uint64_t blocksize,
+    const pb::mds::FsDetail& detail) {
   FsInfoWrapper exist_fs;
 
-  auto volume_info_comparator = [](common::Volume lhs, common::Volume rhs) {
+  auto volume_info_comparator = [](pb::common::Volume lhs,
+                                   pb::common::Volume rhs) {
     // only compare required fields
     // 1. clear `volumeSize` and `extendAlignment`
     // 2. if `autoExtend` is true, `extendFactor` must be equal too
@@ -740,14 +745,15 @@ int FsManager::IsExactlySameOrCreateUnComplete(const std::string& fs_name,
     return google::protobuf::util::MessageDifferencer::Equals(lhs, rhs);
   };
 
-  auto check_fs_info = [fs_type, volume_info_comparator](const FsDetail& lhs,
-                                                         const FsDetail& rhs) {
+  auto check_fs_info = [fs_type, volume_info_comparator](
+                           const pb::mds::FsDetail& lhs,
+                           const pb::mds::FsDetail& rhs) {
     switch (fs_type) {
-      case dingofs::common::FSType::TYPE_S3:
+      case pb::common::FSType::TYPE_S3:
         return MessageDifferencer::Equals(lhs.s3info(), rhs.s3info());
-      case dingofs::common::FSType::TYPE_VOLUME:
+      case pb::common::FSType::TYPE_VOLUME:
         return volume_info_comparator(lhs.volume(), rhs.volume());
-      case dingofs::common::FSType::TYPE_HYBRID:
+      case pb::common::FSType::TYPE_HYBRID:
         return MessageDifferencer::Equals(lhs.s3info(), rhs.s3info()) &&
                volume_info_comparator(lhs.volume(), rhs.volume());
     }
@@ -760,9 +766,9 @@ int FsManager::IsExactlySameOrCreateUnComplete(const std::string& fs_name,
   if (fs_name == exist_fs.GetFsName() && fs_type == exist_fs.GetFsType() &&
       blocksize == exist_fs.GetBlockSize() &&
       check_fs_info(detail, exist_fs.GetFsDetail())) {
-    if (FsStatus::NEW == exist_fs.GetStatus()) {
+    if (pb::mds::FsStatus::NEW == exist_fs.GetStatus()) {
       return 1;
-    } else if (FsStatus::INITED == exist_fs.GetStatus()) {
+    } else if (pb::mds::FsStatus::INITED == exist_fs.GetStatus()) {
       return 0;
     }
   }
@@ -772,7 +778,7 @@ int FsManager::IsExactlySameOrCreateUnComplete(const std::string& fs_name,
 uint64_t FsManager::GetRootId() { return ROOTINODEID; }
 
 void FsManager::GetAllFsInfo(
-    ::google::protobuf::RepeatedPtrField<::dingofs::mds::FsInfo>* fs_info_vec) {
+    ::google::protobuf::RepeatedPtrField<pb::mds::FsInfo>* fs_info_vec) {
   std::vector<FsInfoWrapper> wrapper_vec;
   fsStorage_->GetAll(&wrapper_vec);
   for (auto const& i : wrapper_vec) {
@@ -781,12 +787,12 @@ void FsManager::GetAllFsInfo(
   LOG(INFO) << "get all fsinfo.";
 }
 
-void FsManager::RefreshSession(const RefreshSessionRequest* request,
-                               RefreshSessionResponse* response) {
+void FsManager::RefreshSession(const pb::mds::RefreshSessionRequest* request,
+                               pb::mds::RefreshSessionResponse* response) {
   if (request->txids_size() != 0) {
-    std::vector<PartitionTxId> out;
-    std::vector<PartitionTxId> in = {request->txids().begin(),
-                                     request->txids().end()};
+    std::vector<pb::mds::topology::PartitionTxId> out;
+    std::vector<pb::mds::topology::PartitionTxId> in = {
+        request->txids().begin(), request->txids().end()};
     topoManager_->GetLatestPartitionsTxId(in, &out);
     *response->mutable_latesttxidlist() = {std::make_move_iterator(out.begin()),
                                            std::make_move_iterator(out.end())};
@@ -806,12 +812,13 @@ void FsManager::RefreshSession(const RefreshSessionRequest* request,
   response->set_enablesumindir(wrapper.ProtoFsInfo().enablesumindir());
 }
 
-void FsManager::GetLatestTxId(const uint32_t fs_id,
-                              std::vector<PartitionTxId>* tx_ids) {
-  std::list<PartitionInfo> list;
+void FsManager::GetLatestTxId(
+    const uint32_t fs_id,
+    std::vector<pb::mds::topology::PartitionTxId>* tx_ids) {
+  std::list<pb::common::PartitionInfo> list;
   topoManager_->ListPartitionOfFs(fs_id, &list);
   for (const auto& item : list) {
-    PartitionTxId partition_tx_id;
+    pb::mds::topology::PartitionTxId partition_tx_id;
     partition_tx_id.set_partitionid(item.partitionid());
     partition_tx_id.set_txid(item.txid());
     tx_ids->push_back(std::move(partition_tx_id));
@@ -854,9 +861,9 @@ FSStatusCode FsManager::GetFsTxSequence(const std::string& fs_name,
   return rc;
 }
 
-void FsManager::GetLatestTxId(const GetLatestTxIdRequest* request,
-                              GetLatestTxIdResponse* response) {
-  std::vector<PartitionTxId> tx_ids;
+void FsManager::GetLatestTxId(const pb::mds::GetLatestTxIdRequest* request,
+                              pb::mds::GetLatestTxIdResponse* response) {
+  std::vector<pb::mds::topology::PartitionTxId> tx_ids;
   if (!request->has_fsid()) {
     response->set_statuscode(FSStatusCode::PARAM_ERROR);
     LOG(ERROR) << "Bad GetLatestTxId request which missing fsid"
@@ -909,9 +916,9 @@ void FsManager::GetLatestTxId(const GetLatestTxIdRequest* request,
   response->set_statuscode(rc);
 }
 
-void FsManager::CommitTx(const CommitTxRequest* request,
-                         CommitTxResponse* response) {
-  std::vector<PartitionTxId> tx_ids = {
+void FsManager::CommitTx(const pb::mds::CommitTxRequest* request,
+                         pb::mds::CommitTxResponse* response) {
+  std::vector<pb::mds::topology::PartitionTxId> tx_ids = {
       request->partitiontxids().begin(),
       request->partitiontxids().end(),
   };

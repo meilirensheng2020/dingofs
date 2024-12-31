@@ -29,9 +29,7 @@
 #include <string>
 
 #include "dingofs/src/fs/local_filesystem.h"
-#include "dingofs/src/metaserver/copyset/apply_queue.h"
 #include "dingofs/src/metaserver/copyset/config.h"
-#include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/src/metaserver/copyset/copyset_service.h"
 #include "dingofs/src/metaserver/copyset/raft_cli_service2.h"
 #include "dingofs/src/metaserver/heartbeat.h"
@@ -41,7 +39,6 @@
 #include "dingofs/src/metaserver/recycle_manager.h"
 #include "dingofs/src/metaserver/register.h"
 #include "dingofs/src/metaserver/resource_statistic.h"
-#include "dingofs/src/metaserver/storage/storage.h"
 #include "dingofs/src/stub/rpcclient/base_client.h"
 #include "dingofs/src/stub/rpcclient/mds_client.h"
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
@@ -49,20 +46,6 @@
 
 namespace dingofs {
 namespace metaserver {
-
-using ::dingofs::metaserver::copyset::ApplyQueue;
-using ::dingofs::metaserver::copyset::CopysetNodeManager;
-using ::dingofs::metaserver::copyset::CopysetNodeOptions;
-using ::dingofs::metaserver::copyset::CopysetServiceImpl;
-using ::dingofs::metaserver::copyset::RaftCliService2;
-using ::dingofs::metaserver::storage::StorageOptions;
-using ::dingofs::utils::Configuration;
-
-using ::dingofs::stub::common::MdsOption;
-using ::dingofs::stub::rpcclient::MDSBaseClient;
-using ::dingofs::stub::rpcclient::MdsClient;
-using ::dingofs::stub::rpcclient::MdsClientImpl;
-using ::dingofs::stub::rpcclient::MetaServerClient;
 
 struct MetaserverOptions {
   std::string ip;
@@ -75,7 +58,7 @@ struct MetaserverOptions {
 
 class Metaserver {
  public:
-  void InitOptions(std::shared_ptr<Configuration> conf);
+  void InitOptions(std::shared_ptr<utils::Configuration> conf);
   void Init();
   void Run();
   void Stop();
@@ -91,51 +74,53 @@ class Metaserver {
   void InitHeartbeat();
   void InitMetaClient();
   void InitRegisterOptions();
-  void InitBRaftFlags(const std::shared_ptr<Configuration>& conf);
-  void InitPartitionOption(std::shared_ptr<S3ClientAdaptor> s3Adaptor,
-                           std::shared_ptr<MdsClient> mdsClient,
-                           PartitionCleanOption* partitionCleanOption);
+  void InitBRaftFlags(const std::shared_ptr<utils::Configuration>& conf);
+  void InitPartitionOption(
+      std::shared_ptr<S3ClientAdaptor> s3Adaptor,
+      std::shared_ptr<stub::rpcclient::MdsClient> mdsClient,
+      PartitionCleanOption* partitionCleanOption);
   void InitRecycleManagerOption(RecycleManagerOption* recycleManagerOption);
   void GetMetaserverDataByLoadOrRegister();
-  int PersistMetaserverMeta(std::string path, MetaServerMetadata* metadata);
+  int PersistMetaserverMeta(std::string path,
+                            pb::metaserver::MetaServerMetadata* metadata);
   int LoadMetaserverMeta(const std::string& metaFilePath,
-                         MetaServerMetadata* metadata);
-  int LoadDataFromLocalFile(std::shared_ptr<LocalFileSystem> fs,
+                         pb::metaserver::MetaServerMetadata* metadata);
+  int LoadDataFromLocalFile(std::shared_ptr<fs::LocalFileSystem> fs,
                             const std::string& localPath, std::string* data);
-  int PersistDataToLocalFile(std::shared_ptr<LocalFileSystem> fs,
+  int PersistDataToLocalFile(std::shared_ptr<fs::LocalFileSystem> fs,
                              const std::string& localPath,
                              const std::string& data);
 
  private:
   // metaserver configuration items
-  std::shared_ptr<Configuration> conf_;
+  std::shared_ptr<utils::Configuration> conf_;
   // initialized or not
   bool inited_ = false;
   // running as the main MDS or not
   bool running_ = false;
 
-  std::shared_ptr<MdsClient> mdsClient_;
-  std::shared_ptr<MetaServerClient> metaClient_;
-  MDSBaseClient* mdsBase_;
-  MdsOption mdsOptions_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
+  stub::rpcclient::MDSBaseClient* mdsBase_;
+  stub::common::MdsOption mdsOptions_;
   MetaserverOptions options_;
-  MetaServerMetadata metadata_;
+  pb::metaserver::MetaServerMetadata metadata_;
   std::string metaFilePath_;
 
   std::unique_ptr<brpc::Server> server_;
   std::unique_ptr<brpc::Server> externalServer_;
 
   std::unique_ptr<MetaServerServiceImpl> metaService_;
-  std::unique_ptr<CopysetServiceImpl> copysetService_;
-  std::unique_ptr<RaftCliService2> raftCliService2_;
+  std::unique_ptr<copyset::CopysetServiceImpl> copysetService_;
+  std::unique_ptr<copyset::RaftCliService2> raftCliService2_;
 
   HeartbeatOptions heartbeatOptions_;
   Heartbeat heartbeat_;
 
   std::unique_ptr<ResourceCollector> resourceCollector_;
 
-  CopysetNodeOptions copysetNodeOptions_;
-  CopysetNodeManager* copysetNodeManager_;
+  copyset::CopysetNodeOptions copysetNodeOptions_;
+  copyset::CopysetNodeManager* copysetNodeManager_;
 
   RegisterOptions registerOptions_;
 

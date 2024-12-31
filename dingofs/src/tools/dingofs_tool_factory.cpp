@@ -26,10 +26,10 @@
 #include "dingofs/src/tools/copyset/dingofs_copyset_status.h"
 #include "dingofs/src/tools/create/dingofs_create_fs.h"
 #include "dingofs/src/tools/create/dingofs_create_topology_tool.h"
-#include "dingofs/src/tools/dingofs_tool_abstract_creator.h"
-#include "dingofs/src/tools/dingofs_tool_define.h"
 #include "dingofs/src/tools/delete/dingofs_delete_fs_tool.h"
 #include "dingofs/src/tools/delete/dingofs_delete_partition_tool.h"
+#include "dingofs/src/tools/dingofs_tool_abstract_creator.h"
+#include "dingofs/src/tools/dingofs_tool_define.h"
 #include "dingofs/src/tools/list/dingofs_copysetinfo_list.h"
 #include "dingofs/src/tools/list/dingofs_fsinfo_list.h"
 #include "dingofs/src/tools/list/dingofs_partition_list.h"
@@ -63,7 +63,7 @@ CurvefsToolFactory::CurvefsToolFactory() {
   // create-topology
   RegisterCurvefsTool(
       std::string(kCreateTopologyCmd),
-      CurvefsToolCreator<mds::topology::CurvefsBuildTopologyTool>::Create);
+      CurvefsToolCreator<topology::CurvefsBuildTopologyTool>::Create);
 
   // create-fs
   RegisterCurvefsTool(std::string(kCreateFsCmd),

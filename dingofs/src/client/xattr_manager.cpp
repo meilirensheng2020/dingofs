@@ -22,26 +22,34 @@
 
 #include "dingofs/src/client/xattr_manager.h"
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/common/common.h"
 #include "dingofs/src/stub/filesystem/xattr.h"
-#include "glog/logging.h"
 #include "dingofs/src/utils/string_util.h"
+#include "glog/logging.h"
 
 namespace dingofs {
 namespace client {
 
-using ::dingofs::utils::StringToUll;
-using ::dingofs::utils::Thread;
-using ::dingofs::client::common::AddUllStringToFirst;
-using ::dingofs::stub::filesystem::XATTR_DIR_ENTRIES;
-using ::dingofs::stub::filesystem::XATTR_DIR_FBYTES;
-using ::dingofs::stub::filesystem::XATTR_DIR_FILES;
-using ::dingofs::stub::filesystem::XATTR_DIR_PREFIX;
-using ::dingofs::stub::filesystem::XATTR_DIR_RENTRIES;
-using ::dingofs::stub::filesystem::XATTR_DIR_RFBYTES;
-using ::dingofs::stub::filesystem::XATTR_DIR_RFILES;
-using ::dingofs::stub::filesystem::XATTR_DIR_RSUBDIRS;
-using ::dingofs::stub::filesystem::XATTR_DIR_SUBDIRS;
+using common::AddUllStringToFirst;
+using stub::filesystem::XATTR_DIR_ENTRIES;
+using stub::filesystem::XATTR_DIR_FBYTES;
+using stub::filesystem::XATTR_DIR_FILES;
+using stub::filesystem::XATTR_DIR_PREFIX;
+using stub::filesystem::XATTR_DIR_RENTRIES;
+using stub::filesystem::XATTR_DIR_RFBYTES;
+using stub::filesystem::XATTR_DIR_RFILES;
+using stub::filesystem::XATTR_DIR_RSUBDIRS;
+using stub::filesystem::XATTR_DIR_SUBDIRS;
+using utils::Atomic;
+using utils::InterruptibleSleeper;
+using utils::StringToUll;
+using utils::Thread;
+
+using pb::metaserver::Dentry;
+using pb::metaserver::FsFileType;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::XAttr;
 
 bool IsSummaryInfo(const char* name) {
   return std::strstr(name, XATTR_DIR_PREFIX);
@@ -466,7 +474,7 @@ DINGOFS_ERROR XattrManager::UpdateParentInodeXattr(uint64_t parentId,
     return ret;
   }
 
-  ::dingofs::utils::UniqueLock lgGuard = pInodeWrapper->GetUniqueLock();
+  utils::UniqueLock lgGuard = pInodeWrapper->GetUniqueLock();
   auto inodeXAttr = pInodeWrapper->GetInodeLocked()->xattr();
   bool update = false;
   for (const auto& it : xattr.xattrinfos()) {

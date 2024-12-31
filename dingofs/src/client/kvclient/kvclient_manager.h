@@ -27,17 +27,12 @@
 
 #include <memory>
 #include <string>
-#include <thread>
 #include <utility>
 
-#include "absl/strings/string_view.h"
 #include "dingofs/src/client/common/config.h"
 #include "dingofs/src/client/kvclient/kvclient.h"
 #include "dingofs/src/stub/metric/metric.h"
 #include "dingofs/src/utils/concurrent/task_thread_pool.h"
-#include "dingofs/src/aws/s3_adapter.h"
-
-using dingofs::stub::metric::KVClientMetric;
 
 namespace dingofs {
 namespace client {
@@ -45,13 +40,11 @@ namespace client {
 class KVClientManager;
 class SetKVCacheTask;
 class GetKVCacheTask;
-using dingofs::utils::TaskThreadPool;
-using dingofs::client::common::KVClientManagerOpt;
 
-typedef std::function<void(const std::shared_ptr<SetKVCacheTask>&)>
-    SetKVCacheDone;
-typedef std::function<void(const std::shared_ptr<GetKVCacheTask>&)>
-    GetKVCacheDone;
+using SetKVCacheDone =
+    std::function<void(const std::shared_ptr<SetKVCacheTask>&)>;
+using GetKVCacheDone =
+    std::function<void(const std::shared_ptr<GetKVCacheTask>&)>;
 
 struct SetKVCacheTask {
   std::string key;
@@ -83,7 +76,7 @@ class KVClientManager {
   KVClientManager() = default;
   ~KVClientManager() { Uninit(); }
 
-  bool Init(const KVClientManagerOpt& config,
+  bool Init(const common::KVClientManagerOpt& config,
             const std::shared_ptr<KVClient>& kvclient);
 
   /**
@@ -95,15 +88,16 @@ class KVClientManager {
 
   void Get(std::shared_ptr<GetKVCacheTask> task);
 
-  KVClientMetric* GetClientMetricForTesting() { return &kvClientMetric_; }
+  stub::metric::KVClientMetric* GetClientMetricForTesting() {
+    return &kvClientMetric_;
+  }
 
  private:
   void Uninit();
 
- private:
-  TaskThreadPool<bthread::Mutex, bthread::ConditionVariable> threadPool_;
+  utils::TaskThreadPool<bthread::Mutex, bthread::ConditionVariable> threadPool_;
   std::shared_ptr<KVClient> client_;
-  KVClientMetric kvClientMetric_;
+  stub::metric::KVClientMetric kvClientMetric_;
 };
 
 }  // namespace client

@@ -27,6 +27,8 @@
 namespace dingofs {
 namespace metaserver {
 
+using pb::common::S3Info;
+
 void S3InfoCache::UpdateRecent(uint64_t fsid) {
   if (pos_.find(fsid) != pos_.end()) {
     recent_.erase(pos_[fsid]);
@@ -53,8 +55,8 @@ void S3InfoCache::Put(uint64_t fsid, const S3Info& s3info) {
 S3InfoCache::RequestStatusCode S3InfoCache::RequestS3Info(uint64_t fsid,
                                                           S3Info* s3info) {
   // send GetFsInfoRequest to mds
-  dingofs::mds::GetFsInfoRequest request;
-  dingofs::mds::GetFsInfoResponse response;
+  pb::mds::GetFsInfoRequest request;
+  pb::mds::GetFsInfoResponse response;
   request.set_fsid(fsid);
   brpc::Channel channel;
   if (channel.Init(mdsAddrs_[mdsIndex_].c_str(), NULL) != 0) {
@@ -64,7 +66,7 @@ S3InfoCache::RequestStatusCode S3InfoCache::RequestS3Info(uint64_t fsid,
     return RequestStatusCode::RPCFAILURE;
   }
 
-  dingofs::mds::MdsService_Stub stub(&channel);
+  pb::mds::MdsService_Stub stub(&channel);
   brpc::Controller cntl;
   stub.GetFsInfo(&cntl, &request, &response, nullptr);
   if (cntl.Failed()) {
@@ -87,8 +89,8 @@ S3InfoCache::RequestStatusCode S3InfoCache::RequestS3Info(uint64_t fsid,
   } else {
     auto ret = response.statuscode();
     VLOG(6) << "s3infocache: rpc statuscode " << ret;
-    if (ret == dingofs::mds::FSStatusCode::OK) {
-      const dingofs::mds::FsDetail& fsdetail = response.fsinfo().detail();
+    if (ret == pb::mds::FSStatusCode::OK) {
+      const pb::mds::FsDetail& fsdetail = response.fsinfo().detail();
       if (fsdetail.has_s3info()) {
         *s3info = fsdetail.s3info();
         return RequestStatusCode::SUCCESS;

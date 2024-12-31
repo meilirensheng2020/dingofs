@@ -27,14 +27,12 @@
 #include "dingofs/proto/topology.pb.h"
 #include "dingofs/src/mds/topology/topology_item.h"
 
-using ::dingofs::utils::WriteLockGuard;
-using ::dingofs::mds::topology::MetaServer;
-using ::dingofs::mds::topology::TopoStatusCode;
-using std::chrono::milliseconds;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
+
+using std::chrono::milliseconds;
+
 void MetaserverHealthyChecker::CheckHeartBeatInterval() {
   std::lock_guard<Mutex> lockguard(hbinfoLock_);
   auto iter = heartbeatInfos_.begin();
@@ -113,11 +111,12 @@ bool MetaserverHealthyChecker::GetHeartBeatInfo(MetaServerIdType id,
 
 void MetaserverHealthyChecker::UpdateMetaServerOnlineState(
     MetaServerIdType id, const OnlineState& newState) {
-  TopoStatusCode errCode = topo_->UpdateMetaServerOnlineState(newState, id);
+  topology::TopoStatusCode errCode =
+      topo_->UpdateMetaServerOnlineState(newState, id);
 
-  if (TopoStatusCode::TOPO_OK != errCode) {
+  if (topology::TopoStatusCode::TOPO_OK != errCode) {
     LOG(WARNING) << "heartbeatManager update metaserver get error code: "
-                 << topology::TopoStatusCode_Name(errCode);
+                 << pb::mds::topology::TopoStatusCode_Name(errCode);
   }
 }
 

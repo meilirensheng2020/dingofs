@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "dingofs/src/client/common/config.h"
+#include "dingofs/src/client/filesystem/dir_cache.h"
 #include "dingofs/src/client/filesystem/meta.h"
 #include "dingofs/src/client/filesystem/openfile.h"
 #include "dingofs/src/utils/lru_cache.h"
@@ -34,32 +35,26 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::utils::LRUCache;
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::RWLock;
-using ::dingofs::utils::WriteLockGuard;
-using ::dingofs::client::common::AttrWatcherOption;
-
 class AttrWatcher {
  public:
-  using LRUType = LRUCache<Ino, struct TimeSpec>;
+  using LRUType = utils::LRUCache<Ino, base::time::TimeSpec>;
 
- public:
-  AttrWatcher(AttrWatcherOption option, std::shared_ptr<OpenFiles> openFiles,
+  AttrWatcher(common::AttrWatcherOption option,
+              std::shared_ptr<OpenFiles> openFiles,
               std::shared_ptr<DirCache> dirCache);
 
-  void RemeberMtime(const InodeAttr& attr);
+  void RemeberMtime(const pb::metaserver::InodeAttr& attr);
 
-  bool GetMtime(Ino ino, TimeSpec* time);
+  bool GetMtime(Ino ino, base::time::TimeSpec* time);
 
-  void UpdateDirEntryAttr(Ino ino, const InodeAttr& attr);
+  void UpdateDirEntryAttr(Ino ino, const pb::metaserver::InodeAttr& attr);
 
-  void UpdateDirEntryLength(Ino ino, const InodeAttr& open);
+  void UpdateDirEntryLength(Ino ino, const pb::metaserver::InodeAttr& open);
 
  private:
   friend class AttrWatcherGuard;
 
-  RWLock rwlock_;
+  utils::RWLock rwlock_;
   std::shared_ptr<LRUType> modifiedAt_;
   std::shared_ptr<OpenFiles> openFiles_;
   std::shared_ptr<DirCache> dirCache_;
@@ -78,14 +73,15 @@ enum class ReplyType { ATTR, ONLY_LENGTH };
  */
 struct AttrWatcherGuard {
  public:
-  AttrWatcherGuard(std::shared_ptr<AttrWatcher> watcher, InodeAttr* attr,
-                   ReplyType type, bool writeBack);
+  AttrWatcherGuard(std::shared_ptr<AttrWatcher> watcher,
+                   pb::metaserver::InodeAttr* attr, ReplyType type,
+                   bool writeBack);
 
   ~AttrWatcherGuard();
 
  private:
   std::shared_ptr<AttrWatcher> watcher;
-  InodeAttr* attr;
+  pb::metaserver::InodeAttr* attr;
   ReplyType type;
   bool writeBack;
 };

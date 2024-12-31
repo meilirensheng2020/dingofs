@@ -69,7 +69,7 @@ void RecycleManager::Remove(uint32_t partitionId) {
 void RecycleManager::Run() {
   if (isStop_.exchange(false)) {
     sleeper_.init();
-    thread_ = Thread(&RecycleManager::ScanLoop, this);
+    thread_ = utils::Thread(&RecycleManager::ScanLoop, this);
     LOG(INFO) << "Start RecycleManager thread ok.";
     return;
   }

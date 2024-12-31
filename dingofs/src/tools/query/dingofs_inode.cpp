@@ -84,7 +84,7 @@ int InodeTool::Init() {
   }
 
   for (size_t i = 0; i < poolsId.size(); ++i) {
-    dingofs::metaserver::GetInodeRequest request;
+    pb::metaserver::GetInodeRequest request;
     request.set_poolid(std::stoul((poolsId[i])));
     request.set_copysetid(std::stoul((copysetsId[i])));
     request.set_partitionid(std::stoul((partitionId[i])));
@@ -96,7 +96,7 @@ int InodeTool::Init() {
   }
 
   service_stub_func_ =
-      std::bind(&dingofs::metaserver::MetaServerService_Stub::GetInode,
+      std::bind(&pb::metaserver::MetaServerService_Stub::GetInode,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
 
@@ -111,12 +111,11 @@ void InodeTool::AddUpdateFlags() {
 bool InodeTool::AfterSendRequestToHost(const std::string& host) {
   bool ret = false;
   if (controller_->Failed()) {
-    errorOutput_ << "send request "
-                 << " to metaserver: " << host
+    errorOutput_ << "send request " << " to metaserver: " << host
                  << " failed, errorcode= " << controller_->ErrorCode()
                  << ", error text " << controller_->ErrorText() << "\n";
   } else {
-    if (response_->statuscode() == metaserver::MetaStatusCode::OK) {
+    if (response_->statuscode() == pb::metaserver::MetaStatusCode::OK) {
       ret = UpdateInode2InodeBaseInfoList_(requestQueue_.front(),
                                            response_->inode());
       if (show_) {

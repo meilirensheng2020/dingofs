@@ -65,11 +65,11 @@ int PartitionListTool::Init() {
   dingofs::utils::SplitString(FLAGS_fsId, ",", &fsIds);
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::topology::TopologyService_Stub::ListPartition,
+      std::bind(&pb::mds::topology::TopologyService_Stub::ListPartition,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
 
-  dingofs::mds::topology::ListPartitionRequest request;
+  pb::mds::topology::ListPartitionRequest request;
   for (const auto& i : fsIds) {
     uint32_t fsId = 0;
     dingofs::utils::StringToUl(i, &fsId);
@@ -87,9 +87,10 @@ bool PartitionListTool::AfterSendRequestToHost(const std::string& host) {
                  << " failed, errorcode= " << controller_->ErrorCode()
                  << ", error text " << controller_->ErrorText() << "\n";
   } else {
-    if (response_->statuscode() != mds::topology::TopoStatusCode::TOPO_OK) {
+    if (response_->statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
       std::cerr << "list partitions failed, errorcode= "
-                << mds::topology::TopoStatusCode_Name(response_->statuscode())
+                << pb::mds::topology::TopoStatusCode_Name(
+                       response_->statuscode())
                 << std::endl;
     } else {
       fsId2PartitionList_[requestQueue_.front().fsid()] =

@@ -24,15 +24,19 @@
 #include <cstdint>
 #include <list>
 #include <string>
-
-using ::dingofs::metaserver::MetaStatusCode_Name;
-
 namespace dingofs {
 namespace client {
 
-using dingofs::utils::WriteLockGuard;
-using NameLockGuard = ::dingofs::utils::GenericNameLockGuard<Mutex>;
-using ::dingofs::client::filesystem::ToFSError;
+using filesystem::DINGOFS_ERROR;
+using filesystem::ToFSError;
+using utils::WriteLockGuard;
+
+using pb::metaserver::Dentry;
+using pb::metaserver::FsFileType;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::MetaStatusCode_Name;
+
+using NameLockGuard = ::dingofs::utils::GenericNameLockGuard<utils::Mutex>;
 
 DINGOFS_ERROR DentryCacheManagerImpl::GetDentry(uint64_t parent,
                                                 const std::string& name,

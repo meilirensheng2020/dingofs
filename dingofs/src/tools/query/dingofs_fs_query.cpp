@@ -57,7 +57,7 @@ int FsQueryTool::Init() {
 
   // fsId
   for (auto const& i : fsIdVec) {
-    dingofs::mds::GetFsInfoRequest request;
+    pb::mds::GetFsInfoRequest request;
     request.set_fsid(std::stoul(i));
     AddRequest(request);
     requestValueVec_.push_back(i);
@@ -65,14 +65,14 @@ int FsQueryTool::Init() {
 
   // fsName
   for (auto const& i : fsNameVec) {
-    dingofs::mds::GetFsInfoRequest request;
+    pb::mds::GetFsInfoRequest request;
     request.set_fsname(i);
     AddRequest(request);
     requestValueVec_.push_back(i);
   }
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::MdsService_Stub::GetFsInfo, service_stub_.get(),
+      std::bind(&pb::mds::MdsService_Stub::GetFsInfo, service_stub_.get(),
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3, nullptr);
 
@@ -94,9 +94,9 @@ bool FsQueryTool::AfterSendRequestToHost(const std::string& host) {
                  << ", error text " << controller_->ErrorText() << "\n";
     return false;
   } else if (show_) {
-    if (response_->statuscode() == mds::FSStatusCode::OK) {
+    if (response_->statuscode() == pb::mds::FSStatusCode::OK) {
       std::cout << response_->DebugString() << std::endl;
-    } else if (response_->statuscode() == mds::FSStatusCode::NOT_FOUND) {
+    } else if (response_->statuscode() == pb::mds::FSStatusCode::NOT_FOUND) {
       std::cerr << "fs not found!" << std::endl;
       return false;
     } else {

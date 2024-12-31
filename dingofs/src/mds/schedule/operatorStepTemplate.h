@@ -31,7 +31,8 @@
 namespace dingofs {
 namespace mds {
 namespace schedule {
-using ::dingofs::mds::heartbeat::ConfigChangeType;
+
+using pb::mds::heartbeat::ConfigChangeType;
 
 enum ApplyStatus { Finished, Failed, Ordered, OnGoing };
 

@@ -35,6 +35,8 @@
 namespace dingofs {
 namespace mds {
 
+using dingofs::pb::mds::Mountpoint;
+
 // Metric for a filesystem
 // includes filesystem mount number and filesystem mountpoint lists
 class FsMountMetric {

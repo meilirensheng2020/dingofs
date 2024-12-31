@@ -32,22 +32,28 @@
 #include <utility>
 #include <vector>
 
+#include "dingofs/proto/topology.pb.h"
 #include "dingofs/src/mds/common/mds_define.h"
 #include "dingofs/src/mds/topology/deal_peerid.h"
 #include "dingofs/src/mds/topology/topology_item.h"
+#include "dingofs/src/utils/concurrent/name_lock.h"
 #include "dingofs/src/utils/timeutility.h"
-
-using dingofs::utils::NameLockGuard;
-using dingofs::utils::TimeUtility;
 
 namespace dingofs {
 namespace mds {
 namespace topology {
 
+using dingofs::utils::NameLockGuard;
+using dingofs::utils::TimeUtility;
+
+using pb::mds::topology::PoolInfo;
+using pb::mds::topology::ZoneInfo;
+
 void TopologyManager::Init(const TopologyOption& option) { option_ = option; }
 
-void TopologyManager::RegistMetaServer(const MetaServerRegistRequest* request,
-                                       MetaServerRegistResponse* response) {
+void TopologyManager::RegistMetaServer(
+    const pb::mds::topology::MetaServerRegistRequest* request,
+    pb::mds::topology::MetaServerRegistResponse* response) {
   std::string host_ip = request->internalip();
   uint32_t port = request->internalport();
   NameLockGuard lock(registMsMutex_, host_ip + ":" + std::to_string(port));
@@ -59,7 +65,7 @@ void TopologyManager::RegistMetaServer(const MetaServerRegistRequest* request,
       [&host_ip, &port](const MetaServer& ms) {
         return (ms.GetInternalIp() == host_ip) &&
                (ms.GetInternalPort() == port) &&
-               (ms.GetOnlineState() != OnlineState::OFFLINE);
+               (ms.GetOnlineState() != pb::mds::topology::OnlineState::OFFLINE);
       });
   if (1 == list.size()) {
     // report duplicated register (already a metaserver with same ip and
@@ -125,7 +131,8 @@ void TopologyManager::RegistMetaServer(const MetaServerRegistRequest* request,
 
   MetaServer metaserver(meta_server_id, request->hostname(), token, server_id,
                         request->internalip(), request->internalport(),
-                        request->externalip(), request->externalport(), ONLINE);
+                        request->externalip(), request->externalport(),
+                        pb::mds::topology::OnlineState::ONLINE);
 
   TopoStatusCode errcode = topology_->AddMetaServer(metaserver);
   if (errcode == TopoStatusCode::TOPO_OK) {
@@ -137,8 +144,9 @@ void TopologyManager::RegistMetaServer(const MetaServerRegistRequest* request,
   }
 }
 
-void TopologyManager::ListMetaServer(const ListMetaServerRequest* request,
-                                     ListMetaServerResponse* response) {
+void TopologyManager::ListMetaServer(
+    const pb::mds::topology::ListMetaServerRequest* request,
+    pb::mds::topology::ListMetaServerResponse* response) {
   Server server;
   if (!topology_->GetServer(request->serverid(), &server)) {
     response->set_statuscode(TopoStatusCode::TOPO_SERVER_NOT_FOUND);
@@ -151,7 +159,8 @@ void TopologyManager::ListMetaServer(const ListMetaServerRequest* request,
   for (MetaServerIdType id : metaserver_list) {
     MetaServer ms;
     if (topology_->GetMetaServer(id, &ms)) {
-      MetaServerInfo* ms_info = response->add_metaserverinfos();
+      pb::mds::topology::MetaServerInfo* ms_info =
+          response->add_metaserverinfos();
       ms_info->set_metaserverid(ms.GetId());
       ms_info->set_hostname(ms.GetHostName());
       ms_info->set_internalip(ms.GetInternalIp());
@@ -169,8 +178,9 @@ void TopologyManager::ListMetaServer(const ListMetaServerRequest* request,
   }
 }
 
-void TopologyManager::GetMetaServer(const GetMetaServerInfoRequest* request,
-                                    GetMetaServerInfoResponse* response) {
+void TopologyManager::GetMetaServer(
+    const pb::mds::topology::GetMetaServerInfoRequest* request,
+    pb::mds::topology::GetMetaServerInfoResponse* response) {
   MetaServer ms;
   if (request->has_metaserverid()) {
     if (!topology_->GetMetaServer(request->metaserverid(), &ms)) {
@@ -187,7 +197,8 @@ void TopologyManager::GetMetaServer(const GetMetaServerInfoRequest* request,
     return;
   }
   response->set_statuscode(TopoStatusCode::TOPO_OK);
-  MetaServerInfo* ms_info = response->mutable_metaserverinfo();
+  pb::mds::topology::MetaServerInfo* ms_info =
+      response->mutable_metaserverinfo();
   ms_info->set_metaserverid(ms.GetId());
   ms_info->set_hostname(ms.GetHostName());
   ms_info->set_internalip(ms.GetInternalIp());
@@ -197,14 +208,16 @@ void TopologyManager::GetMetaServer(const GetMetaServerInfoRequest* request,
   ms_info->set_onlinestate(ms.GetOnlineState());
 }
 
-void TopologyManager::DeleteMetaServer(const DeleteMetaServerRequest* request,
-                                       DeleteMetaServerResponse* response) {
+void TopologyManager::DeleteMetaServer(
+    const pb::mds::topology::DeleteMetaServerRequest* request,
+    pb::mds::topology::DeleteMetaServerResponse* response) {
   TopoStatusCode errcode = topology_->RemoveMetaServer(request->metaserverid());
   response->set_statuscode(errcode);
 }
 
-void TopologyManager::RegistServer(const ServerRegistRequest* request,
-                                   ServerRegistResponse* response) {
+void TopologyManager::RegistServer(
+    const pb::mds::topology::ServerRegistRequest* request,
+    pb::mds::topology::ServerRegistResponse* response) {
   Pool p_pool;
   if (!topology_->GetPool(request->poolname(), &p_pool)) {
     response->set_statuscode(TopoStatusCode::TOPO_POOL_NOT_FOUND);
@@ -257,8 +270,9 @@ void TopologyManager::RegistServer(const ServerRegistRequest* request,
   }
 }
 
-void TopologyManager::GetServer(const GetServerRequest* request,
-                                GetServerResponse* response) {
+void TopologyManager::GetServer(
+    const pb::mds::topology::GetServerRequest* request,
+    pb::mds::topology::GetServerResponse* response) {
   Server sv;
   if (request->has_serverid()) {
     if (!topology_->GetServer(request->serverid(), &sv)) {
@@ -296,7 +310,7 @@ void TopologyManager::GetServer(const GetServerRequest* request,
     response->set_statuscode(TopoStatusCode::TOPO_INTERNAL_ERROR);
     return;
   }
-  ServerInfo* info = new ServerInfo();
+  pb::mds::topology::ServerInfo* info = new pb::mds::topology::ServerInfo();
   info->set_serverid(sv.GetId());
   info->set_hostname(sv.GetHostName());
   info->set_internalip(sv.GetInternalIp());
@@ -310,8 +324,9 @@ void TopologyManager::GetServer(const GetServerRequest* request,
   response->set_allocated_serverinfo(info);
 }
 
-void TopologyManager::DeleteServer(const DeleteServerRequest* request,
-                                   DeleteServerResponse* response) {
+void TopologyManager::DeleteServer(
+    const pb::mds::topology::DeleteServerRequest* request,
+    pb::mds::topology::DeleteServerResponse* response) {
   TopoStatusCode errcode = TopoStatusCode::TOPO_OK;
   Server server;
   if (!topology_->GetServer(request->serverid(), &server)) {
@@ -327,7 +342,7 @@ void TopologyManager::DeleteServer(const DeleteServerRequest* request,
                  << ", serverId = " << request->serverid();
       response->set_statuscode(TopoStatusCode::TOPO_INTERNAL_ERROR);
       return;
-    } else if (OnlineState::OFFLINE != ms.GetOnlineState()) {
+    } else if (pb::mds::topology::OnlineState::OFFLINE != ms.GetOnlineState()) {
       LOG(ERROR) << "Can not delete server which have "
                  << "metaserver not offline.";
       response->set_statuscode(TopoStatusCode::TOPO_CANNOT_REMOVE_NOT_OFFLINE);
@@ -344,8 +359,9 @@ void TopologyManager::DeleteServer(const DeleteServerRequest* request,
   response->set_statuscode(errcode);
 }
 
-void TopologyManager::ListZoneServer(const ListZoneServerRequest* request,
-                                     ListZoneServerResponse* response) {
+void TopologyManager::ListZoneServer(
+    const pb::mds::topology::ListZoneServerRequest* request,
+    pb::mds::topology::ListZoneServerResponse* response) {
   Zone zone;
   if (request->has_zoneid()) {
     if (!topology_->GetZone(request->zoneid(), &zone)) {
@@ -382,7 +398,7 @@ void TopologyManager::ListZoneServer(const ListZoneServerRequest* request,
         response->set_statuscode(TopoStatusCode::TOPO_INTERNAL_ERROR);
         return;
       }
-      ServerInfo* info = response->add_serverinfo();
+      pb::mds::topology::ServerInfo* info = response->add_serverinfo();
       info->set_serverid(sv.GetId());
       info->set_hostname(sv.GetHostName());
       info->set_internalip(sv.GetInternalIp());
@@ -403,8 +419,9 @@ void TopologyManager::ListZoneServer(const ListZoneServerRequest* request,
   }
 }
 
-void TopologyManager::CreateZone(const CreateZoneRequest* request,
-                                 CreateZoneResponse* response) {
+void TopologyManager::CreateZone(
+    const pb::mds::topology::CreateZoneRequest* request,
+    pb::mds::topology::CreateZoneResponse* response) {
   Pool pPool;
   if (!topology_->GetPool(request->poolname(), &pPool)) {
     response->set_statuscode(TopoStatusCode::TOPO_POOL_NOT_FOUND);
@@ -436,8 +453,9 @@ void TopologyManager::CreateZone(const CreateZoneRequest* request,
   }
 }
 
-void TopologyManager::DeleteZone(const DeleteZoneRequest* request,
-                                 DeleteZoneResponse* response) {
+void TopologyManager::DeleteZone(
+    const pb::mds::topology::DeleteZoneRequest* request,
+    pb::mds::topology::DeleteZoneResponse* response) {
   Zone zone;
   if (!topology_->GetZone(request->zoneid(), &zone)) {
     response->set_statuscode(TopoStatusCode::TOPO_ZONE_NOT_FOUND);
@@ -447,8 +465,8 @@ void TopologyManager::DeleteZone(const DeleteZoneRequest* request,
   response->set_statuscode(errcode);
 }
 
-void TopologyManager::GetZone(const GetZoneRequest* request,
-                              GetZoneResponse* response) {
+void TopologyManager::GetZone(const pb::mds::topology::GetZoneRequest* request,
+                              pb::mds::topology::GetZoneResponse* response) {
   Zone zone;
   if (!topology_->GetZone(request->zoneid(), &zone)) {
     response->set_statuscode(TopoStatusCode::TOPO_ZONE_NOT_FOUND);
@@ -468,8 +486,9 @@ void TopologyManager::GetZone(const GetZoneRequest* request,
   response->set_allocated_zoneinfo(info);
 }
 
-void TopologyManager::ListPoolZone(const ListPoolZoneRequest* request,
-                                   ListPoolZoneResponse* response) {
+void TopologyManager::ListPoolZone(
+    const pb::mds::topology::ListPoolZoneRequest* request,
+    pb::mds::topology::ListPoolZoneResponse* response) {
   Pool pPool;
   if (!topology_->GetPool(request->poolid(), &pPool)) {
     response->set_statuscode(TopoStatusCode::TOPO_POOL_NOT_FOUND);
@@ -495,8 +514,9 @@ void TopologyManager::ListPoolZone(const ListPoolZoneRequest* request,
   }
 }
 
-void TopologyManager::CreatePool(const CreatePoolRequest* request,
-                                 CreatePoolResponse* response) {
+void TopologyManager::CreatePool(
+    const pb::mds::topology::CreatePoolRequest* request,
+    pb::mds::topology::CreatePoolResponse* response) {
   if (topology_->FindPool(request->poolname()) !=
       static_cast<PoolIdType>(UNINITIALIZE_ID)) {
     response->set_statuscode(TopoStatusCode::TOPO_NAME_DUPLICATED);
@@ -537,8 +557,9 @@ void TopologyManager::CreatePool(const CreatePoolRequest* request,
   }
 }
 
-void TopologyManager::DeletePool(const DeletePoolRequest* request,
-                                 DeletePoolResponse* response) {
+void TopologyManager::DeletePool(
+    const pb::mds::topology::DeletePoolRequest* request,
+    pb::mds::topology::DeletePoolResponse* response) {
   Pool pool;
   if (!topology_->GetPool(request->poolid(), &pool)) {
     response->set_statuscode(TopoStatusCode::TOPO_POOL_NOT_FOUND);
@@ -549,8 +570,8 @@ void TopologyManager::DeletePool(const DeletePoolRequest* request,
   response->set_statuscode(errcode);
 }
 
-void TopologyManager::GetPool(const GetPoolRequest* request,
-                              GetPoolResponse* response) {
+void TopologyManager::GetPool(const pb::mds::topology::GetPoolRequest* request,
+                              pb::mds::topology::GetPoolResponse* response) {
   Pool pool;
   if (!topology_->GetPool(request->poolid(), &pool)) {
     response->set_statuscode(TopoStatusCode::TOPO_POOL_NOT_FOUND);
@@ -567,8 +588,9 @@ void TopologyManager::GetPool(const GetPoolRequest* request,
   response->set_allocated_poolinfo(info);
 }
 
-void TopologyManager::ListPool(const ListPoolRequest* request,
-                               ListPoolResponse* response) {
+void TopologyManager::ListPool(
+    const pb::mds::topology::ListPoolRequest* request,
+    pb::mds::topology::ListPoolResponse* response) {
   (void)request;
   response->set_statuscode(TopoStatusCode::TOPO_OK);
   auto poolList = topology_->GetPoolInCluster();
@@ -592,9 +614,9 @@ void TopologyManager::ListPool(const ListPoolRequest* request,
 }
 
 TopoStatusCode TopologyManager::CreatePartitionsAndGetMinPartition(
-    FsIdType fsId, PartitionInfo* partition) {
-  CreatePartitionRequest request;
-  CreatePartitionResponse response;
+    FsIdType fsId, pb::common::PartitionInfo* partition) {
+  pb::mds::topology::CreatePartitionRequest request;
+  pb::mds::topology::CreatePartitionResponse response;
   request.set_fsid(fsId);
   request.set_count(option_.createPartitionNumber);
   CreatePartitions(&request, &response);
@@ -623,7 +645,8 @@ TopoStatusCode TopologyManager::CreatePartitionsAndGetMinPartition(
 }
 
 TopoStatusCode TopologyManager::CreatePartitionOnCopyset(
-    FsIdType fsId, const CopySetInfo& copyset, PartitionInfo* info) {
+    FsIdType fsId, const CopySetInfo& copyset,
+    pb::common::PartitionInfo* info) {
   // get copyset members
   std::set<MetaServerIdType> copysetMembers = copyset.GetCopySetMembers();
   std::set<std::string> copysetMemberAddr;
@@ -679,13 +702,14 @@ TopoStatusCode TopologyManager::CreatePartitionOnCopyset(
   info->set_start(idStart);
   info->set_end(idEnd);
   info->set_txid(0);
-  info->set_status(PartitionStatus::READWRITE);
+  info->set_status(pb::common::PartitionStatus::READWRITE);
 
   return TopoStatusCode::TOPO_OK;
 }
 
-void TopologyManager::CreatePartitions(const CreatePartitionRequest* request,
-                                       CreatePartitionResponse* response) {
+void TopologyManager::CreatePartitions(
+    const pb::mds::topology::CreatePartitionRequest* request,
+    pb::mds::topology::CreatePartitionResponse* response) {
   FsIdType fsId = request->fsid();
   uint32_t count = request->count();
   auto partitionInfoList = response->mutable_partitioninfolist();
@@ -723,7 +747,7 @@ void TopologyManager::CreatePartitions(const CreatePartitionRequest* request,
     int32_t tempCount = std::min(copysetNum, count - partitionInfoList->size());
 
     for (int i = 0; i < tempCount; i++) {
-      PartitionInfo* info = partitionInfoList->Add();
+      pb::common::PartitionInfo* info = partitionInfoList->Add();
       TopoStatusCode ret = CreatePartitionOnCopyset(fsId, copysetVec[i], info);
       if (ret != TopoStatusCode::TOPO_OK) {
         LOG(ERROR) << "create partition on copyset fail, fsId = " << fsId
@@ -736,10 +760,10 @@ void TopologyManager::CreatePartitions(const CreatePartitionRequest* request,
   }
 }
 
-TopoStatusCode TopologyManager::DeletePartition(uint32_t partitionId) {
-  DeletePartitionRequest request;
-  DeletePartitionResponse response;
-  request.set_partitionid(partitionId);
+TopoStatusCode TopologyManager::DeletePartition(uint32_t partition_id) {
+  pb::mds::topology::DeletePartitionRequest request;
+  pb::mds::topology::DeletePartitionResponse response;
+  request.set_partitionid(partition_id);
   DeletePartition(&request, &response);
 
   if (TopoStatusCode::TOPO_OK != response.statuscode()) {
@@ -749,8 +773,9 @@ TopoStatusCode TopologyManager::DeletePartition(uint32_t partitionId) {
   return TopoStatusCode::TOPO_OK;
 }
 
-void TopologyManager::DeletePartition(const DeletePartitionRequest* request,
-                                      DeletePartitionResponse* response) {
+void TopologyManager::DeletePartition(
+    const pb::mds::topology::DeletePartitionRequest* request,
+    pb::mds::topology::DeletePartitionResponse* response) {
   uint32_t partitionId = request->partitionid();
   Partition partition;
   if (!topology_->GetPartition(partitionId, &partition)) {
@@ -759,7 +784,7 @@ void TopologyManager::DeletePartition(const DeletePartitionRequest* request,
     return;
   }
 
-  if (partition.GetStatus() == PartitionStatus::DELETING) {
+  if (partition.GetStatus() == pb::common::PartitionStatus::DELETING) {
     LOG(WARNING) << "Delete partition which is deleting already, id =  "
                  << partitionId;
     response->set_statuscode(TopoStatusCode::TOPO_OK);
@@ -782,8 +807,8 @@ void TopologyManager::DeletePartition(const DeletePartitionRequest* request,
   auto fret = metaserverClient_->DeletePartition(poolId, copysetId, partitionId,
                                                  copysetMemberAddr);
   if (fret == FSStatusCode::OK || fret == FSStatusCode::UNDER_DELETING) {
-    ret = topology_->UpdatePartitionStatus(partitionId,
-                                           PartitionStatus::DELETING);
+    ret = topology_->UpdatePartitionStatus(
+        partitionId, pb::common::PartitionStatus::DELETING);
     if (ret != TopoStatusCode::TOPO_OK) {
       LOG(ERROR) << "DeletePartition failed, partitionId = " << partitionId
                  << ", ret = " << TopoStatusCode_Name(ret);
@@ -900,16 +925,17 @@ TopoStatusCode TopologyManager::CreateCopyset(
 }
 
 TopoStatusCode TopologyManager::CommitTxId(
-    const std::vector<PartitionTxId>& txIds) {
+    const std::vector<pb::mds::topology::PartitionTxId>& txIds) {
   if (txIds.size() == 0) {
     return TopoStatusCode::TOPO_OK;
   }
   return topology_->UpdatePartitionTxIds(txIds);
 }
 
-void TopologyManager::CommitTx(const CommitTxRequest* request,
-                               CommitTxResponse* response) {
-  std::vector<PartitionTxId> txIds;
+void TopologyManager::CommitTx(
+    const pb::mds::topology::CommitTxRequest* request,
+    pb::mds::topology::CommitTxResponse* response) {
+  std::vector<pb::mds::topology::PartitionTxId> txIds;
   for (int i = 0; i < request->partitiontxids_size(); i++) {
     txIds.emplace_back(request->partitiontxids(i));
   }
@@ -918,8 +944,8 @@ void TopologyManager::CommitTx(const CommitTxRequest* request,
 }
 
 void TopologyManager::GetMetaServerListInCopysets(
-    const GetMetaServerListInCopySetsRequest* request,
-    GetMetaServerListInCopySetsResponse* response) {
+    const pb::mds::topology::GetMetaServerListInCopySetsRequest* request,
+    pb::mds::topology::GetMetaServerListInCopySetsResponse* response) {
   PoolIdType poolId = request->poolid();
   auto csIds = request->copysetid();
   response->set_statuscode(TopoStatusCode::TOPO_OK);
@@ -927,12 +953,13 @@ void TopologyManager::GetMetaServerListInCopysets(
     CopySetKey key(poolId, id);
     CopySetInfo info;
     if (topology_->GetCopySet(key, &info)) {
-      CopySetServerInfo* serverInfo = response->add_csinfo();
+      pb::mds::topology::CopySetServerInfo* serverInfo = response->add_csinfo();
       serverInfo->set_copysetid(id);
       for (auto metaserverId : info.GetCopySetMembers()) {
         MetaServer metaserver;
         if (topology_->GetMetaServer(metaserverId, &metaserver)) {
-          MetaServerLocation* location = serverInfo->add_cslocs();
+          pb::mds::topology::MetaServerLocation* location =
+              serverInfo->add_cslocs();
           location->set_metaserverid(metaserver.GetId());
           location->set_internalip(metaserver.GetInternalIp());
           location->set_internalport(metaserver.GetInternalPort());
@@ -953,15 +980,16 @@ void TopologyManager::GetMetaServerListInCopysets(
   }
 }
 
-void TopologyManager::ListPartition(const ListPartitionRequest* request,
-                                    ListPartitionResponse* response) {
+void TopologyManager::ListPartition(
+    const pb::mds::topology::ListPartitionRequest* request,
+    pb::mds::topology::ListPartitionResponse* response) {
   FsIdType fsId = request->fsid();
   auto partitionInfoList = response->mutable_partitioninfolist();
   response->set_statuscode(TopoStatusCode::TOPO_OK);
   std::list<Partition> partitions = topology_->GetPartitionOfFs(fsId);
 
   for (auto partition : partitions) {
-    PartitionInfo* info = partitionInfoList->Add();
+    pb::common::PartitionInfo* info = partitionInfoList->Add();
     info->set_fsid(partition.GetFsId());
     info->set_poolid(partition.GetPoolId());
     info->set_copysetid(partition.GetCopySetId());
@@ -979,13 +1007,13 @@ void TopologyManager::ListPartition(const ListPartitionRequest* request,
 }
 
 void TopologyManager::GetLatestPartitionsTxId(
-    const std::vector<PartitionTxId>& txIds,
-    std::vector<PartitionTxId>* needUpdate) {
+    const std::vector<pb::mds::topology::PartitionTxId>& txIds,
+    std::vector<pb::mds::topology::PartitionTxId>* needUpdate) {
   for (auto iter = txIds.begin(); iter != txIds.end(); iter++) {
     Partition out;
     topology_->GetPartition(iter->partitionid(), &out);
     if (out.GetTxId() != iter->txid()) {
-      PartitionTxId tmp;
+      pb::mds::topology::PartitionTxId tmp;
       tmp.set_partitionid(iter->partitionid());
       tmp.set_txid(out.GetTxId());
       needUpdate->push_back(std::move(tmp));
@@ -993,8 +1021,8 @@ void TopologyManager::GetLatestPartitionsTxId(
   }
 }
 
-void TopologyManager::ListPartitionOfFs(FsIdType fsId,
-                                        std::list<PartitionInfo>* list) {
+void TopologyManager::ListPartitionOfFs(
+    FsIdType fsId, std::list<pb::common::PartitionInfo>* list) {
   for (auto& partition : topology_->GetPartitionOfFs(fsId)) {
     list->emplace_back(partition.ToPartitionInfo());
   }
@@ -1003,20 +1031,20 @@ void TopologyManager::ListPartitionOfFs(FsIdType fsId,
 }
 
 void TopologyManager::GetCopysetOfPartition(
-    const GetCopysetOfPartitionRequest* request,
-    GetCopysetOfPartitionResponse* response) {
+    const pb::mds::topology::GetCopysetOfPartitionRequest* request,
+    pb::mds::topology::GetCopysetOfPartitionResponse* response) {
   for (int i = 0; i < request->partitionid_size(); i++) {
     PartitionIdType pId = request->partitionid(i);
     CopySetInfo copyset;
     if (topology_->GetCopysetOfPartition(pId, &copyset)) {
-      Copyset cs;
+      pb::mds::topology::Copyset cs;
       cs.set_poolid(copyset.GetPoolId());
       cs.set_copysetid(copyset.GetId());
       // get coptset members
       for (auto msId : copyset.GetCopySetMembers()) {
         MetaServer ms;
         if (topology_->GetMetaServer(msId, &ms)) {
-          common::Peer* peer = cs.add_peers();
+          pb::common::Peer* peer = cs.add_peers();
           peer->set_id(ms.GetId());
           peer->set_address(
               BuildPeerIdWithIpPort(ms.GetInternalIp(), ms.GetInternalPort()));
@@ -1064,22 +1092,22 @@ TopoStatusCode TopologyManager::GetCopysetMembers(
   return TopoStatusCode::TOPO_OK;
 }
 
-void TopologyManager::GetCopysetInfo(const uint32_t& poolId,
-                                     const uint32_t& copysetId,
-                                     CopysetValue* copysetValue) {
+void TopologyManager::GetCopysetInfo(
+    const uint32_t& poolId, const uint32_t& copysetId,
+    pb::mds::topology::CopysetValue* copysetValue) {
   // default is ok, when find error set to error code
   copysetValue->set_statuscode(TopoStatusCode::TOPO_OK);
   CopySetKey key(poolId, copysetId);
   CopySetInfo info;
   if (topology_->GetCopySet(key, &info)) {
-    auto valueCopysetInfo = new dingofs::mds::heartbeat::CopySetInfo();
+    auto* valueCopysetInfo = new pb::mds::heartbeat::CopySetInfo();
     valueCopysetInfo->set_poolid(info.GetPoolId());
     valueCopysetInfo->set_copysetid(info.GetId());
     // set peers
     for (auto const& msId : info.GetCopySetMembers()) {
       MetaServer ms;
       if (topology_->GetMetaServer(msId, &ms)) {
-        common::Peer* peer = valueCopysetInfo->add_peers();
+        pb::common::Peer* peer = valueCopysetInfo->add_peers();
         peer->set_id(ms.GetId());
         peer->set_address(
             BuildPeerIdWithIpPort(ms.GetInternalIp(), ms.GetInternalPort()));
@@ -1094,7 +1122,7 @@ void TopologyManager::GetCopysetInfo(const uint32_t& poolId,
     // set leader peer
     auto msId = info.GetLeader();
     MetaServer ms;
-    auto peer = new common::Peer();
+    auto* peer = new pb::common::Peer();
     if (topology_->GetMetaServer(msId, &ms)) {
       peer->set_id(ms.GetId());
       peer->set_address(
@@ -1140,27 +1168,29 @@ void TopologyManager::GetCopysetInfo(const uint32_t& poolId,
   }
 }
 
-void TopologyManager::GetCopysetsInfo(const GetCopysetsInfoRequest* request,
-                                      GetCopysetsInfoResponse* response) {
+void TopologyManager::GetCopysetsInfo(
+    const pb::mds::topology::GetCopysetsInfoRequest* request,
+    pb::mds::topology::GetCopysetsInfoResponse* response) {
   for (auto const& i : request->copysetkeys()) {
     GetCopysetInfo(i.poolid(), i.copysetid(), response->add_copysetvalues());
   }
 }
 
-void TopologyManager::ListCopysetsInfo(ListCopysetInfoResponse* response) {
+void TopologyManager::ListCopysetsInfo(
+    pb::mds::topology::ListCopysetInfoResponse* response) {
   auto cpysetInfoVec = topology_->ListCopysetInfo();
   for (auto const& i : cpysetInfoVec) {
-    auto copysetValue = response->add_copysetvalues();
+    auto* copysetValue = response->add_copysetvalues();
     // default is ok, when find error set to error code
     copysetValue->set_statuscode(TopoStatusCode::TOPO_OK);
-    auto valueCopysetInfo = new dingofs::mds::heartbeat::CopySetInfo();
-    valueCopysetInfo->set_poolid(i.GetPoolId());
-    valueCopysetInfo->set_copysetid(i.GetId());
+    auto* value_copyset_info = new pb::mds::heartbeat::CopySetInfo();
+    value_copyset_info->set_poolid(i.GetPoolId());
+    value_copyset_info->set_copysetid(i.GetId());
     // set peers
     for (auto const& msId : i.GetCopySetMembers()) {
       MetaServer ms;
       if (topology_->GetMetaServer(msId, &ms)) {
-        common::Peer* peer = valueCopysetInfo->add_peers();
+        pb::common::Peer* peer = value_copyset_info->add_peers();
         peer->set_id(ms.GetId());
         peer->set_address(
             BuildPeerIdWithIpPort(ms.GetInternalIp(), ms.GetInternalPort()));
@@ -1171,12 +1201,12 @@ void TopologyManager::ListCopysetsInfo(ListCopysetInfoResponse* response) {
         copysetValue->set_statuscode(TopoStatusCode::TOPO_METASERVER_NOT_FOUND);
       }
     }
-    valueCopysetInfo->set_epoch(i.GetEpoch());
+    value_copyset_info->set_epoch(i.GetEpoch());
 
     // set leader peer
     auto msId = i.GetLeader();
     MetaServer ms;
-    auto peer = new common::Peer();
+    auto* peer = new pb::common::Peer();
     if (topology_->GetMetaServer(msId, &ms)) {
       peer->set_id(ms.GetId());
       peer->set_address(
@@ -1187,7 +1217,7 @@ void TopologyManager::ListCopysetsInfo(ListCopysetInfoResponse* response) {
                    << " has metaServer error, metaserverId = " << msId;
       copysetValue->set_statuscode(TopoStatusCode::TOPO_METASERVER_NOT_FOUND);
     }
-    valueCopysetInfo->set_allocated_leaderpeer(peer);
+    value_copyset_info->set_allocated_leaderpeer(peer);
 
     // set partitioninfolist
     for (auto const& j : i.GetPartitionIds()) {
@@ -1197,22 +1227,23 @@ void TopologyManager::ListCopysetsInfo(ListCopysetInfoResponse* response) {
                      << " has pattition error, partitionId=" << j;
         copysetValue->set_statuscode(TopoStatusCode::TOPO_PARTITION_NOT_FOUND);
       } else {
-        *valueCopysetInfo->add_partitioninfolist() =
-            std::move(common::PartitionInfo(tmp));
+        *value_copyset_info->add_partitioninfolist() =
+            std::move(pb::common::PartitionInfo(tmp));
       }
     }
 
-    copysetValue->set_allocated_copysetinfo(valueCopysetInfo);
+    copysetValue->set_allocated_copysetinfo(value_copyset_info);
   }
 }
 
 void TopologyManager::GetMetaServersSpace(
-    ::google::protobuf::RepeatedPtrField<dingofs::mds::topology::MetadataUsage>*
+    ::google::protobuf::RepeatedPtrField<pb::mds::topology::MetadataUsage>*
         spaces) {
   topology_->GetMetaServersSpace(spaces);
 }
 
-void TopologyManager::GetTopology(ListTopologyResponse* response) {
+void TopologyManager::GetTopology(
+    pb::mds::topology::ListTopologyResponse* response) {
   // cluster info
   ClusterInformation info;
   if (topology_->GetClusterInfo(&info)) {
@@ -1227,7 +1258,7 @@ void TopologyManager::GetTopology(ListTopologyResponse* response) {
   ListMetaserverOfCluster(response->mutable_metaservers());
 }
 
-void TopologyManager::ListZone(ListZoneResponse* response) {
+void TopologyManager::ListZone(pb::mds::topology::ListZoneResponse* response) {
   response->set_statuscode(TopoStatusCode::TOPO_OK);
   auto zoneIdVec = topology_->GetZoneInCluster();
   for (auto const& zoneId : zoneIdVec) {
@@ -1246,7 +1277,8 @@ void TopologyManager::ListZone(ListZoneResponse* response) {
   }
 }
 
-void TopologyManager::ListServer(ListServerResponse* response) {
+void TopologyManager::ListServer(
+    pb::mds::topology::ListServerResponse* response) {
   response->set_statuscode(TopoStatusCode::TOPO_OK);
   auto serverIdVec = topology_->GetServerInCluster();
   for (auto const& serverId : serverIdVec) {
@@ -1271,13 +1303,14 @@ void TopologyManager::ListServer(ListServerResponse* response) {
 }
 
 void TopologyManager::ListMetaserverOfCluster(
-    ListMetaServerResponse* response) {
+    pb::mds::topology::ListMetaServerResponse* response) {
   response->set_statuscode(TopoStatusCode::TOPO_OK);
   auto metaserverIdList = topology_->GetMetaServerInCluster();
   for (auto const& id : metaserverIdList) {
     MetaServer ms;
     if (topology_->GetMetaServer(id, &ms)) {
-      MetaServerInfo* msInfo = response->add_metaserverinfos();
+      pb::mds::topology::MetaServerInfo* msInfo =
+          response->add_metaserverinfos();
       msInfo->set_metaserverid(ms.GetId());
       msInfo->set_hostname(ms.GetHostName());
       msInfo->set_internalip(ms.GetInternalIp());
@@ -1297,13 +1330,13 @@ void TopologyManager::ListMetaserverOfCluster(
 }
 
 TopoStatusCode TopologyManager::UpdatePartitionStatus(
-    PartitionIdType partition_id, PartitionStatus status) {
+    PartitionIdType partition_id, pb::common::PartitionStatus status) {
   return topology_->UpdatePartitionStatus(partition_id, status);
 }
 
 void TopologyManager::RegistMemcacheCluster(
-    const RegistMemcacheClusterRequest* request,
-    RegistMemcacheClusterResponse* response) {
+    const pb::mds::topology::RegistMemcacheClusterRequest* request,
+    pb::mds::topology::RegistMemcacheClusterResponse* response) {
   response->set_statuscode(TopoStatusCode::TOPO_OK);
   // register memcacheCluster as server
   WriteLockGuard lock(registMemcacheClusterMutex_);
@@ -1354,7 +1387,7 @@ void TopologyManager::RegistMemcacheCluster(
 }
 
 void TopologyManager::ListMemcacheCluster(
-    ListMemcacheClusterResponse* response) {
+    pb::mds::topology::ListMemcacheClusterResponse* response) {
   std::list<MemcacheCluster> cluster_list = topology_->ListMemcacheClusters();
   if (!cluster_list.empty()) {
     response->set_statuscode(TopoStatusCode::TOPO_OK);
@@ -1367,8 +1400,8 @@ void TopologyManager::ListMemcacheCluster(
 }
 
 void TopologyManager::AllocOrGetMemcacheCluster(
-    const AllocOrGetMemcacheClusterRequest* request,
-    AllocOrGetMemcacheClusterResponse* response) {
+    const pb::mds::topology::AllocOrGetMemcacheClusterRequest* request,
+    pb::mds::topology::AllocOrGetMemcacheClusterResponse* response) {
   auto status_code = topology_->AllocOrGetMemcacheCluster(
       request->fsid(), response->mutable_cluster());
   response->set_statuscode(status_code);

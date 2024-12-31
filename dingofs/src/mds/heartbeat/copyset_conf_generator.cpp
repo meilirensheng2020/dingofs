@@ -29,17 +29,18 @@
 #include "dingofs/proto/heartbeat.pb.h"
 #include "dingofs/src/mds/topology/deal_peerid.h"
 
-using ::dingofs::mds::topology::TopoStatusCode;
-using std::chrono::milliseconds;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
+
+using mds::topology::TopoStatusCode;
+using std::chrono::milliseconds;
+
 bool CopysetConfGenerator::GenCopysetConf(
     MetaServerIdType report_id,
-    const ::dingofs::mds::topology::CopySetInfo& report_copy_set_info,
-    const ::dingofs::mds::heartbeat::ConfigChangeInfo& config_ch_info,
-    ::dingofs::mds::heartbeat::CopySetConf* copyset_conf) {
+    const mds::topology::CopySetInfo& report_copy_set_info,
+    const mds::heartbeat::ConfigChangeInfo& config_ch_info,
+    pb::mds::heartbeat::CopySetConf* copyset_conf) {
   // if copyset is creating return false directly
   if (topo_->IsCopysetCreating(report_copy_set_info.GetCopySetKey())) {
     return false;
@@ -48,7 +49,7 @@ bool CopysetConfGenerator::GenCopysetConf(
   // reported copyset not exist in topology
   // in this case an empty configuration will be sent to metaserver
   // to delete it
-  ::dingofs::mds::topology::CopySetInfo record_copy_set_info;
+  mds::topology::CopySetInfo record_copy_set_info;
   if (!topo_->GetCopySet(report_copy_set_info.GetCopySetKey(),
                          &record_copy_set_info)) {
     LOG(ERROR) << "heartbeatManager receive copyset("
@@ -65,7 +66,7 @@ bool CopysetConfGenerator::GenCopysetConf(
     MetaServerIdType candidate = LeaderGenCopysetConf(
         report_copy_set_info, config_ch_info, copyset_conf);
     // new config to dispatch available, update candidate to topology
-    if (candidate != ::dingofs::mds::topology::UNINITIALIZE_ID) {
+    if (candidate != mds::topology::UNINITIALIZE_ID) {
       auto new_copy_set_info = report_copy_set_info;
       new_copy_set_info.SetCandidate(candidate);
       TopoStatusCode update_code = topo_->UpdateCopySetTopo(new_copy_set_info);
@@ -91,9 +92,9 @@ bool CopysetConfGenerator::GenCopysetConf(
 }
 
 MetaServerIdType CopysetConfGenerator::LeaderGenCopysetConf(
-    const ::dingofs::mds::topology::CopySetInfo& copy_set_info,
-    const ::dingofs::mds::heartbeat::ConfigChangeInfo& config_ch_info,
-    ::dingofs::mds::heartbeat::CopySetConf* copyset_conf) {
+    const mds::topology::CopySetInfo& copy_set_info,
+    const mds::heartbeat::ConfigChangeInfo& config_ch_info,
+    pb::mds::heartbeat::CopySetConf* copyset_conf) {
   // pass data to scheduler
   return coordinator_->CopySetHeartbeat(copy_set_info, config_ch_info,
                                         copyset_conf);
@@ -101,9 +102,9 @@ MetaServerIdType CopysetConfGenerator::LeaderGenCopysetConf(
 
 bool CopysetConfGenerator::FollowerGenCopysetConf(
     MetaServerIdType report_id,
-    const ::dingofs::mds::topology::CopySetInfo& report_copy_set_info,
-    const ::dingofs::mds::topology::CopySetInfo& record_copy_set_info,
-    ::dingofs::mds::heartbeat::CopySetConf* copyset_conf) {
+    const mds::topology::CopySetInfo& report_copy_set_info,
+    const mds::topology::CopySetInfo& record_copy_set_info,
+    pb::mds::heartbeat::CopySetConf* copyset_conf) {
   // if there's no candidate on a copyset, and epoch on MDS is larger or equal
   // to what non-leader copy report,
   // copy(ies) can be deleted according to the configuration of MDS
@@ -143,7 +144,7 @@ bool CopysetConfGenerator::FollowerGenCopysetConf(
       if (candidate_addr.empty()) {
         return false;
       }
-      auto* replica = new ::dingofs::common::Peer();
+      auto* replica = new pb::common::Peer();
       replica->set_id(record_copy_set_info.GetCandidate());
       replica->set_address(candidate_addr);
       // memory of replica will be free by proto

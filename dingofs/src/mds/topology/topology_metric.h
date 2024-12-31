@@ -37,18 +37,17 @@
 #include "dingofs/src/mds/topology/topology.h"
 #include "dingofs/src/utils/interruptible_sleeper.h"
 
-using ::dingofs::utils::InterruptibleSleeper;
-
 namespace dingofs {
 namespace mds {
 namespace topology {
 
-using ::dingofs::metaserver::FsFileType;
-using ::dingofs::metaserver::FsFileType_IsValid;
-using ::dingofs::metaserver::FsFileType_MAX;
-using ::dingofs::metaserver::FsFileType_MIN;
-using ::dingofs::metaserver::FsFileType_Name;
+using pb::metaserver::FsFileType;
+using pb::metaserver::FsFileType_IsValid;
+using pb::metaserver::FsFileType_MAX;
+using pb::metaserver::FsFileType_MIN;
+using pb::metaserver::FsFileType_Name;
 
+using utils::InterruptibleSleeper;
 struct MetaServerMetric {
   const std::string kTopologyMetaServerMetricPrefix =
       "topology_metric_metaserver_id_";

@@ -29,46 +29,36 @@
 #include <utility>
 #include <vector>
 
-#include "dingofs/proto/common.pb.h"
 #include "dingofs/src/metaserver/s3compact.h"
 #include "dingofs/src/metaserver/s3compact_worker.h"
 #include "dingofs/src/metaserver/s3infocache.h"
 #include "dingofs/src/utils/configuration.h"
-#include "dingofs/src/utils/interruptible_sleeper.h"
-#include "dingofs/src/aws/s3_adapter.h"
 
 namespace dingofs {
 namespace metaserver {
-
-using dingofs::utils::Configuration;
-using dingofs::utils::InterruptibleSleeper;
-using dingofs::utils::RWLock;
-using dingofs::aws::S3Adapter;
-using dingofs::aws::S3AdapterOption;
-using dingofs::common::S3Info;
 
 class S3AdapterManager {
  private:
   std::mutex mtx_;
   bool inited_;
   uint64_t size_;  // same size as worker thread count
-  std::vector<std::unique_ptr<S3Adapter>> s3adapters_;
+  std::vector<std::unique_ptr<aws::S3Adapter>> s3adapters_;
   std::vector<bool> used_;
-  S3AdapterOption opts_;
+  aws::S3AdapterOption opts_;
 
  public:
-  explicit S3AdapterManager(uint64_t size, const S3AdapterOption& opts)
+  explicit S3AdapterManager(uint64_t size, const aws::S3AdapterOption& opts)
       : inited_(false), size_(size), opts_(opts) {}
   virtual ~S3AdapterManager() = default;
   virtual void Init();
   virtual void Deinit();
-  virtual std::pair<uint64_t, S3Adapter*> GetS3Adapter();
+  virtual std::pair<uint64_t, aws::S3Adapter*> GetS3Adapter();
   virtual void ReleaseS3Adapter(uint64_t index);
-  virtual S3AdapterOption GetBasicS3AdapterOption();
+  virtual aws::S3AdapterOption GetBasicS3AdapterOption();
 };
 
 struct S3CompactWorkQueueOption {
-  S3AdapterOption s3opts;
+  aws::S3AdapterOption s3opts;
   bool enable;
   uint64_t threadNum;
   uint64_t fragmentThreshold;
@@ -81,7 +71,7 @@ struct S3CompactWorkQueueOption {
   uint64_t s3ReadMaxRetry;
   uint64_t s3ReadRetryInterval;
 
-  void Init(std::shared_ptr<Configuration> conf);
+  void Init(std::shared_ptr<utils::Configuration> conf);
 };
 
 class S3CompactManager {
@@ -106,7 +96,7 @@ class S3CompactManager {
     return instance_;
   }
 
-  void Init(std::shared_ptr<Configuration> conf);
+  void Init(std::shared_ptr<utils::Configuration> conf);
   void Register(S3Compact s3compact);
   void Cancel(uint32_t partitionId);
 

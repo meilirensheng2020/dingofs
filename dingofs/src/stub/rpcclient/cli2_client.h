@@ -35,26 +35,21 @@
 #include "dingofs/src/stub/common/common.h"
 #include "dingofs/src/stub/common/metacache_struct.h"
 
-using ::dingofs::stub::common::CopysetID;
-using ::dingofs::stub::common::CopysetPeerInfo;
-using ::dingofs::stub::common::LogicPoolID;
-using ::dingofs::stub::common::MetaserverID;
-using ::dingofs::stub::common::PeerAddr;
-
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
-using PeerInfoList = std::vector<CopysetPeerInfo<MetaserverID>>;
+using PeerInfoList = std::vector<common::CopysetPeerInfo<common::MetaserverID>>;
 using Task2 = std::function<void(brpc::Channel* channel)>;
 
 class GetLeaderTaskExecutor;
 struct Cli2TaskContext {
-  LogicPoolID poolID;
-  CopysetID copysetID;
+  common::LogicPoolID poolID;
+  common::CopysetID copysetID;
   std::string peerAddr;
 
-  Cli2TaskContext(const LogicPoolID& poolid, const CopysetID& copysetid,
+  Cli2TaskContext(const common::LogicPoolID& poolid,
+                  const common::CopysetID& copysetid,
                   const std::string& peeraddr)
       : poolID(poolid), copysetID(copysetid), peerAddr(peeraddr) {}
 };
@@ -68,11 +63,10 @@ class Cli2Closure : public google::protobuf::Closure {
 
   void Run() override;
 
- public:
   Cli2TaskContext taskContext;
   std::shared_ptr<GetLeaderTaskExecutor> excutor;
 
-  dingofs::metaserver::copyset::GetLeaderResponse2 response;
+  dingofs::pb::metaserver::copyset::GetLeaderResponse2 response;
   brpc::Controller cntl;
 };
 
@@ -88,10 +82,11 @@ class Cli2Client {
   Cli2Client() {}
   virtual ~Cli2Client() {}
 
-  virtual bool GetLeader(const LogicPoolID& poolID, const CopysetID& copysetID,
+  virtual bool GetLeader(const common::LogicPoolID& poolID,
+                         const common::CopysetID& copysetID,
                          const PeerInfoList& peerInfoList,
-                         int16_t currentLeaderIndex, PeerAddr* peerAddr,
-                         MetaserverID* metaserverID) = 0;
+                         int16_t currentLeaderIndex, common::PeerAddr* peerAddr,
+                         common::MetaserverID* metaServerID) = 0;
 };
 
 class GetLeaderTaskExecutor {
@@ -115,15 +110,16 @@ class Cli2ClientImpl : public Cli2Client {
   Cli2ClientImpl() = default;
   explicit Cli2ClientImpl(const Cli2ClientImplOption& opt) : opt_(opt) {}
 
-  bool GetLeader(const LogicPoolID& pooID, const CopysetID& copysetID,
+  bool GetLeader(const common::LogicPoolID& pooID,
+                 const common::CopysetID& copysetID,
                  const PeerInfoList& peerInfoList, int16_t currentLeaderIndex,
-                 PeerAddr* peerAddr, MetaserverID* metaserverID) override;
+                 common::PeerAddr* peerAddr,
+                 common::MetaserverID* metaServerID) override;
 
  private:
-  bool DoGetLeader(Cli2Closure* done, PeerAddr* peerAddr,
-                   MetaserverID* metaserverID);
+  bool DoGetLeader(Cli2Closure* done, common::PeerAddr* peerAddr,
+                   common::MetaserverID* metaServerID);
 
- private:
   Cli2ClientImplOption opt_;
 };
 

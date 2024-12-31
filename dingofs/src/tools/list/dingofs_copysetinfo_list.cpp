@@ -39,11 +39,11 @@ int CopysetInfoListTool::Init() {
     return -1;
   }
   dingofs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
-  dingofs::mds::topology::ListCopysetInfoRequest request;
+  pb::mds::topology::ListCopysetInfoRequest request;
   AddRequest(request);
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::topology::TopologyService_Stub::ListCopysetInfo,
+      std::bind(&pb::mds::topology::TopologyService_Stub::ListCopysetInfo,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
   return 0;

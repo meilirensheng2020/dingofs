@@ -23,6 +23,8 @@
 #include "dingofs/src/metaserver/trash.h"
 
 #include "dingofs/proto/mds.pb.h"
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/metaserver/storage/converter.h"
 #include "dingofs/src/utils/timeutility.h"
 
 using ::dingofs::utils::TimeUtility;
@@ -30,8 +32,14 @@ using ::dingofs::utils::TimeUtility;
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::mds::FsInfo;
-using ::dingofs::mds::FSStatusCode;
+using pb::mds::FsInfo;
+using pb::mds::FSStatusCode;
+using pb::metaserver::FsFileType;
+using pb::metaserver::Inode;
+using pb::metaserver::MetaStatusCode;
+using storage::Key4Inode;
+using utils::Configuration;
+using utils::LockGuard;
 
 void TrashOption::InitTrashOptionFromConf(std::shared_ptr<Configuration> conf) {
   conf->GetValueFatalIfFail("trash.scanPeriodSec", &scanPeriodSec);

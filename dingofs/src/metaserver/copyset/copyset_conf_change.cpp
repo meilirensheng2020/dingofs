@@ -33,7 +33,7 @@ void OnConfChangeDone::Run() {
 
   LOG_IF(WARNING, !status().ok())
       << "Copyset: " << node_->Name() << " "
-      << dingofs::mds::heartbeat::ConfigChangeType_Name(confChange_.type)
+      << pb::mds::heartbeat::ConfigChangeType_Name(confChange_.type)
       << " failed";
 
   if (done_) {

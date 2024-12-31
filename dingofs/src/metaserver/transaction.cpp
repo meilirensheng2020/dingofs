@@ -30,11 +30,14 @@ namespace metaserver {
 using dingofs::utils::ReadLockGuard;
 using dingofs::utils::WriteLockGuard;
 
+using pb::metaserver::Dentry;
+using pb::metaserver::MetaStatusCode;
+
 #define FOR_EACH_DENTRY(action)                                                \
   do {                                                                         \
     for (const auto& dentry : dentrys_) {                                      \
       auto rc = storage_->HandleTx(DentryStorage::TX_OP_TYPE::action, dentry); \
-      if (rc != MetaStatusCode::OK) {                                          \
+      if (rc != pb::metaserver::MetaStatusCode::OK) {                          \
         return false;                                                          \
       }                                                                        \
     }                                                                          \

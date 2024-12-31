@@ -99,23 +99,23 @@ void Coordinator::Stop() {
 }
 
 MetaServerIdType Coordinator::CopySetHeartbeat(
-    const ::dingofs::mds::topology::CopySetInfo& origin_info,
-    const ::dingofs::mds::heartbeat::ConfigChangeInfo& config_ch_info,
-    ::dingofs::mds::heartbeat::CopySetConf* out) {
+    const mds::topology::CopySetInfo& origin_info,
+    const pb::mds::heartbeat::ConfigChangeInfo& config_ch_info,
+    pb::mds::heartbeat::CopySetConf* out) {
   // transfer copyset info format from topology to scheduler
   CopySetInfo info;
   if (!topo_->CopySetFromTopoToSchedule(origin_info, &info)) {
     LOG(ERROR) << "coordinator cannot convert copyset("
                << origin_info.GetPoolId() << "," << origin_info.GetId()
                << ") from heartbeat topo form to schedule form error";
-    return ::dingofs::mds::topology::UNINITIALIZE_ID;
+    return mds::topology::UNINITIALIZE_ID;
   }
   info.configChangeInfo = config_ch_info;
 
   // check if there's any operator on specified copyset
   Operator op;
   if (!opController_->GetOperatorById(info.id, &op)) {
-    return ::dingofs::mds::topology::UNINITIALIZE_ID;
+    return mds::topology::UNINITIALIZE_ID;
   }
   LOG(INFO) << "find operator on" << info.CopySetInfoStr()
             << "), operator: " << op.OpToString();
@@ -137,7 +137,7 @@ MetaServerIdType Coordinator::CopySetHeartbeat(
       LOG(WARNING) << "Operator " << op.OpToString() << "on "
                    << info.CopySetInfoStr() << " is stale, remove operator";
       opController_->RemoveOperator(info.id);
-      return ::dingofs::mds::topology::UNINITIALIZE_ID;
+      return mds::topology::UNINITIALIZE_ID;
     }
 
     // the operator should not be dispacthed if the candidate
@@ -147,7 +147,7 @@ MetaServerIdType Coordinator::CopySetHeartbeat(
       LOG(ERROR) << "coordinator can not get metaServer "
                  << res.configChangeItem << " from topology";
       opController_->RemoveOperator(info.id);
-      return ::dingofs::mds::topology::UNINITIALIZE_ID;
+      return mds::topology::UNINITIALIZE_ID;
     }
     bool need_check_type = (res.type == ConfigChangeType::ADD_PEER ||
                             res.type == ConfigChangeType::TRANSFER_LEADER ||
@@ -156,7 +156,7 @@ MetaServerIdType Coordinator::CopySetHeartbeat(
       LOG(WARNING) << "candidate metaserver " << meta_server.info.id
                    << " is offline, abort config change";
       opController_->RemoveOperator(info.id);
-      return ::dingofs::mds::topology::UNINITIALIZE_ID;
+      return mds::topology::UNINITIALIZE_ID;
     }
 
     // build the copysetConf need to be returned in heartbeat
@@ -165,7 +165,7 @@ MetaServerIdType Coordinator::CopySetHeartbeat(
       LOG(ERROR) << "build copyset conf for " << info.CopySetInfoStr()
                  << ") fail, remove operator";
       opController_->RemoveOperator(info.id);
-      return ::dingofs::mds::topology::UNINITIALIZE_ID;
+      return mds::topology::UNINITIALIZE_ID;
     }
 
     LOG(INFO) << "order operator " << op.OpToString() << " on "
@@ -173,10 +173,10 @@ MetaServerIdType Coordinator::CopySetHeartbeat(
     return res.configChangeItem;
   }
 
-  return ::dingofs::mds::topology::UNINITIALIZE_ID;
+  return mds::topology::UNINITIALIZE_ID;
 }
 
-ScheduleStatusCode Coordinator::QueryMetaServerRecoverStatus(
+pb::mds::schedule::ScheduleStatusCode Coordinator::QueryMetaServerRecoverStatus(
     const std::vector<MetaServerIdType>& id_list,
     std::map<MetaServerIdType, bool>* status_map) {
   std::vector<MetaServerInfo> infos;
@@ -190,7 +190,7 @@ ScheduleStatusCode Coordinator::QueryMetaServerRecoverStatus(
       bool get_ok = topo_->GetMetaServerInfo(id, &info);
       if (!get_ok) {
         LOG(ERROR) << "invalid metaserver id: " << id;
-        return ScheduleStatusCode::InvalidQueryMetaserverID;
+        return pb::mds::schedule::ScheduleStatusCode::InvalidQueryMetaserverID;
       }
       infos.emplace_back(std::move(info));
     }
@@ -202,7 +202,7 @@ ScheduleStatusCode Coordinator::QueryMetaServerRecoverStatus(
     (*status_map)[info.info.id] = IsMetaServerRecover(info);
   }
 
-  return ScheduleStatusCode::Success;
+  return pb::mds::schedule::ScheduleStatusCode::Success;
 }
 
 void Coordinator::RunScheduler(const std::shared_ptr<Scheduler>& s,
@@ -215,8 +215,8 @@ void Coordinator::RunScheduler(const std::shared_ptr<Scheduler>& s,
   LOG(INFO) << ScheduleName(type) << " exit.";
 }
 
-bool Coordinator::BuildCopySetConf(
-    const CopySetConf& res, ::dingofs::mds::heartbeat::CopySetConf* out) {
+bool Coordinator::BuildCopySetConf(const CopySetConf& res,
+                                   pb::mds::heartbeat::CopySetConf* out) {
   // build the copysetConf need to be returned in heartbeat
   out->set_poolid(res.id.first);
   out->set_copysetid(res.id.second);
@@ -231,21 +231,21 @@ bool Coordinator::BuildCopySetConf(
     return false;
   }
 
-  auto* replica = new dingofs::common::Peer();
+  auto* replica = new pb::common::Peer();
   replica->set_id(res.configChangeItem);
   replica->set_address(topology::BuildPeerIdWithIpPort(
       meta_server.info.ip, meta_server.info.port, 0));
   out->set_allocated_configchangeitem(replica);
 
   // set old
-  if (res.oldOne != ::dingofs::mds::topology::UNINITIALIZE_ID) {
+  if (res.oldOne != mds::topology::UNINITIALIZE_ID) {
     if (!topo_->GetMetaServerInfo(res.oldOne, &meta_server)) {
       LOG(ERROR) << "coordinator can not get metaServer " << res.oldOne
                  << " from topology";
       return false;
     }
 
-    auto* replica = new dingofs::common::Peer();
+    auto* replica = new pb::common::Peer();
     replica->set_id(res.oldOne);
     replica->set_address(topology::BuildPeerIdWithIpPort(
         meta_server.info.ip, meta_server.info.port, 0));

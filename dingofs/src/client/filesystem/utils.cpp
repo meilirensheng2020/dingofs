@@ -28,32 +28,34 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-bool IsDir(const InodeAttr& attr) {
-  return attr.type() == FsFileType::TYPE_DIRECTORY;
+using base::time::TimeSpec;
+
+bool IsDir(const pb::metaserver::InodeAttr& attr) {
+  return attr.type() == pb::metaserver::FsFileType::TYPE_DIRECTORY;
 }
 
-bool IsS3File(const InodeAttr& attr) {
-  return attr.type() == FsFileType::TYPE_S3;
+bool IsS3File(const pb::metaserver::InodeAttr& attr) {
+  return attr.type() == pb::metaserver::FsFileType::TYPE_S3;
 }
 
-bool IsVolmeFile(const InodeAttr& attr) {
-  return attr.type() == FsFileType::TYPE_FILE;
+bool IsVolmeFile(const pb::metaserver::InodeAttr& attr) {
+  return attr.type() == pb::metaserver::FsFileType::TYPE_FILE;
 }
 
-bool IsSymLink(const InodeAttr& attr) {
-  return attr.type() == FsFileType::TYPE_SYM_LINK;
+bool IsSymLink(const pb::metaserver::InodeAttr& attr) {
+  return attr.type() == pb::metaserver::FsFileType::TYPE_SYM_LINK;
 }
 
-TimeSpec AttrMtime(const InodeAttr& attr) {
-  return TimeSpec(attr.mtime(), attr.mtime_ns());
+TimeSpec AttrMtime(const pb::metaserver::InodeAttr& attr) {
+  return base::time::TimeSpec(attr.mtime(), attr.mtime_ns());
 }
 
-TimeSpec AttrCtime(const InodeAttr& attr) {
+TimeSpec AttrCtime(const pb::metaserver::InodeAttr& attr) {
   return TimeSpec(attr.ctime(), attr.ctime_ns());
 }
 
 TimeSpec InodeMtime(const std::shared_ptr<InodeWrapper> inode) {
-  InodeAttr attr;
+  pb::metaserver::InodeAttr attr;
   inode->GetInodeAttr(&attr);
   return AttrMtime(attr);
 }

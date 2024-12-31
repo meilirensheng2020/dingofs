@@ -36,19 +36,22 @@
 #include "dingofs/src/utils/concurrent/concurrent.h"
 #include "dingofs/src/utils/interruptible_sleeper.h"
 
-using ::dingofs::mds::schedule::Coordinator;
-using ::dingofs::mds::topology::CopySetIdType;
-using ::dingofs::mds::topology::PoolIdType;
-using ::dingofs::mds::topology::Topology;
-
-using ::dingofs::utils::Atomic;
-using ::dingofs::utils::InterruptibleSleeper;
-using ::dingofs::utils::RWLock;
-using ::dingofs::utils::Thread;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
+
+using mds::schedule::Coordinator;
+using mds::topology::CopySetIdType;
+using mds::topology::PoolIdType;
+using mds::topology::Topology;
+
+using utils::Atomic;
+using utils::InterruptibleSleeper;
+using utils::RWLock;
+using utils::Thread;
+
+using pb::mds::heartbeat::MetaServerHeartbeatRequest;
+using pb::mds::heartbeat::MetaServerHeartbeatResponse;
 
 // the responsibilities of heartbeat manager including:
 // 1. background threads inspection
@@ -106,7 +109,7 @@ class HeartbeatManager {
    * @return Return HeartbeatStatusCode::hbOK when valid, otherwise return
    *         corresponding error code
    */
-  HeartbeatStatusCode CheckRequest(
+  pb::mds::heartbeat::HeartbeatStatusCode CheckRequest(
       const MetaServerHeartbeatRequest& request);  // NOLINT
 
   // TODO(lixiaocui): optimize, unify the names of the two CopySetInfo in
@@ -121,8 +124,8 @@ class HeartbeatManager {
    * @return Return true if succeeded, false if failed
    */
   bool TransformHeartbeatCopySetInfoToTopologyOne(
-      const ::dingofs::mds::heartbeat::CopySetInfo& info,
-      ::dingofs::mds::topology::CopySetInfo* out);
+      const pb::mds::heartbeat::CopySetInfo& info,
+      mds::topology::CopySetInfo* out);
 
   /**
    * @brief Extract ip address and port number from string, and fetch

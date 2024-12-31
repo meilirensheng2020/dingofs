@@ -32,14 +32,8 @@
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
 #include "dingofs/src/utils/concurrent/generic_name_lock.h"
 
-using ::dingofs::metaserver::Dentry;
-
 namespace dingofs {
 namespace client {
-
-using ::dingofs::client::filesystem::DINGOFS_ERROR;
-using dingofs::stub::rpcclient::MetaServerClient;
-using dingofs::stub::rpcclient::MetaServerClientImpl;
 
 static const char* kDentryKeyDelimiter = ":";
 
@@ -50,18 +44,20 @@ class DentryCacheManager {
 
   void SetFsId(uint32_t fsId) { fsId_ = fsId; }
 
-  virtual DINGOFS_ERROR GetDentry(uint64_t parent, const std::string& name,
-                                  Dentry* out) = 0;
+  virtual filesystem::DINGOFS_ERROR GetDentry(uint64_t parent,
+                                              const std::string& name,
+                                              pb::metaserver::Dentry* out) = 0;
 
-  virtual DINGOFS_ERROR CreateDentry(const Dentry& dentry) = 0;
+  virtual filesystem::DINGOFS_ERROR CreateDentry(
+      const pb::metaserver::Dentry& dentry) = 0;
 
-  virtual DINGOFS_ERROR DeleteDentry(uint64_t parent, const std::string& name,
-                                     FsFileType type) = 0;
+  virtual filesystem::DINGOFS_ERROR DeleteDentry(
+      uint64_t parent, const std::string& name,
+      pb::metaserver::FsFileType type) = 0;
 
-  virtual DINGOFS_ERROR ListDentry(uint64_t parent,
-                                   std::list<Dentry>* dentryList,
-                                   uint32_t limit, bool onlyDir = false,
-                                   uint32_t nlink = 0) = 0;
+  virtual filesystem::DINGOFS_ERROR ListDentry(
+      uint64_t parent, std::list<pb::metaserver::Dentry>* dentryList,
+      uint32_t limit, bool onlyDir = false, uint32_t nlink = 0) = 0;
 
  protected:
   uint32_t fsId_;
@@ -70,32 +66,35 @@ class DentryCacheManager {
 class DentryCacheManagerImpl : public DentryCacheManager {
  public:
   DentryCacheManagerImpl()
-      : metaClient_(std::make_shared<MetaServerClientImpl>()) {}
+      : metaClient_(std::make_shared<stub::rpcclient::MetaServerClientImpl>()) {
+  }
 
   explicit DentryCacheManagerImpl(
-      const std::shared_ptr<MetaServerClient>& metaClient)
+      const std::shared_ptr<stub::rpcclient::MetaServerClient>& metaClient)
       : metaClient_(metaClient) {}
 
-  DINGOFS_ERROR GetDentry(uint64_t parent, const std::string& name,
-                          Dentry* out) override;
+  filesystem::DINGOFS_ERROR GetDentry(uint64_t parent, const std::string& name,
+                                      pb::metaserver::Dentry* out) override;
 
-  DINGOFS_ERROR CreateDentry(const Dentry& dentry) override;
+  filesystem::DINGOFS_ERROR CreateDentry(
+      const pb::metaserver::Dentry& dentry) override;
 
-  DINGOFS_ERROR DeleteDentry(uint64_t parent, const std::string& name,
-                             FsFileType type) override;
+  filesystem::DINGOFS_ERROR DeleteDentry(
+      uint64_t parent, const std::string& name,
+      pb::metaserver::FsFileType type) override;
 
-  DINGOFS_ERROR ListDentry(uint64_t parent, std::list<Dentry>* dentryList,
-                           uint32_t limit, bool dirOnly = false,
-                           uint32_t nlink = 0) override;
+  filesystem::DINGOFS_ERROR ListDentry(
+      uint64_t parent, std::list<pb::metaserver::Dentry>* dentryList,
+      uint32_t limit, bool dirOnly = false, uint32_t nlink = 0) override;
 
   std::string GetDentryCacheKey(uint64_t parent, const std::string& name) {
     return std::to_string(parent) + kDentryKeyDelimiter + name;
   }
 
  private:
-  std::shared_ptr<MetaServerClient> metaClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
 
-  dingofs::utils::GenericNameLock<Mutex> nameLock_;
+  dingofs::utils::GenericNameLock<utils::Mutex> nameLock_;
 };
 
 }  // namespace client

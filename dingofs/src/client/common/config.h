@@ -36,15 +36,6 @@ namespace dingofs {
 namespace client {
 namespace common {
 
-using ::dingofs::aws::S3AdapterOption;
-using ::dingofs::aws::S3InfoOption;
-using ::dingofs::client::common::DiskCacheType;
-using ::dingofs::utils::Configuration;
-
-using ::dingofs::stub::common::ExcutorOpt;
-using ::dingofs::stub::common::MdsOption;
-using ::dingofs::stub::common::MetaCacheOpt;
-
 struct BlockDeviceClientOptions {
   std::string configPath;
 };
@@ -85,7 +76,7 @@ struct S3ClientAdaptorOption {
 
 struct S3Option {
   S3ClientAdaptorOption s3ClientAdaptorOpt;
-  S3AdapterOption s3AdaptrOpt;
+  aws::S3AdapterOption s3AdaptrOpt;
 };
 
 struct BlockGroupOption {
@@ -230,10 +221,10 @@ struct BlockCacheOption {
 // }
 
 struct FuseClientOption {
-  MdsOption mdsOpt;
-  MetaCacheOpt metaCacheOpt;
-  ExcutorOpt excutorOpt;
-  ExcutorOpt excutorInternalOpt;
+  stub::common::MdsOption mdsOpt;
+  stub::common::MetaCacheOpt metaCacheOpt;
+  stub::common::ExcutorOpt excutorOpt;
+  stub::common::ExcutorOpt excutorInternalOpt;
   SpaceAllocServerOption spaceOpt;
   BlockDeviceClientOptions bdevOpt;
   S3Option s3Opt;
@@ -255,15 +246,16 @@ struct FuseClientOption {
   uint32_t warmupThreadsNum = 10;
 };
 
-void InitFuseClientOption(Configuration* conf, FuseClientOption* clientOption);
+void InitFuseClientOption(utils::Configuration* conf,
+                          FuseClientOption* clientOption);
 
 void SetFuseClientS3Option(FuseClientOption* clientOption,
-                           const S3InfoOption& fsS3Opt);
+                           const aws::S3InfoOption& fsS3Opt);
 
-void S3Info2FsS3Option(const dingofs::common::S3Info& s3,
-                       S3InfoOption* fsS3Opt);
+void S3Info2FsS3Option(const pb::common::S3Info& s3,
+                       aws::S3InfoOption* fsS3Opt);
 
-void InitLeaseOpt(Configuration* conf, LeaseOpt* leaseOpt);
+void InitLeaseOpt(utils::Configuration* conf, LeaseOpt* leaseOpt);
 
 void RewriteCacheDir(BlockCacheOption* option, std::string uuid);
 

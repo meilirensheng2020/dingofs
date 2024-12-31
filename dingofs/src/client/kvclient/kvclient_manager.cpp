@@ -23,12 +23,13 @@
 #include "dingofs/src/client/kvclient/kvclient_manager.h"
 
 #include "dingofs/src/stub/metric/metric.h"
-#include "dingofs/src/utils/concurrent/count_down_event.h"
 
 using dingofs::stub::metric::LatencyGuard;
 
 namespace dingofs {
 namespace client {
+
+using common::KVClientManagerOpt;
 
 #define ONRETURN(TYPE, RES)                        \
   if (RES) {                                       \

@@ -23,8 +23,6 @@
 #ifndef DINGOFS_SRC_METASERVER_DENTRY_MANAGER_H_
 #define DINGOFS_SRC_METASERVER_DENTRY_MANAGER_H_
 
-#include <atomic>
-#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -40,27 +38,33 @@ class DentryManager {
   DentryManager(std::shared_ptr<DentryStorage> dentryStorage,
                 std::shared_ptr<TxManager> txManger);
 
-  MetaStatusCode CreateDentry(const Dentry& dentry);
+  pb::metaserver::MetaStatusCode CreateDentry(
+      const pb::metaserver::Dentry& dentry);
 
   // only invoked from snapshot loadding
-  MetaStatusCode CreateDentry(const DentryVec& vec, bool merge);
+  pb::metaserver::MetaStatusCode CreateDentry(
+      const pb::metaserver::DentryVec& vec, bool merge);
 
-  MetaStatusCode DeleteDentry(const Dentry& dentry);
+  pb::metaserver::MetaStatusCode DeleteDentry(
+      const pb::metaserver::Dentry& dentry);
 
-  MetaStatusCode GetDentry(Dentry* dentry);
+  pb::metaserver::MetaStatusCode GetDentry(pb::metaserver::Dentry* dentry);
 
-  MetaStatusCode ListDentry(const Dentry& dentry, std::vector<Dentry>* dentrys,
-                            uint32_t limit, bool onlyDir = false);
+  pb::metaserver::MetaStatusCode ListDentry(
+      const pb::metaserver::Dentry& dentry,
+      std::vector<pb::metaserver::Dentry>* dentrys, uint32_t limit,
+      bool onlyDir = false);
 
   void ClearDentry();
 
-  MetaStatusCode HandleRenameTx(const std::vector<Dentry>& dentrys);
+  pb::metaserver::MetaStatusCode HandleRenameTx(
+      const std::vector<pb::metaserver::Dentry>& dentrys);
 
  private:
-  void Log4Dentry(const std::string& request, const Dentry& dentry);
-  void Log4Code(const std::string& request, MetaStatusCode rc);
+  void Log4Dentry(const std::string& request,
+                  const pb::metaserver::Dentry& dentry);
+  void Log4Code(const std::string& request, pb::metaserver::MetaStatusCode rc);
 
- private:
   std::shared_ptr<DentryStorage> dentryStorage_;
   std::shared_ptr<TxManager> txManager_;
 };

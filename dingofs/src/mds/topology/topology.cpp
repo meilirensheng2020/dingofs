@@ -302,7 +302,7 @@ TopoStatusCode TopologyImpl::UpdateServer(const Server& data) {
 }
 
 TopoStatusCode TopologyImpl::UpdateMetaServerOnlineState(
-    const OnlineState& online_state, MetaServerIdType id) {
+    const pb::mds::topology::OnlineState& online_state, MetaServerIdType id) {
   ReadLockGuard rlock_meta_server_map(metaServerMutex_);
   auto it = metaServerMap_.find(id);
   if (it != metaServerMap_.end()) {
@@ -633,8 +633,8 @@ TopoStatusCode TopologyImpl::UpdatePartitionStatistic(
   }
 }
 
-TopoStatusCode TopologyImpl::UpdatePartitionStatus(PartitionIdType partition_id,
-                                                   PartitionStatus status) {
+TopoStatusCode TopologyImpl::UpdatePartitionStatus(
+    PartitionIdType partition_id, pb::common::PartitionStatus status) {
   WriteLockGuard wlock_partition(partitionMutex_);
   auto it = partitionMap_.find(partition_id);
   if (it != partitionMap_.end()) {
@@ -1269,7 +1269,7 @@ bool TopologyImpl::GetClusterInfo(ClusterInformation* info) {
 
 // update partition tx, and ensure atomicity
 TopoStatusCode TopologyImpl::UpdatePartitionTxIds(
-    std::vector<PartitionTxId> tx_ids) {
+    std::vector<pb::mds::topology::PartitionTxId> tx_ids) {
   std::vector<Partition> partitions;
   WriteLockGuard wlock_partition(partitionMutex_);
   for (const auto& item : tx_ids) {
@@ -1301,7 +1301,7 @@ TopoStatusCode TopologyImpl::ChooseNewMetaServerForCopyset(
     const std::set<MetaServerIdType>& unavailable_ms,
     MetaServerIdType* target) {
   MetaServerFilter filter = [](const MetaServer& ms) {
-    return ms.GetOnlineState() == OnlineState::ONLINE;
+    return ms.GetOnlineState() == pb::mds::topology::OnlineState::ONLINE;
   };
 
   auto metaservers = GetMetaServerInPool(pool_id, filter);
@@ -1371,7 +1371,7 @@ uint32_t TopologyImpl::GetLeaderNumInMetaserver(MetaServerIdType id) const {
 void TopologyImpl::GetAvailableMetaserversUnlock(
     std::vector<const MetaServer*>* vec) {
   for (const auto& it : metaServerMap_) {
-    if (it.second.GetOnlineState() == OnlineState::ONLINE &&
+    if (it.second.GetOnlineState() == pb::mds::topology::OnlineState::ONLINE &&
         it.second.GetMetaServerSpace().IsMetaserverResourceAvailable() &&
         GetCopysetNumInMetaserver(it.first) <
             option_.maxCopysetNumInMetaserver) {
@@ -1521,7 +1521,7 @@ TopoStatusCode TopologyImpl::GenSubsequentCopysetAddrBatchUnlocked(
             << ", copysetList size = " << copyset_list->size() << " begin";
 
   MetaServerFilter filter = [](const MetaServer& ms) {
-    return ms.GetOnlineState() == OnlineState::ONLINE;
+    return ms.GetOnlineState() == pb::mds::topology::OnlineState::ONLINE;
   };
 
   std::vector<Pool> pool_list;
@@ -1611,12 +1611,12 @@ std::vector<CopySetInfo> TopologyImpl::ListCopysetInfo() const {
 }
 
 void TopologyImpl::GetMetaServersSpace(
-    ::google::protobuf::RepeatedPtrField<dingofs::mds::topology::MetadataUsage>*
+    ::google::protobuf::RepeatedPtrField<pb::mds::topology::MetadataUsage>*
         spaces) {
   ReadLockGuard rlock_meta_server_map(metaServerMutex_);
   for (auto const& i : metaServerMap_) {
     ReadLockGuard rlock_meta_server(i.second.GetRWLockRef());
-    auto* meta_server_usage = new dingofs::mds::topology::MetadataUsage();
+    auto* meta_server_usage = new pb::mds::topology::MetadataUsage();
     meta_server_usage->set_metaserveraddr(
         i.second.GetInternalIp() + ":" +
         std::to_string(i.second.GetInternalPort()));
@@ -1709,7 +1709,7 @@ std::list<MemcacheCluster> TopologyImpl::ListMemcacheClusters() const {
 }
 
 TopoStatusCode TopologyImpl::AllocOrGetMemcacheCluster(
-    FsIdType fs_id, MemcacheClusterInfo* cluster) {
+    FsIdType fs_id, pb::mds::topology::MemcacheClusterInfo* cluster) {
   TopoStatusCode ret = TopoStatusCode::TOPO_OK;
   WriteLockGuard wlock_fs2_memcache_cluster(fs2MemcacheClusterMutex_);
   ReadLockGuard rlock_memcache_cluster(memcacheClusterMutex_);

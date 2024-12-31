@@ -25,12 +25,15 @@
 #include <butil/fast_rand.h>
 
 #include "dingofs/proto/metaserver.pb.h"
-
-using ::dingofs::metaserver::MetaStatusCode;
+#include "dingofs/src/utils/math_util.h"
 
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
+
+using pb::metaserver::MetaStatusCode;
+
+using common::MetaserverID;
 
 MetaStatusCode ConvertToMetaStatusCode(int retcode) {
   if (retcode < 0) {
@@ -293,14 +296,12 @@ uint64_t TaskExecutor::TimeoutBackOff() {
 bool TaskExecutor::HasValidTarget() const { return task_->target.IsValid(); }
 
 void TaskExecutor::SetRetryParam() {
-  using dingofs::utils::MaxPowerTimesLessEqualValue;
-
   uint64_t overloadTimes = opt_.maxRetrySleepIntervalUS / opt_.retryIntervalUS;
 
-  maxOverloadPow_ = MaxPowerTimesLessEqualValue(overloadTimes);
+  maxOverloadPow_ = utils::MaxPowerTimesLessEqualValue(overloadTimes);
 
   uint64_t timeoutTimes = opt_.maxRPCTimeoutMS / opt_.rpcTimeoutMS;
-  maxTimeoutPow_ = MaxPowerTimesLessEqualValue(timeoutTimes);
+  maxTimeoutPow_ = utils::MaxPowerTimesLessEqualValue(timeoutTimes);
 }
 
 void TaskExecutorDone::Run() {

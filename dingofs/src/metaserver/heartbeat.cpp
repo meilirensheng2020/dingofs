@@ -29,23 +29,29 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <list>
-#include <memory>
 #include <utility>
-#include <vector>
 
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/src/metaserver/copyset/copyset_node.h"
 #include "dingofs/src/metaserver/copyset/utils.h"
 #include "dingofs/src/metaserver/resource_statistic.h"
-#include "dingofs/src/utils/string_util.h"
 #include "dingofs/src/utils/timeutility.h"
 #include "dingofs/src/utils/uri_parser.h"
 
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::mds::heartbeat::ConfigChangeInfo;
-using ::dingofs::mds::heartbeat::ConfigChangeType;
-using ::dingofs::metaserver::copyset::ToGroupIdString;
+using copyset::CopysetNode;
+using metaserver::copyset::ToGroupIdString;
+
+using pb::common::Peer;
+using pb::mds::heartbeat::ConfigChangeInfo;
+using pb::mds::heartbeat::ConfigChangeType;
+using pb::mds::heartbeat::CopySetConf;
+using pb::mds::heartbeat::MetaServerSpaceStatus;
+
+using HeartbeatRequest = pb::mds::heartbeat::MetaServerHeartbeatRequest;
+using HeartbeatResponse = pb::mds::heartbeat::MetaServerHeartbeatResponse;
 
 namespace {
 
@@ -83,10 +89,10 @@ int Heartbeat::Init(const HeartbeatOptions& options) {
   options_ = options;
 
   std::string copyset_data_path =
-      dingofs::utils::UriParser::GetPathFromUri(options_.storeUri);
+      utils::UriParser::GetPathFromUri(options_.storeUri);
   // get the metaserver data dir, because copysets dir doesn't exist at
   // beginning  // NOLINT
-  auto path_list = dingofs::utils::UriParser::ParseDirPath(copyset_data_path);
+  auto path_list = utils::UriParser::ParseDirPath(copyset_data_path);
   if (path_list.size() > 1) {
     auto it = path_list.end();
     std::advance(it, -2);
@@ -105,7 +111,7 @@ int Heartbeat::Init(const HeartbeatOptions& options) {
   LOG(INFO) << "Metaserver address: " << options_.ip << ":" << options_.port;
 
   // mdsEps can not empty
-  ::dingofs::utils::SplitString(options_.mdsListenAddr, ",", &mdsEps_);
+  utils::SplitString(options_.mdsListenAddr, ",", &mdsEps_);
   if (mdsEps_.empty()) {
     LOG(ERROR) << "Invalid mds ip provided: " << options_.mdsListenAddr;
     return -1;
@@ -128,7 +134,7 @@ int Heartbeat::Init(const HeartbeatOptions& options) {
   LOG(INFO) << "MDS timer: " << options_.intervalSec << " seconde";
   waitInterval_.Init(options_.intervalSec * 1000);
 
-  startUpTime_ = ::dingofs::utils::TimeUtility::GetTimeofDaySec();
+  startUpTime_ = utils::TimeUtility::GetTimeofDaySec();
 
   taskExecutor_ = std::make_unique<HeartbeatTaskExecutor>(copysetMan_, msEp_);
 
@@ -136,7 +142,7 @@ int Heartbeat::Init(const HeartbeatOptions& options) {
 }
 
 int Heartbeat::Run() {
-  hbThread_ = Thread(&Heartbeat::HeartbeatWorker, this);
+  hbThread_ = utils::Thread(&Heartbeat::HeartbeatWorker, this);
   return 0;
 }
 
@@ -160,7 +166,7 @@ int Heartbeat::Fini() {
   return 0;
 }
 
-void Heartbeat::BuildCopysetInfo(dingofs::mds::heartbeat::CopySetInfo* info,
+void Heartbeat::BuildCopysetInfo(pb::mds::heartbeat::CopySetInfo* info,
                                  CopysetNode* copyset) {
   int ret;
   PoolId pool_id = copyset->GetPoolId();
@@ -177,7 +183,7 @@ void Heartbeat::BuildCopysetInfo(dingofs::mds::heartbeat::CopySetInfo* info,
     replica->set_address(peer.address().c_str());
   }
 
-  PeerId leader = copyset->GetLeaderId();
+  braft::PeerId leader = copyset->GetLeaderId();
   Peer* replica = new Peer();
   replica->set_address(leader.to_string());
   info->set_allocated_leaderpeer(replica);
@@ -191,7 +197,7 @@ void Heartbeat::BuildCopysetInfo(dingofs::mds::heartbeat::CopySetInfo* info,
                  << "list fail, because copyset is loading, poolId = "
                  << pool_id << ", copysetId = " << copyset_id;
   } else {
-    std::list<PartitionInfo> partition_info_list;
+    std::list<pb::common::PartitionInfo> partition_info_list;
     bool ret = copyset->GetPartitionInfoList(&partition_info_list);
     if (ret) {
       for (auto& it : partition_info_list) {
@@ -256,7 +262,7 @@ int Heartbeat::BuildRequest(HeartbeatRequest* req) {
   int leaders = 0;
 
   for (auto* copyset : copysets) {
-    dingofs::mds::heartbeat::CopySetInfo* info = req->add_copysetinfos();
+    pb::mds::heartbeat::CopySetInfo* info = req->add_copysetinfos();
 
     BuildCopysetInfo(info, copyset);
 
@@ -292,7 +298,7 @@ void Heartbeat::DumpHeartbeatRequest(const HeartbeatRequest& request) {
           << ", memoryUsedByte = " << request.spacestatus().memoryusedbyte();
 
   for (int i = 0; i < request.copysetinfos_size(); i++) {
-    const dingofs::mds::heartbeat::CopySetInfo& info = request.copysetinfos(i);
+    const pb::mds::heartbeat::CopySetInfo& info = request.copysetinfos(i);
 
     std::string peers_str;
     for (int j = 0; j < info.peers_size(); j++) {
@@ -325,7 +331,7 @@ int Heartbeat::SendHeartbeat(const HeartbeatRequest& request,
     return -1;
   }
 
-  dingofs::mds::heartbeat::HeartbeatService_Stub stub(&channel);
+  pb::mds::heartbeat::HeartbeatService_Stub stub(&channel);
   brpc::Controller cntl;
   cntl.set_timeout_ms(options_.timeout);
 
@@ -397,7 +403,7 @@ void Heartbeat::HeartbeatWorker() {
   LOG(INFO) << "Heartbeat worker thread stopped.";
 }
 
-HeartbeatTaskExecutor::HeartbeatTaskExecutor(CopysetNodeManager* mgr,
+HeartbeatTaskExecutor::HeartbeatTaskExecutor(copyset::CopysetNodeManager* mgr,
                                              const butil::EndPoint& endpoint)
     : copysetMgr_(mgr), ep_(endpoint) {}
 

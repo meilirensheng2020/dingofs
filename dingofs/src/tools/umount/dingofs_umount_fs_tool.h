@@ -45,9 +45,9 @@ namespace dingofs {
 namespace tools {
 namespace umount {
 
-class UmountFsTool : public CurvefsToolRpc<dingofs::mds::UmountFsRequest,
-                                           dingofs::mds::UmountFsResponse,
-                                           dingofs::mds::MdsService_Stub> {
+class UmountFsTool
+    : public CurvefsToolRpc<pb::mds::UmountFsRequest, pb::mds::UmountFsResponse,
+                            pb::mds::MdsService_Stub> {
  public:
   explicit UmountFsTool(const std::string& cmd = kUmountFsCmd)
       : CurvefsToolRpc(cmd) {}

@@ -29,7 +29,7 @@ namespace metaserver {
 
 int TrashManager::Run() {
   if (isStop_.exchange(false)) {
-    recycleThread_ = Thread(&TrashManager::ScanLoop, this);
+    recycleThread_ = utils::Thread(&TrashManager::ScanLoop, this);
     LOG(INFO) << "Start trash manager thread ok.";
     return 0;
   }

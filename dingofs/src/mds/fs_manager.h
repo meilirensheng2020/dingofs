@@ -31,6 +31,7 @@
 
 #include "dingofs/proto/mds.pb.h"
 #include "dingofs/proto/topology.pb.h"
+#include "dingofs/src/aws/s3_adapter.h"
 #include "dingofs/src/mds/common/types.h"
 #include "dingofs/src/mds/dlock/dlock.h"
 #include "dingofs/src/mds/fs_info_wrapper.h"
@@ -40,38 +41,25 @@
 #include "dingofs/src/mds/topology/topology_manager.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
 #include "dingofs/src/utils/interruptible_sleeper.h"
-#include "dingofs/src/aws/s3_adapter.h"
 
 namespace dingofs {
 namespace mds {
-
-using ::dingofs::mds::Mountpoint;
-using ::dingofs::mds::dlock::DLock;
-using ::dingofs::mds::topology::PartitionTxId;
-using ::dingofs::mds::topology::Topology;
-using ::dingofs::mds::topology::TopologyManager;
-
-using ::dingofs::utils::Atomic;
-using ::dingofs::utils::InterruptibleSleeper;
-using ::dingofs::aws::S3Adapter;
-using ::dingofs::utils::Thread;
-
-using dingofs::common::PartitionInfo;
 
 struct FsManagerOption {
   uint32_t backEndThreadRunInterSec;
   uint32_t spaceReloadConcurrency = 10;
   uint32_t clientTimeoutSec = 20;
-  dingofs::aws::S3AdapterOption s3AdapterOption;
+  aws::S3AdapterOption s3AdapterOption;
 };
 
 class FsManager {
  public:
   FsManager(const std::shared_ptr<FsStorage>& fs_storage,
             const std::shared_ptr<MetaserverClient>& metaserver_client,
-            const std::shared_ptr<TopologyManager>& topo_manager,
-            const std::shared_ptr<S3Adapter>& s3_adapter,
-            const std::shared_ptr<DLock>& dlock, const FsManagerOption& option)
+            const std::shared_ptr<topology::TopologyManager>& topo_manager,
+            const std::shared_ptr<aws::S3Adapter>& s3_adapter,
+            const std::shared_ptr<dlock::DLock>& dlock,
+            const FsManagerOption& option)
       : fsStorage_(fs_storage),
         metaserverClient_(metaserver_client),
         topoManager_(topo_manager),
@@ -97,8 +85,8 @@ class FsManager {
    * FS_EXIST;
    *         else return error code
    */
-  FSStatusCode CreateFs(const ::dingofs::mds::CreateFsRequest* request,
-                        FsInfo* fs_info);
+  FSStatusCode CreateFs(const pb::mds::CreateFsRequest* request,
+                        pb::mds::FsInfo* fs_info);
 
   /**
    * @brief delete fs, fs must unmount first
@@ -124,8 +112,9 @@ class FsManager {
    *         if fs has same mount point or cto not consistent, return
    *         MOUNT_POINT_CONFLICT; else return error code
    */
-  FSStatusCode MountFs(const std::string& fs_name, const Mountpoint& mountpoint,
-                       FsInfo* fs_info);
+  FSStatusCode MountFs(const std::string& fs_name,
+                       const pb::mds::Mountpoint& mountpoint,
+                       pb::mds::FsInfo* fs_info);
 
   /**
    * @brief Umount fs, it will decrease mountNum.
@@ -138,7 +127,7 @@ class FsManager {
    *         else return error code
    */
   FSStatusCode UmountFs(const std::string& fs_name,
-                        const Mountpoint& mountpoint);
+                        const pb::mds::Mountpoint& mountpoint);
 
   /**
    * @brief get fs info by fsname
@@ -148,7 +137,7 @@ class FsManager {
    *
    * @return If success return OK; else return error code
    */
-  FSStatusCode GetFsInfo(const std::string& fs_name, FsInfo* fs_info);
+  FSStatusCode GetFsInfo(const std::string& fs_name, pb::mds::FsInfo* fs_info);
 
   /**
    * @brief get fs info by fsid
@@ -158,7 +147,7 @@ class FsManager {
    *
    * @return If success return OK; else return error code
    */
-  FSStatusCode GetFsInfo(uint32_t fs_id, FsInfo* fs_info);
+  FSStatusCode GetFsInfo(uint32_t fs_id, pb::mds::FsInfo* fs_info);
 
   /**
    * @brief get fs info by fsid and fsname
@@ -170,19 +159,19 @@ class FsManager {
    * @return If success return OK; else return error code
    */
   FSStatusCode GetFsInfo(const std::string& fs_name, uint32_t fs_id,
-                         FsInfo* fs_info);
+                         pb::mds::FsInfo* fs_info);
 
   void GetAllFsInfo(
-      ::google::protobuf::RepeatedPtrField<::dingofs::mds::FsInfo>*
-          fs_info_vec);
+      ::google::protobuf::RepeatedPtrField<pb::mds::FsInfo>* fs_info_vec);
 
-  void RefreshSession(const RefreshSessionRequest* request,
-                      RefreshSessionResponse* response);
+  void RefreshSession(const pb::mds::RefreshSessionRequest* request,
+                      pb::mds::RefreshSessionResponse* response);
 
-  void GetLatestTxId(const GetLatestTxIdRequest* request,
-                     GetLatestTxIdResponse* response);
+  void GetLatestTxId(const pb::mds::GetLatestTxIdRequest* request,
+                     pb::mds::GetLatestTxIdResponse* response);
 
-  void CommitTx(const CommitTxRequest* request, CommitTxResponse* response);
+  void CommitTx(const pb::mds::CommitTxRequest* request,
+                pb::mds::CommitTxResponse* response);
 
   // periodically check if the mount point is alive
   void BackEndCheckMountPoint();
@@ -195,18 +184,21 @@ class FsManager {
  private:
   // return 0: ExactlySame; 1: uncomplete, -1: neither
   int IsExactlySameOrCreateUnComplete(const std::string& fs_name,
-                                      FSType fs_type, uint64_t blocksize,
-                                      const FsDetail& detail);
+                                      pb::common::FSType fs_type,
+                                      uint64_t blocksize,
+                                      const pb::mds::FsDetail& detail);
 
   // send request to metaserver to DeletePartition, if response returns
   // FSStatusCode::OK or FSStatusCode::UNDER_DELETING, returns true;
   // else returns false
-  bool DeletePartiton(std::string fs_name, const PartitionInfo& partition);
+  bool DeletePartiton(std::string fs_name,
+                      const pb::common::PartitionInfo& partition);
 
   // set partition status to DELETING in topology
-  bool SetPartitionToDeleting(const PartitionInfo& partition);
+  bool SetPartitionToDeleting(const pb::common::PartitionInfo& partition);
 
-  void GetLatestTxId(uint32_t fs_id, std::vector<PartitionTxId>* tx_ids);
+  void GetLatestTxId(uint32_t fs_id,
+                     std::vector<pb::mds::topology::PartitionTxId>* tx_ids);
 
   FSStatusCode IncreaseFsTxSequence(const std::string& fs_name,
                                     const std::string& owner,
@@ -214,12 +206,12 @@ class FsManager {
 
   FSStatusCode GetFsTxSequence(const std::string& fs_name, uint64_t* sequence);
 
-  void UpdateClientAliveTime(const Mountpoint& mountpoint,
+  void UpdateClientAliveTime(const pb::mds::Mountpoint& mountpoint,
                              const std::string& fs_name,
                              bool add_mount_point = true);
 
   // add mount point to fs if client restore session
-  FSStatusCode AddMountPoint(const Mountpoint& mountpoint,
+  FSStatusCode AddMountPoint(const pb::mds::Mountpoint& mountpoint,
                              const std::string& fs_name);
 
   void DeleteClientAliveTime(const std::string& mountpoint);
@@ -231,19 +223,19 @@ class FsManager {
   std::shared_ptr<FsStorage> fsStorage_;
   std::shared_ptr<MetaserverClient> metaserverClient_;
   dingofs::utils::GenericNameLock<Mutex> nameLock_;
-  std::shared_ptr<TopologyManager> topoManager_;
-  std::shared_ptr<S3Adapter> s3Adapter_;
-  std::shared_ptr<DLock> dlock_;
+  std::shared_ptr<topology::TopologyManager> topoManager_;
+  std::shared_ptr<aws::S3Adapter> s3Adapter_;
+  std::shared_ptr<dlock::DLock> dlock_;
 
   // Manage fs background delete threads
-  Thread backEndThread_;
-  Atomic<bool> isStop_;
-  InterruptibleSleeper sleeper_;
+  utils::Thread backEndThread_;
+  utils::Atomic<bool> isStop_;
+  utils::InterruptibleSleeper sleeper_;
   FsManagerOption option_;
 
   // deal with check mountpoint alive
-  Thread checkMountPointThread_;
-  InterruptibleSleeper checkMountPointSleeper_;
+  utils::Thread checkMountPointThread_;
+  utils::InterruptibleSleeper checkMountPointSleeper_;
   // <mountpoint, <fsname,last update time>>
   std::map<std::string, std::pair<std::string, uint64_t>> mpTimeRecorder_;
   mutable RWLock recorderMutex_;

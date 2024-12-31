@@ -44,14 +44,13 @@ int CopysetStatusTool::RunCommand() {
   int ret = copyInfoListTool_->RunCommand();
   auto response = copyInfoListTool_->GetResponse();
   std::map<uint64_t,
-           std::vector<dingofs::metaserver::copyset::CopysetStatusResponse>>
+           std::vector<pb::metaserver::copyset::CopysetStatusResponse>>
       key2Status;
   if (!copyset::CopysetInfo2CopysetStatus(*response.get(), &key2Status)) {
     ret = -1;
   }
 
-  std::map<uint64_t, std::vector<dingofs::mds::topology::CopysetValue>>
-      key2Info;
+  std::map<uint64_t, std::vector<pb::mds::topology::CopysetValue>> key2Info;
 
   if (!copyset::Response2CopysetInfo(*response.get(), &key2Info)) {
     ret = -1;

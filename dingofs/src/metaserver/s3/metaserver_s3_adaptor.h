@@ -32,6 +32,9 @@
 namespace dingofs {
 namespace metaserver {
 
+using pb::metaserver::S3ChunkInfo;
+using pb::metaserver::S3ChunkInfoList;
+
 struct S3ClientAdaptorOption {
   uint64_t blockSize;
   uint64_t chunkSize;
@@ -68,7 +71,7 @@ class S3ClientAdaptor {
    * Step.1 get indoe' s3chunkInfoList
    * Step.2 delete chunk from s3 client
    */
-  virtual int Delete(const Inode& inode) = 0;
+  virtual int Delete(const pb::metaserver::Inode& inode) = 0;
 
   /**
    * @brief get S3ClientAdaptorOption
@@ -110,7 +113,7 @@ class S3ClientAdaptorImpl : public S3ClientAdaptor {
    * Step.1 get indoe' s3chunkInfoList
    * Step.2 delete chunk from s3 client
    */
-  int Delete(const Inode& inode) override;
+  int Delete(const pb::metaserver::Inode& inode) override;
 
   /**
    * @brief get S3ClientAdaptorOption
@@ -131,9 +134,9 @@ class S3ClientAdaptorImpl : public S3ClientAdaptor {
   int DeleteChunk(uint64_t fsId, uint64_t inodeId, uint64_t chunkId,
                   uint64_t compaction, uint64_t chunkPos, uint64_t length);
 
-  int DeleteInodeByDeleteSingleChunk(const Inode& inode);
+  int DeleteInodeByDeleteSingleChunk(const pb::metaserver::Inode& inode);
 
-  int DeleteInodeByDeleteBatchChunk(const Inode& inode);
+  int DeleteInodeByDeleteBatchChunk(const pb::metaserver::Inode& inode);
 
   int DeleteS3ChunkInfoList(uint32_t fsId, uint64_t inodeId,
                             const S3ChunkInfoList& s3ChunkInfolist);

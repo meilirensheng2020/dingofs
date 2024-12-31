@@ -25,7 +25,6 @@
 
 #include <atomic>
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -64,7 +63,8 @@ class CopysetNodeManager {
    * @return 0: not exist; 1: key exist and peers are exactly same;
    * -1: key exist but peers are not exactly same
    */
-  int IsCopysetNodeExist(const CreateCopysetRequest::Copyset& copyset);
+  int IsCopysetNodeExist(
+      const pb::metaserver::copyset::CreateCopysetRequest::Copyset& copyset);
 
   bool CreateCopysetNode(PoolId poolId, CopysetId copysetId,
                          const braft::Configuration& conf,

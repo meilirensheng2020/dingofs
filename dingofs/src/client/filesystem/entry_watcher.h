@@ -33,25 +33,22 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::utils::LRUCache;
-using ::dingofs::utils::RWLock;
-
 // remeber regular file's ino which will use nocto flush plolicy
 class EntryWatcher {
  public:
-  using LRUType = LRUCache<Ino, bool>;
+  using LRUType = utils::LRUCache<Ino, bool>;
 
- public:
   EntryWatcher(const std::string& nocto_suffix);
 
-  void Remeber(const InodeAttr& attr, const std::string& filename);
+  void Remeber(const pb::metaserver::InodeAttr& attr,
+               const std::string& filename);
 
   void Forget(Ino ino);
 
   bool ShouldWriteback(Ino ino);
 
  private:
-  RWLock rwlock_;
+  utils::RWLock rwlock_;
   std::unique_ptr<LRUType> nocto_;
   std::vector<std::string> suffixs_;
 };

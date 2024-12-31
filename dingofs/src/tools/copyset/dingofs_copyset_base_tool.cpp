@@ -32,28 +32,31 @@ namespace dingofs {
 namespace tools {
 namespace copyset {
 
+using namespace pb::mds::topology;
+using mds::topology::SplitPeerId;
+
 uint64_t GetCopysetKey(uint64_t copysetId, uint64_t poolId) {
   return (poolId << 32) | copysetId;
 }
 
 bool CopysetInfo2CopysetStatus(
-    const dingofs::mds::topology::GetCopysetsInfoResponse& response,
+    const GetCopysetsInfoResponse& response,
     std::map<uint64_t,
-             std::vector<dingofs::metaserver::copyset::CopysetStatusResponse>>*
+             std::vector<pb::metaserver::copyset::CopysetStatusResponse>>*
         key2Status) {
   bool ret = true;
   std::map<std::string,
-           std::queue<dingofs::metaserver::copyset::CopysetsStatusRequest>>
+           std::queue<pb::metaserver::copyset::CopysetsStatusRequest>>
       addr2Request;
   for (auto const& i : response.copysetvalues()) {
-    using tmpType = dingofs::metaserver::copyset::CopysetStatusRequest;
+    using tmpType = pb::metaserver::copyset::CopysetStatusRequest;
     tmpType tmp;
     tmp.set_copysetid(i.copysetinfo().copysetid());
     tmp.set_poolid(i.copysetinfo().poolid());
     for (auto const& j : i.copysetinfo().peers()) {
       // send request to all peer
       std::string addr;
-      if (!dingofs::mds::topology::SplitPeerId(j.address(), &addr)) {
+      if (!SplitPeerId(j.address(), &addr)) {
         std::cerr << "copyset[" << tmp.copysetid()
                   << "] has error peerid: " << j.address() << std::endl;
         ret = false;
@@ -61,8 +64,7 @@ bool CopysetInfo2CopysetStatus(
       }
       auto& queueRequest = addr2Request[addr];
       if (queueRequest.empty()) {
-        queueRequest.push(
-            dingofs::metaserver::copyset::CopysetsStatusRequest());
+        queueRequest.push(pb::metaserver::copyset::CopysetsStatusRequest());
       }
       *queueRequest.front().add_copysets() = tmp;
     }
@@ -93,23 +95,23 @@ bool CopysetInfo2CopysetStatus(
 }
 
 bool CopysetInfo2CopysetStatus(
-    const dingofs::mds::topology::ListCopysetInfoResponse& response,
+    const ListCopysetInfoResponse& response,
     std::map<uint64_t,
-             std::vector<dingofs::metaserver::copyset::CopysetStatusResponse>>*
+             std::vector<pb::metaserver::copyset::CopysetStatusResponse>>*
         key2Status) {
   bool ret = true;
   std::map<std::string,
-           std::queue<dingofs::metaserver::copyset::CopysetsStatusRequest>>
+           std::queue<pb::metaserver::copyset::CopysetsStatusRequest>>
       addr2Request;
   for (auto const& i : response.copysetvalues()) {
-    using tmpType = dingofs::metaserver::copyset::CopysetStatusRequest;
+    using tmpType = pb::metaserver::copyset::CopysetStatusRequest;
     tmpType tmp;
     tmp.set_copysetid(i.copysetinfo().copysetid());
     tmp.set_poolid(i.copysetinfo().poolid());
     for (auto const& j : i.copysetinfo().peers()) {
       // send request to all peer
       std::string addr;
-      if (!dingofs::mds::topology::SplitPeerId(j.address(), &addr)) {
+      if (!SplitPeerId(j.address(), &addr)) {
         std::cerr << "copyset[" << tmp.copysetid()
                   << "] has error peerid: " << j.address() << std::endl;
         ret = false;
@@ -117,8 +119,7 @@ bool CopysetInfo2CopysetStatus(
       }
       auto& queueRequest = addr2Request[addr];
       if (queueRequest.empty()) {
-        queueRequest.push(
-            dingofs::metaserver::copyset::CopysetsStatusRequest());
+        queueRequest.push(pb::metaserver::copyset::CopysetsStatusRequest());
       }
       *queueRequest.front().add_copysets() = tmp;
     }
@@ -150,9 +151,8 @@ bool CopysetInfo2CopysetStatus(
 }
 
 bool Response2CopysetInfo(
-    const dingofs::mds::topology::ListCopysetInfoResponse& response,
-    std::map<uint64_t, std::vector<dingofs::mds::topology::CopysetValue>>*
-        key2Info) {
+    const ListCopysetInfoResponse& response,
+    std::map<uint64_t, std::vector<CopysetValue>>* key2Info) {
   bool ret = true;
   for (auto const& i : response.copysetvalues()) {
     if (i.has_copysetinfo()) {
@@ -167,9 +167,8 @@ bool Response2CopysetInfo(
 }
 
 bool Response2CopysetInfo(
-    const dingofs::mds::topology::GetCopysetsInfoResponse& response,
-    std::map<uint64_t, std::vector<dingofs::mds::topology::CopysetValue>>*
-        key2Info) {
+    const GetCopysetsInfoResponse& response,
+    std::map<uint64_t, std::vector<CopysetValue>>* key2Info) {
   bool ret = true;
   for (auto const& i : response.copysetvalues()) {
     if (i.has_copysetinfo()) {
@@ -184,8 +183,8 @@ bool Response2CopysetInfo(
 }
 
 CheckResult checkCopysetHelthy(
-    const std::vector<dingofs::mds::topology::CopysetValue>& copysetInfoVec,
-    const std::vector<dingofs::metaserver::copyset::CopysetStatusResponse>&
+    const std::vector<CopysetValue>& copysetInfoVec,
+    const std::vector<pb::metaserver::copyset::CopysetStatusResponse>&
         copysetStatusVec) {
   if (copysetInfoVec.empty()) {
     return CheckResult::kNoCopyset;
@@ -193,8 +192,7 @@ CheckResult checkCopysetHelthy(
   if (copysetInfoVec.size() > 1) {
     return CheckResult::kOverCopyset;
   }
-  if (dingofs::mds::topology::TopoStatusCode::TOPO_OK !=
-      copysetInfoVec[0].statuscode()) {
+  if (TopoStatusCode::TOPO_OK != copysetInfoVec[0].statuscode()) {
     return CheckResult::kTopoNotOk;
   }
   auto copysetInfo = copysetInfoVec[0].copysetinfo();
@@ -204,9 +202,10 @@ CheckResult checkCopysetHelthy(
   }
   for (auto const& i : copysetStatusVec) {
     auto const& opStatus = i.status();
-    if (opStatus != metaserver::copyset::COPYSET_OP_STATUS_SUCCESS &&
-        opStatus != metaserver::copyset::COPYSET_OP_STATUS_EXIST &&
-        opStatus != metaserver::copyset::COPYSET_OP_STATUS_COPYSET_IS_HEALTHY) {
+    if (opStatus != pb::metaserver::copyset::COPYSET_OP_STATUS_SUCCESS &&
+        opStatus != pb::metaserver::copyset::COPYSET_OP_STATUS_EXIST &&
+        opStatus !=
+            pb::metaserver::copyset::COPYSET_OP_STATUS_COPYSET_IS_HEALTHY) {
       return CheckResult::kPeerOpNotOk;
     }
   }

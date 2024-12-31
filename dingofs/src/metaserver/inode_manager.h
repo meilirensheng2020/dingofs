@@ -34,9 +34,6 @@
 #include "dingofs/src/metaserver/trash.h"
 #include "dingofs/src/utils/concurrent/name_lock.h"
 
-using ::dingofs::utils::NameLock;
-using ::dingofs::metaserver::S3ChunkInfoList;
-
 namespace dingofs {
 namespace metaserver {
 
@@ -50,7 +47,7 @@ struct InodeParam {
   uint32_t uid;
   uint32_t gid;
   uint32_t mode;
-  FsFileType type;
+  pb::metaserver::FsFileType type;
   std::string symlink;
   uint64_t rdev;
   uint64_t parent;
@@ -66,56 +63,66 @@ class InodeManager {
         trash_(trash),
         type2InodeNum_(type2InodeNum) {}
 
-  MetaStatusCode CreateInode(uint64_t inodeId, const InodeParam& param,
-                             Inode* inode);
-  MetaStatusCode CreateRootInode(const InodeParam& param);
+  pb::metaserver::MetaStatusCode CreateInode(uint64_t inodeId,
+                                             const InodeParam& param,
+                                             pb::metaserver::Inode* inode);
+  pb::metaserver::MetaStatusCode CreateRootInode(const InodeParam& param);
 
-  MetaStatusCode CreateManageInode(const InodeParam& param,
-                                   ManageInodeType manageType, Inode* inode);
+  pb::metaserver::MetaStatusCode CreateManageInode(
+      const InodeParam& param, pb::metaserver::ManageInodeType manageType,
+      pb::metaserver::Inode* inode);
 
-  MetaStatusCode GetInode(uint32_t fsId, uint64_t inodeId, Inode* inode,
-                          bool paddingS3ChunkInfo = false);
+  pb::metaserver::MetaStatusCode GetInode(uint32_t fsId, uint64_t inodeId,
+                                          pb::metaserver::Inode* inode,
+                                          bool paddingS3ChunkInfo = false);
 
-  MetaStatusCode GetInodeAttr(uint32_t fsId, uint64_t inodeId, InodeAttr* attr);
+  pb::metaserver::MetaStatusCode GetInodeAttr(uint32_t fsId, uint64_t inodeId,
+                                              pb::metaserver::InodeAttr* attr);
 
-  MetaStatusCode GetXAttr(uint32_t fsId, uint64_t inodeId, XAttr* xattr);
+  pb::metaserver::MetaStatusCode GetXAttr(uint32_t fsId, uint64_t inodeId,
+                                          pb::metaserver::XAttr* xattr);
 
-  MetaStatusCode DeleteInode(uint32_t fsId, uint64_t inodeId);
+  pb::metaserver::MetaStatusCode DeleteInode(uint32_t fsId, uint64_t inodeId);
 
-  MetaStatusCode UpdateInode(const UpdateInodeRequest& request);
+  pb::metaserver::MetaStatusCode UpdateInode(
+      const pb::metaserver::UpdateInodeRequest& request);
 
-  MetaStatusCode GetOrModifyS3ChunkInfo(
+  pb::metaserver::MetaStatusCode GetOrModifyS3ChunkInfo(
       uint32_t fsId, uint64_t inodeId, const S3ChunkInfoMap& map2add,
       const S3ChunkInfoMap& map2del, bool returnS3ChunkInfoMap,
-      std::shared_ptr<Iterator>* iterator4InodeS3Meta);
+      std::shared_ptr<storage::Iterator>* iterator4InodeS3Meta);
 
-  MetaStatusCode PaddingInodeS3ChunkInfo(int32_t fsId, uint64_t inodeId,
-                                         S3ChunkInfoMap* m, uint64_t limit = 0);
+  pb::metaserver::MetaStatusCode PaddingInodeS3ChunkInfo(int32_t fsId,
+                                                         uint64_t inodeId,
+                                                         S3ChunkInfoMap* m,
+                                                         uint64_t limit = 0);
 
-  MetaStatusCode UpdateInodeWhenCreateOrRemoveSubNode(uint32_t fsId,
-                                                      uint64_t inodeId,
-                                                      FsFileType type,
-                                                      bool isCreate);
+  pb::metaserver::MetaStatusCode UpdateInodeWhenCreateOrRemoveSubNode(
+      uint32_t fsId, uint64_t inodeId, pb::metaserver::FsFileType type,
+      bool isCreate);
 
-  MetaStatusCode InsertInode(const Inode& inode);
+  pb::metaserver::MetaStatusCode InsertInode(
+      const pb::metaserver::Inode& inode);
 
   bool GetInodeIdList(std::list<uint64_t>* inodeIdList);
 
   // Update one or more volume extent slice
-  MetaStatusCode UpdateVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                    const VolumeExtentList& extents);
+  pb::metaserver::MetaStatusCode UpdateVolumeExtent(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::VolumeExtentList& extents);
 
   // Update only one volume extent slice
-  MetaStatusCode UpdateVolumeExtentSlice(uint32_t fsId, uint64_t inodeId,
-                                         const VolumeExtentSlice& slice);
+  pb::metaserver::MetaStatusCode UpdateVolumeExtentSlice(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::VolumeExtentSlice& slice);
 
-  MetaStatusCode GetVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                 const std::vector<uint64_t>& slices,
-                                 VolumeExtentList* extents);
+  pb::metaserver::MetaStatusCode GetVolumeExtent(
+      uint32_t fsId, uint64_t inodeId, const std::vector<uint64_t>& slices,
+      pb::metaserver::VolumeExtentList* extents);
 
  private:
   void GenerateInodeInternal(uint64_t inodeId, const InodeParam& param,
-                             Inode* inode);
+                             pb::metaserver::Inode* inode);
 
   bool AppendS3ChunkInfo(uint32_t fsId, uint64_t inodeId, S3ChunkInfoMap added);
 
@@ -123,15 +130,15 @@ class InodeManager {
     return std::to_string(fsId) + "_" + std::to_string(inodeId);
   }
 
-  MetaStatusCode UpdateVolumeExtentSliceLocked(uint32_t fsId, uint64_t inodeId,
-                                               const VolumeExtentSlice& slice);
+  pb::metaserver::MetaStatusCode UpdateVolumeExtentSliceLocked(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::VolumeExtentSlice& slice);
 
- private:
   std::shared_ptr<InodeStorage> inodeStorage_;
   std::shared_ptr<Trash> trash_;
   FileType2InodeNumMap* type2InodeNum_;
 
-  NameLock inodeLock_;
+  utils::NameLock inodeLock_;
 };
 
 }  // namespace metaserver

@@ -26,6 +26,12 @@ namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
+using common::CopysetID;
+using common::CopysetPeerInfo;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PeerAddr;
+
 void Cli2Closure::Run() {
   bool success = false;
   if (cntl.Failed()) {
@@ -84,11 +90,11 @@ bool Cli2ClientImpl::DoGetLeader(Cli2Closure* done, PeerAddr* peerAddr,
 
   // define rpc task
   auto task = RPCFunc {
-    dingofs::metaserver::copyset::GetLeaderRequest2 request;
+    dingofs::pb::metaserver::copyset::GetLeaderRequest2 request;
     request.set_poolid(done->taskContext.poolID);
     request.set_copysetid(done->taskContext.copysetID);
 
-    dingofs::metaserver::copyset::CliService2_Stub stub(channel);
+    dingofs::pb::metaserver::copyset::CliService2_Stub stub(channel);
     stub.GetLeader(&done->cntl, &request, &done->response, done);
 
     return 0;

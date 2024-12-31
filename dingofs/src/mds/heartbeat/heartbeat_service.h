@@ -30,26 +30,25 @@
 #include "dingofs/proto/heartbeat.pb.h"
 #include "dingofs/src/mds/heartbeat/heartbeat_manager.h"
 
-using ::dingofs::mds::heartbeat::HeartbeatManager;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
 
-class HeartbeatServiceImpl : public HeartbeatService {
+class HeartbeatServiceImpl : public pb::mds::heartbeat::HeartbeatService {
  public:
   HeartbeatServiceImpl() = default;
   explicit HeartbeatServiceImpl(
       std::shared_ptr<HeartbeatManager> heartbeat_manager);
   ~HeartbeatServiceImpl() override = default;
 
-  void MetaServerHeartbeat(google::protobuf::RpcController* controller,
-                           const MetaServerHeartbeatRequest* request,
-                           MetaServerHeartbeatResponse* response,
-                           google::protobuf::Closure* done) override;
+  void MetaServerHeartbeat(
+      google::protobuf::RpcController* controller,
+      const pb::mds::heartbeat::MetaServerHeartbeatRequest* request,
+      pb::mds::heartbeat::MetaServerHeartbeatResponse* response,
+      google::protobuf::Closure* done) override;
 
  private:
-  std::shared_ptr<HeartbeatManager> heartbeatManager_;
+  std::shared_ptr<mds::heartbeat::HeartbeatManager> heartbeatManager_;
 };
 }  // namespace heartbeat
 }  // namespace mds

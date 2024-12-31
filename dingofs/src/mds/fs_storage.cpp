@@ -33,8 +33,8 @@
 namespace dingofs {
 namespace mds {
 
-using ::dingofs::idgenerator::EtcdIdGenerator;
-using ::dingofs::kvstorage::KVStorageClient;
+using kvstorage::KVStorageClient;
+using pb::mds::FSStatusCode;
 
 bool MemoryFsStorage::Init() {
   WriteLockGuard writeLockGuard(rwLock_);
@@ -343,7 +343,7 @@ bool PersisKVStorage::LoadAllFs() {
   }
 
   for (const auto& kv : out) {
-    FsInfo fsInfo;
+    pb::mds::FsInfo fsInfo;
     if (!codec::DecodeProtobufMessage(kv.second, &fsInfo)) {
       LOG(ERROR) << "Decode fs info failed, encoded fsName: " << kv.first;
       return false;
@@ -357,7 +357,7 @@ bool PersisKVStorage::LoadAllFs() {
     // For compatibility when upgrading, the new field 'optional
     // objectPrefix` in message `S3Info` needs to be set to the default
     // value
-    if (fsInfo.fstype() == FSType::TYPE_S3) {
+    if (fsInfo.fstype() == pb::common::FSType::TYPE_S3) {
       if (!fsInfo.detail().s3info().has_objectprefix()) {
         fsInfo.mutable_detail()->mutable_s3info()->set_objectprefix(0);
       }

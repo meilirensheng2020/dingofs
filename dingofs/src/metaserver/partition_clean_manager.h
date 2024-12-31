@@ -25,20 +25,17 @@
 #include <list>
 #include <memory>
 
-#include "dingofs/src/stub/rpcclient/mds_client.h"
 #include "dingofs/src/metaserver/partition_cleaner.h"
+#include "dingofs/src/stub/rpcclient/mds_client.h"
 
 namespace dingofs {
 namespace metaserver {
-
-using ::dingofs::stub::rpcclient::MdsClient;
-using ::dingofs::stub::rpcclient::MdsClientImpl;
 
 struct PartitionCleanOption {
   uint32_t scanPeriodSec;
   uint32_t inodeDeletePeriodMs;
   std::shared_ptr<S3ClientAdaptor> s3Adaptor;
-  std::shared_ptr<MdsClient> mdsClient;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient;
 };
 
 class PartitionCleanManager {
@@ -80,12 +77,12 @@ class PartitionCleanManager {
   std::list<std::shared_ptr<PartitionCleaner>> partitonCleanerList_;
   std::shared_ptr<PartitionCleaner> inProcessingCleaner_;
   std::shared_ptr<S3ClientAdaptor> S3ClientAdaptor_;
-  std::shared_ptr<MdsClient> mdsClient_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
   uint32_t scanPeriodSec_;
   uint32_t inodeDeletePeriodMs_;
-  Atomic<bool> isStop_;
-  Thread thread_;
-  InterruptibleSleeper sleeper_;
+  utils::Atomic<bool> isStop_;
+  utils::Thread thread_;
+  utils::InterruptibleSleeper sleeper_;
   dingofs::utils::RWLock rwLock_;
   bvar::Adder<uint32_t> partitionCleanerCount;
 };

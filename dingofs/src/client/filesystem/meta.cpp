@@ -30,6 +30,14 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
+using pb::metaserver::InodeAttr;
+
+using utils::Mutex;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::UniqueLock;
+using utils::WriteLockGuard;
+
 HandlerManager::HandlerManager()
     : mutex_(), dirBuffer_(std::make_shared<DirBuffer>()), handlers_() {}
 

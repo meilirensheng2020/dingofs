@@ -34,8 +34,6 @@
 namespace dingofs {
 namespace mds {
 
-using ::dingofs::common::FSType;
-
 // A wrapper for proto FsInfo
 class FsInfoWrapper {
   friend class PersisKVStorage;
@@ -43,11 +41,12 @@ class FsInfoWrapper {
  public:
   FsInfoWrapper() = default;
 
-  explicit FsInfoWrapper(const FsInfo& fs_info) : fsInfo_(fs_info) {}
+  explicit FsInfoWrapper(const pb::mds::FsInfo& fs_info) : fsInfo_(fs_info) {}
 
-  explicit FsInfoWrapper(FsInfo&& fs_info) : fsInfo_(std::move(fs_info)) {}
+  explicit FsInfoWrapper(pb::mds::FsInfo&& fs_info)
+      : fsInfo_(std::move(fs_info)) {}
 
-  FsInfoWrapper(const ::dingofs::mds::CreateFsRequest* request, uint64_t fs_id,
+  FsInfoWrapper(const pb::mds::CreateFsRequest* request, uint64_t fs_id,
                 uint64_t root_inode_id);
 
   FsInfoWrapper(const FsInfoWrapper& other) = default;
@@ -56,9 +55,9 @@ class FsInfoWrapper {
   FsInfoWrapper(FsInfoWrapper&& other) noexcept = default;
   FsInfoWrapper& operator=(FsInfoWrapper&& other) noexcept = default;
 
-  void SetFsType(FSType type) { fsInfo_.set_fstype(type); }
+  void SetFsType(pb::common::FSType type) { fsInfo_.set_fstype(type); }
 
-  void SetStatus(FsStatus status) { fsInfo_.set_status(status); }
+  void SetStatus(pb::mds::FsStatus status) { fsInfo_.set_status(status); }
 
   void SetFsName(const std::string& name) { fsInfo_.set_fsname(name); }
 
@@ -66,9 +65,9 @@ class FsInfoWrapper {
 
   void SetOwner(const std::string& owner) { fsInfo_.set_owner(owner); }
 
-  FSType GetFsType() const { return fsInfo_.fstype(); }
+  pb::common::FSType GetFsType() const { return fsInfo_.fstype(); }
 
-  FsStatus GetStatus() const { return fsInfo_.status(); }
+  pb::mds::FsStatus GetStatus() const { return fsInfo_.status(); }
 
   std::string GetFsName() const { return fsInfo_.fsname(); }
 
@@ -82,21 +81,21 @@ class FsInfoWrapper {
 
   bool IsMountPointEmpty() const { return fsInfo_.mountpoints_size() == 0; }
 
-  bool IsMountPointExist(const Mountpoint& mp) const;
+  bool IsMountPointExist(const pb::mds::Mountpoint& mp) const;
 
-  bool IsMountPointConflict(const Mountpoint& mp) const;
+  bool IsMountPointConflict(const pb::mds::Mountpoint& mp) const;
 
-  void AddMountPoint(const Mountpoint& mp);
+  void AddMountPoint(const pb::mds::Mountpoint& mp);
 
-  FSStatusCode DeleteMountPoint(const Mountpoint& mp);
+  pb::mds::FSStatusCode DeleteMountPoint(const pb::mds::Mountpoint& mp);
 
-  std::vector<Mountpoint> MountPoints() const;
+  std::vector<pb::mds::Mountpoint> MountPoints() const;
 
-  const FsInfo& ProtoFsInfo() const& { return fsInfo_; }
+  const pb::mds::FsInfo& ProtoFsInfo() const& { return fsInfo_; }
 
-  FsInfo ProtoFsInfo() && { return std::move(fsInfo_); }
+  pb::mds::FsInfo ProtoFsInfo() && { return std::move(fsInfo_); }
 
-  const FsDetail& GetFsDetail() const { return fsInfo_.detail(); }
+  const pb::mds::FsDetail& GetFsDetail() const { return fsInfo_.detail(); }
 
   bool GetEnableSumInDir() const { return fsInfo_.enablesumindir(); }
 
@@ -119,7 +118,7 @@ class FsInfoWrapper {
   void SetVolumeSize(uint64_t size);
 
  private:
-  FsInfo fsInfo_;
+  pb::mds::FsInfo fsInfo_;
 };
 
 }  // namespace mds

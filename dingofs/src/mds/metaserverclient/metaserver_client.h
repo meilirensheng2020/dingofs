@@ -31,10 +31,12 @@
 #include "dingofs/proto/mds.pb.h"
 #include "dingofs/proto/metaserver.pb.h"
 
-using dingofs::metaserver::ManageInodeType;
-
 namespace dingofs {
 namespace mds {
+
+using dingofs::pb::mds::FSStatusCode;
+using dingofs::pb::metaserver::ManageInodeType;
+
 struct MetaserverOptions {
   std::string metaserverAddr;
   uint32_t rpcTimeoutMs;

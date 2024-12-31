@@ -125,7 +125,7 @@ class MetaOperator {
    */
   virtual void Redirect() = 0;
 
-  virtual void OnFailed(MetaStatusCode code) = 0;
+  virtual void OnFailed(pb::metaserver::MetaStatusCode code) = 0;
 
   /**
    * @brief Whether an operator can bypass propose to raft,
@@ -173,7 +173,7 @@ class MetaOperator {
    private:                                                      \
     void Redirect() override;                                    \
                                                                  \
-    void OnFailed(MetaStatusCode code) override;                 \
+    void OnFailed(pb::metaserver::MetaStatusCode code) override; \
                                                                  \
     bool CanBypassPropose() const override;                      \
   }
@@ -203,7 +203,7 @@ class GetDentryOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 
   bool CanBypassPropose() const override;
 };
@@ -224,7 +224,7 @@ class ListDentryOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 
   bool CanBypassPropose() const override;
 };
@@ -245,7 +245,7 @@ class CreateDentryOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class DeleteDentryOperator : public MetaOperator {
@@ -264,7 +264,7 @@ class DeleteDentryOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class GetInodeOperator : public MetaOperator {
@@ -283,7 +283,7 @@ class GetInodeOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 
   bool CanBypassPropose() const override;
 };
@@ -304,7 +304,7 @@ class BatchGetInodeAttrOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 
   bool CanBypassPropose() const override;
 };
@@ -325,7 +325,7 @@ class BatchGetXAttrOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 
   bool CanBypassPropose() const override;
 };
@@ -346,7 +346,7 @@ class CreateInodeOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class UpdateInodeOperator : public MetaOperator {
@@ -365,7 +365,7 @@ class UpdateInodeOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class GetOrModifyS3ChunkInfoOperator : public MetaOperator {
@@ -384,7 +384,7 @@ class GetOrModifyS3ChunkInfoOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class DeleteInodeOperator : public MetaOperator {
@@ -403,7 +403,7 @@ class DeleteInodeOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class CreateRootInodeOperator : public MetaOperator {
@@ -422,7 +422,7 @@ class CreateRootInodeOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class CreateManageInodeOperator : public MetaOperator {
@@ -441,7 +441,7 @@ class CreateManageInodeOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class UpdateInodeS3VersionOperator : public MetaOperator {
@@ -460,7 +460,7 @@ class UpdateInodeS3VersionOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class CreatePartitionOperator : public MetaOperator {
@@ -479,7 +479,7 @@ class CreatePartitionOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class DeletePartitionOperator : public MetaOperator {
@@ -498,7 +498,7 @@ class DeletePartitionOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class PrepareRenameTxOperator : public MetaOperator {
@@ -517,7 +517,7 @@ class PrepareRenameTxOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 class GetVolumeExtentOperator : public MetaOperator {
@@ -536,7 +536,7 @@ class GetVolumeExtentOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 
   bool CanBypassPropose() const override;
 };
@@ -557,7 +557,7 @@ class UpdateVolumeExtentOperator : public MetaOperator {
  private:
   void Redirect() override;
 
-  void OnFailed(MetaStatusCode code) override;
+  void OnFailed(pb::metaserver::MetaStatusCode code) override;
 };
 
 }  // namespace copyset

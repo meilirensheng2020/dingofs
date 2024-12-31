@@ -25,6 +25,7 @@
 
 #include <memory>
 
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/s3compact_inode.h"
 #include "dingofs/src/metaserver/s3compact_manager.h"
 #include "dingofs/src/metaserver/s3compact_worker.h"
@@ -34,7 +35,6 @@
 #include "dingofs/test/metaserver/s3compact/mock_s3compact_inode.h"
 #include "dingofs/test/metaserver/s3compact/mock_s3infocache.h"
 #include "dingofs/test/metaserver/storage/utils.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
 
 using ::dingofs::metaserver::copyset::CopysetNode;
 using ::dingofs::metaserver::copyset::CopysetNodeManager;
@@ -111,7 +111,7 @@ class S3CompactTest : public ::testing::Test {
   void TearDown() override {
     ASSERT_TRUE(kvStorage_->Close());
     ASSERT_EQ(0, system(std::string{"rm -rf " + dataDir_}.c_str()));
-    dingofs::aws::S3Adapter::Shutdown();
+    S3Adapter::Shutdown();
   }
 
  protected:

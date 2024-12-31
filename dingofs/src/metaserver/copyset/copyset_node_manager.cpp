@@ -27,16 +27,16 @@
 #include <string>
 #include <utility>
 
+#include "dingofs/proto/common.pb.h"
 #include "dingofs/src/metaserver/copyset/copyset_reloader.h"
 #include "dingofs/src/metaserver/copyset/raft_cli_service2.h"
 #include "dingofs/src/metaserver/copyset/utils.h"
-#include "dingofs/src/utils/timeutility.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-using ::dingofs::utils::TimeUtility;
+using pb::common::Peer;
 
 bool CopysetNodeManager::IsLoadFinished() const {
   return loadFinished_.load(std::memory_order_acquire);
@@ -169,7 +169,7 @@ std::shared_ptr<CopysetNode> CopysetNodeManager::GetSharedCopysetNode(
 }
 
 int CopysetNodeManager::IsCopysetNodeExist(
-    const CreateCopysetRequest::Copyset& copyset) {
+    const pb::metaserver::copyset::CreateCopysetRequest::Copyset& copyset) {
   ReadLockGuard lock(lock_);
   auto iter = copysets_.find(ToGroupId(copyset.poolid(), copyset.copysetid()));
   if (iter == copysets_.end()) {

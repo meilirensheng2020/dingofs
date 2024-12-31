@@ -23,8 +23,12 @@
 
 #include <utility>
 
+#include "dingofs/src/utils/string_util.h"
+
 namespace dingofs {
 namespace mds {
+
+using kvstorage::KVStorageClient;
 
 int ChunkIdAllocatorImpl::GenChunkId(uint64_t idNum, uint64_t* chunkId) {
   int ret = 0;
@@ -108,7 +112,7 @@ int ChunkIdAllocatorImpl::AllocateBundleIds(int bundleSize) {
 }
 
 bool ChunkIdAllocatorImpl::DecodeID(const std::string& value, uint64_t* out) {
-  return ::dingofs::utils::StringToUll(value, out);
+  return utils::StringToUll(value, out);
 }
 
 }  // namespace mds

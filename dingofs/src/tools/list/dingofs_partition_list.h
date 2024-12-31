@@ -39,12 +39,12 @@ namespace tools {
 namespace list {
 
 using PartitionInfoList =
-    google::protobuf::RepeatedPtrField<common::PartitionInfo>;
+    google::protobuf::RepeatedPtrField<pb::common::PartitionInfo>;
 
 class PartitionListTool
-    : public CurvefsToolRpc<dingofs::mds::topology::ListPartitionRequest,
-                            dingofs::mds::topology::ListPartitionResponse,
-                            dingofs::mds::topology::TopologyService_Stub> {
+    : public CurvefsToolRpc<pb::mds::topology::ListPartitionRequest,
+                            pb::mds::topology::ListPartitionResponse,
+                            pb::mds::topology::TopologyService_Stub> {
  public:
   explicit PartitionListTool(const std::string& cmd = kPartitionListCmd,
                              bool show = true)

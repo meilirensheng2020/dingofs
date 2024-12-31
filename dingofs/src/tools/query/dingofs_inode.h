@@ -38,12 +38,12 @@ namespace dingofs {
 namespace tools {
 namespace query {
 
-using InodeBaseInfo = metaserver::Inode;
+using InodeBaseInfo = pb::metaserver::Inode;
 
 class InodeTool
-    : public CurvefsToolRpc<dingofs::metaserver::GetInodeRequest,
-                            dingofs::metaserver::GetInodeResponse,
-                            dingofs::metaserver::MetaServerService_Stub> {
+    : public CurvefsToolRpc<pb::metaserver::GetInodeRequest,
+                            pb::metaserver::GetInodeResponse,
+                            pb::metaserver::MetaServerService_Stub> {
  public:
   explicit InodeTool(const std::string& cmd = kNoInvokeCmd, bool show = true)
       : CurvefsToolRpc(cmd) {

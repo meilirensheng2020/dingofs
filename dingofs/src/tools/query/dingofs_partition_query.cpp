@@ -45,16 +45,16 @@ int PartitionQueryTool::Init() {
 
   std::vector<std::string> partitionId;
   dingofs::utils::SplitString(FLAGS_partitionId, ",", &partitionId);
-  dingofs::mds::topology::GetCopysetOfPartitionRequest request;
+  pb::mds::topology::GetCopysetOfPartitionRequest request;
   for (auto const& i : partitionId) {
     request.add_partitionid(std::stoul(i));
   }
   AddRequest(request);
 
-  service_stub_func_ = std::bind(
-      &dingofs::mds::topology::TopologyService_Stub::GetCopysetOfPartition,
-      service_stub_.get(), std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3, nullptr);
+  service_stub_func_ =
+      std::bind(&pb::mds::topology::TopologyService_Stub::GetCopysetOfPartition,
+                service_stub_.get(), std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3, nullptr);
 
   return 0;
 }
@@ -70,12 +70,11 @@ bool PartitionQueryTool::AfterSendRequestToHost(const std::string& host) {
                  << " failed, errorcode= " << controller_->ErrorCode()
                  << ", error text " << controller_->ErrorText() << std::endl;
     return false;
-  } else if (response_->statuscode() != dingofs::mds::topology::TOPO_OK) {
+  } else if (response_->statuscode() != pb::mds::topology::TOPO_OK) {
     std::cerr << "query partition [" << FLAGS_partitionId
               << "] error, error code=" << response_->statuscode()
               << " error name is "
-              << dingofs::mds::topology::TopoStatusCode_Name(
-                     response_->statuscode())
+              << pb::mds::topology::TopoStatusCode_Name(response_->statuscode())
               << std::endl;
   } else if (show_) {
     std::cout << response_->DebugString() << std::endl;

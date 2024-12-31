@@ -39,9 +39,9 @@ namespace tools {
 namespace delete_ {
 
 class DeletePartitionTool
-    : public CurvefsToolRpc<dingofs::mds::topology::DeletePartitionRequest,
-                            dingofs::mds::topology::DeletePartitionResponse,
-                            dingofs::mds::topology::TopologyService_Stub> {
+    : public CurvefsToolRpc<pb::mds::topology::DeletePartitionRequest,
+                            pb::mds::topology::DeletePartitionResponse,
+                            pb::mds::topology::TopologyService_Stub> {
  public:
   explicit DeletePartitionTool(const std::string& cmd = kPartitionDeleteCmd)
       : CurvefsToolRpc(cmd) {}

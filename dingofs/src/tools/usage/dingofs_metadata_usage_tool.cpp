@@ -71,12 +71,12 @@ int MatedataUsageTool::Init() {
     return -1;
   }
   dingofs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
-  service_stub_func_ = std::bind(
-      &dingofs::mds::topology::TopologyService_Stub::StatMetadataUsage,
-      service_stub_.get(), std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3, nullptr);
+  service_stub_func_ =
+      std::bind(&pb::mds::topology::TopologyService_Stub::StatMetadataUsage,
+                service_stub_.get(), std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3, nullptr);
 
-  dingofs::mds::topology::StatMetadataUsageRequest request;
+  pb::mds::topology::StatMetadataUsageRequest request;
   AddRequest(request);
   return 0;
 }

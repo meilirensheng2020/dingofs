@@ -22,6 +22,7 @@
 
 #include "dingofs/src/client/filesystem/entry_watcher.h"
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/base/filepath/filepath.h"
 #include "dingofs/src/base/string/string.h"
 #include "dingofs/src/client/filesystem/utils.h"
@@ -31,10 +32,14 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::WriteLockGuard;
-using ::dingofs::base::filepath::HasSuffix;
-using ::dingofs::base::string::StrSplit;
+using base::filepath::HasSuffix;
+using base::string::StrSplit;
+using utils::LRUCache;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
+
+using pb::metaserver::InodeAttr;
 
 EntryWatcher::EntryWatcher(const std::string& nocto_suffix) {
   nocto_ = std::make_unique<LRUType>(65536);

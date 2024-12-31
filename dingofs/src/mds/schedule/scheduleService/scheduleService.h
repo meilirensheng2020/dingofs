@@ -34,7 +34,10 @@
 namespace dingofs {
 namespace mds {
 namespace schedule {
-class ScheduleServiceImpl : public ScheduleService {
+using pb::mds::schedule::QueryMetaServerRecoverStatusRequest;
+using pb::mds::schedule::QueryMetaServerRecoverStatusResponse;
+
+class ScheduleServiceImpl : public pb::mds::schedule::ScheduleService {
  public:
   explicit ScheduleServiceImpl(const std::shared_ptr<Coordinator>& coordinator)
       : coordinator_(coordinator) {}

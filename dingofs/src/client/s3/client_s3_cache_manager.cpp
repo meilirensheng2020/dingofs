@@ -37,36 +37,42 @@
 #include "dingofs/src/client/datastream/data_stream.h"
 #include "dingofs/src/client/filesystem/meta.h"
 #include "dingofs/src/client/kvclient/kvclient_manager.h"
-#include "dingofs/src/stub/metric/metric.h"
 #include "dingofs/src/client/s3/client_s3_adaptor.h"
+#include "dingofs/src/stub/metric/metric.h"
 
-namespace dingofs {
-namespace client {
-namespace common {
-DECLARE_bool(enableCto);
-}  // namespace common
-}  // namespace client
-}  // namespace dingofs
-
-using ::dingofs::stub::metric::S3MultiManagerMetric;
-static S3MultiManagerMetric* g_s3MultiManagerMetric =
-    new S3MultiManagerMetric();
+static dingofs::stub::metric::S3MultiManagerMetric* g_s3MultiManagerMetric =
+    new dingofs::stub::metric::S3MultiManagerMetric();
 
 namespace dingofs {
 namespace client {
 
-using ::dingofs::client::blockcache::BCACHE_ERROR;
-using ::dingofs::client::blockcache::Block;
-using ::dingofs::client::blockcache::BlockContext;
-using ::dingofs::client::blockcache::BlockFrom;
-using ::dingofs::client::blockcache::GetObjectAsyncContext;
-using ::dingofs::client::blockcache::StrErr;
-using ::dingofs::client::datastream::DataStream;
-using ::dingofs::client::filesystem::Ino;
-using ::dingofs::stub::metric::MetricGuard;
-using ::dingofs::stub::metric::S3Metric;
+using aws::GetObjectAsyncCallBack;
+using aws::GetObjectAsyncContext;
+using aws::PutObjectAsyncCallBack;
+using aws::PutObjectAsyncContext;
 
-using ::dingofs::client::common::FLAGS_fuse_read_max_retry_s3_not_exist;
+using blockcache::BCACHE_ERROR;
+using blockcache::Block;
+using blockcache::BlockContext;
+using blockcache::BlockFrom;
+using blockcache::BlockKey;
+using blockcache::StrErr;
+
+using datastream::DataStream;
+using filesystem::Ino;
+using stub::metric::MetricGuard;
+using stub::metric::S3Metric;
+using utils::CountDownEvent;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
+
+using pb::mds::FSStatusCode;
+using pb::metaserver::Inode;
+using pb::metaserver::S3ChunkInfo;
+using pb::metaserver::S3ChunkInfoList;
+
+using common::FLAGS_fuse_read_max_retry_s3_not_exist;
 
 void FsCacheManager::DataCacheNumInc() {
   g_s3MultiManagerMetric->writeDataCacheNum << 1;
@@ -721,18 +727,19 @@ class AsyncPrefetchCallback {
                         S3ClientAdaptorImpl* s3Client, int64_t startTime)
       : key(key), inode_(inode), s3Client_(s3Client), startTime_(startTime) {}
 
-  void operator()(const S3Adapter*,
+  void operator()(const aws::S3Adapter*,
                   const std::shared_ptr<GetObjectAsyncContext>& context) {
     VLOG(9) << "prefetch end: " << context->key << ", len " << context->len
             << "actual len: " << context->actualLen;
     std::unique_ptr<char[]> guard(context->buf);
     // prefetch s3 data metrics
-    MetricGuard metricGuard(&context->retCode, &S3Metric::GetInstance().read_s3,
-                            context->actualLen, startTime_);
-    auto fileCache =
+    MetricGuard metric_guard(&context->retCode,
+                             &S3Metric::GetInstance().read_s3,
+                             context->actualLen, startTime_);
+    auto file_cache =
         s3Client_->GetFsCacheManager()->FindFileCacheManager(inode_);
 
-    if (!fileCache) {
+    if (!file_cache) {
       VLOG(3) << "prefetch inodeId=" << inode_
               << " end, but file cache is released, key: " << context->key;
       return;
@@ -752,8 +759,8 @@ class AsyncPrefetchCallback {
     }
 
     {
-      dingofs::utils::LockGuard lg(fileCache->downloadMtx_);
-      fileCache->downloadingObj_.erase(context->key);
+      dingofs::utils::LockGuard lg(file_cache->downloadMtx_);
+      file_cache->downloadingObj_.erase(context->key);
     }
   }
 
@@ -1052,7 +1059,7 @@ void FileCacheManager::GenerateS3Request(ReadRequest request,
 }
 
 void FileCacheManager::ReleaseCache() {
-  WriteLockGuard writeLockGuard(rwLock_);
+  WriteLockGuard write_lock_guard(rwLock_);
 
   uint64_t chunNum = chunkCacheMap_.size();
   for (auto& chunk : chunkCacheMap_) {
@@ -1061,7 +1068,6 @@ void FileCacheManager::ReleaseCache() {
 
   chunkCacheMap_.clear();
   g_s3MultiManagerMetric->chunkManagerNum << -1 * chunNum;
-  return;
 }
 
 void FileCacheManager::TruncateCache(uint64_t offset, uint64_t fileSize) {
@@ -1095,7 +1101,7 @@ DINGOFS_ERROR FileCacheManager::Flush(bool force, bool toS3) {
   DINGOFS_ERROR ret = DINGOFS_ERROR::OK;
   std::map<uint64_t, ChunkCacheManagerPtr> tmp;
   {
-    WriteLockGuard writeLockGuard(rwLock_);
+    WriteLockGuard write_lock_guard(rwLock_);
     tmp = chunkCacheMap_;
   }
 
@@ -1113,7 +1119,7 @@ DINGOFS_ERROR FileCacheManager::Flush(bool force, bool toS3) {
         }
 
         {
-          WriteLockGuard writeLockGuard(rwLock_);
+          WriteLockGuard write_lock_guard(rwLock_);
           auto iter1 =
               chunkCacheMap_.find(context->chunkCacheManptr->GetIndex());
           if (iter1 != chunkCacheMap_.end() && iter1->second->IsEmpty() &&

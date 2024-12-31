@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/base/timer/timer_impl.h"
 #include "dingofs/src/client/common/dynamic_config.h"
 #include "dingofs/src/client/filesystem/dir_cache.h"
@@ -37,7 +38,12 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
+using base::time::TimeSpec;
 using base::timer::TimerImpl;
+using common::FileSystemOption;
+
+using pb::metaserver::InodeAttr;
+using pb::metaserver::Quota;
 
 USING_FLAG(stat_timer_thread_num);
 
@@ -358,9 +364,8 @@ DINGOFS_ERROR FileSystem::Open(Request req, Ino ino, FileInfo* fi) {
                  << ": attribute not found in wacther";
     return DINGOFS_ERROR::STALE;
   } else if (mtime != InodeMtime(inode)) {
-    LOG(WARNING) << "open(" << ino << "): stale file handler"
-                 << ", cache(" << mtime << ") vs remote(" << InodeMtime(inode)
-                 << ")";
+    LOG(WARNING) << "open(" << ino << "): stale file handler" << ", cache("
+                 << mtime << ") vs remote(" << InodeMtime(inode) << ")";
     return DINGOFS_ERROR::STALE;
   }
 

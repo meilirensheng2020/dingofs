@@ -34,11 +34,28 @@ namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
-using ::dingofs::mds::space::SpaceErrCode;
-using ::dingofs::mds::space::SpaceErrCode_Name;
-using ::dingofs::utils::TimeUtility;
+using pb::common::PartitionInfo;
+using pb::mds::CommitTxRequest;
+using pb::mds::CommitTxResponse;
+using pb::mds::FsInfo;
+using pb::mds::FSStatusCode;
+using pb::mds::GetLatestTxIdRequest;
+using pb::mds::GetLatestTxIdResponse;
+using pb::mds::Mountpoint;
+using pb::mds::space::SpaceErrCode;
+using pb::mds::space::SpaceErrCode_Name;
+using pb::mds::topology::Copyset;
+using pb::mds::topology::MemcacheClusterInfo;
+using pb::mds::topology::TopoStatusCode;
 
-using ::dingofs::stub::metric::MetricListGuard;
+using common::CopysetID;
+using common::CopysetInfo;
+using common::CopysetPeerInfo;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PeerAddr;
+using metric::MetricListGuard;
+using utils::TimeUtility;
 
 // rpc发送和mds地址切换状态机
 int RPCExcutorRetryPolicy::DoRPCTask(RPCFunc rpctask, uint64_t maxRetryTimeMS) {
@@ -234,7 +251,7 @@ FSStatusCode MdsClientImpl::MountFs(const std::string& fsName,
         &is_ok, {&mdsClientMetric_.mountFs, &mdsClientMetric_.getAllOperation},
         start);
 
-    MountFsResponse response;
+    pb::mds::MountFsResponse response;
     mdsbasecli_->MountFs(fsName, mountPt, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "MountFs Failed, errorcode = " << cntl->ErrorCode()
@@ -270,7 +287,7 @@ FSStatusCode MdsClientImpl::UmountFs(const std::string& fsName,
         &is_ok, {&mdsClientMetric_.umountFs, &mdsClientMetric_.getAllOperation},
         start);
 
-    UmountFsResponse response;
+    pb::mds::UmountFsResponse response;
     mdsbasecli_->UmountFs(fsName, mountPt, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "UmountFs Failed, errorcode = " << cntl->ErrorCode()
@@ -303,7 +320,7 @@ FSStatusCode MdsClientImpl::GetFsInfo(const std::string& fsName,
         {&mdsClientMetric_.getFsInfo, &mdsClientMetric_.getAllOperation},
         start);
 
-    GetFsInfoResponse response;
+    pb::mds::GetFsInfoResponse response;
     mdsbasecli_->GetFsInfo(fsName, &response, cntl, channel);
 
     if (cntl->Failed()) {
@@ -339,7 +356,7 @@ FSStatusCode MdsClientImpl::GetFsInfo(uint32_t fsId, FsInfo* fsInfo) {
         {&mdsClientMetric_.getFsInfo, &mdsClientMetric_.getAllOperation},
         start);
 
-    GetFsInfoResponse response;
+    pb::mds::GetFsInfoResponse response;
     mdsbasecli_->GetFsInfo(fsId, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "GetFsInfo Failed, errorcode = " << cntl->ErrorCode()
@@ -406,7 +423,7 @@ bool MdsClientImpl::GetMetaServerInfo(
                               &mdsClientMetric_.getAllOperation},
                              start);
 
-    GetMetaServerInfoResponse response;
+    pb::mds::topology::GetMetaServerInfoResponse response;
     mdsbasecli_->GetMetaServerInfo(port, ip, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "GetMetaServerInfo Failed, errorcode = "
@@ -450,7 +467,7 @@ bool MdsClientImpl::GetMetaServerListInCopysets(
                               &mdsClientMetric_.getAllOperation},
                              start);
 
-    GetMetaServerListInCopySetsResponse response;
+    pb::mds::topology::GetMetaServerListInCopySetsResponse response;
     mdsbasecli_->GetMetaServerListInCopysets(logicalpooid, copysetidvec,
                                              &response, cntl, channel);
     if (cntl->Failed()) {
@@ -463,14 +480,14 @@ bool MdsClientImpl::GetMetaServerListInCopysets(
     int csinfonum = response.csinfo_size();
     for (int i = 0; i < csinfonum; i++) {
       CopysetInfo<MetaserverID> copysetseverl;
-      ::dingofs::mds::topology::CopySetServerInfo info = response.csinfo(i);
+      dingofs::pb::mds::topology::CopySetServerInfo info = response.csinfo(i);
 
       copysetseverl.lpid_ = logicalpooid;
       copysetseverl.cpid_ = info.copysetid();
       int cslocsNum = info.cslocs_size();
       for (int j = 0; j < cslocsNum; j++) {
         CopysetPeerInfo<MetaserverID> csinfo;
-        ::dingofs::mds::topology::MetaServerLocation csl = info.cslocs(j);
+        dingofs::pb::mds::topology::MetaServerLocation csl = info.cslocs(j);
         csinfo.peerID = csl.metaserverid();
         butil::EndPoint internal;
         butil::EndPoint external;
@@ -483,8 +500,7 @@ bool MdsClientImpl::GetMetaServerListInCopysets(
     }
     TopoStatusCode ret = response.statuscode();
     LOG_IF(WARNING, TopoStatusCode::TOPO_OK != 0)
-        << "GetMetaServerList failed"
-        << ", errocde = " << response.statuscode()
+        << "GetMetaServerList failed" << ", errocde = " << response.statuscode()
         << ", log id = " << cntl->log_id();
     return ret;
   };
@@ -505,7 +521,7 @@ bool MdsClientImpl::CreatePartition(
         {&mdsClientMetric_.createPartition, &mdsClientMetric_.getAllOperation},
         start);
 
-    CreatePartitionResponse response;
+    pb::mds::topology::CreatePartitionResponse response;
     mdsbasecli_->CreatePartition(fsID, count, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "CreatePartition from mds failed, error is "
@@ -557,7 +573,7 @@ bool MdsClientImpl::GetCopysetOfPartitions(
                               &mdsClientMetric_.getAllOperation},
                              start);
 
-    GetCopysetOfPartitionResponse response;
+    pb::mds::topology::GetCopysetOfPartitionResponse response;
     mdsbasecli_->GetCopysetOfPartitions(partitionIDList, &response, cntl,
                                         channel);
     if (cntl->Failed()) {
@@ -607,7 +623,7 @@ bool MdsClientImpl::ListPartition(uint32_t fsID,
         {&mdsClientMetric_.listPartition, &mdsClientMetric_.getAllOperation},
         start);
 
-    ListPartitionResponse response;
+    pb::mds::topology::ListPartitionResponse response;
     mdsbasecli_->ListPartition(fsID, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "ListPartition from mds failed, error is "
@@ -650,7 +666,7 @@ bool MdsClientImpl::AllocOrGetMemcacheCluster(uint32_t fsId,
                               &mdsClientMetric_.getAllOperation},
                              start);
 
-    mds::topology::AllocOrGetMemcacheClusterResponse response;
+    dingofs::pb::mds::topology::AllocOrGetMemcacheClusterResponse response;
     mdsbasecli_->AllocOrGetMemcacheCluster(fsId, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "AllocOrGetMemcacheCluster from mds failed, error is "
@@ -687,7 +703,7 @@ FSStatusCode MdsClientImpl::AllocS3ChunkId(uint32_t fsId, uint32_t idNum,
         {&mdsClientMetric_.allocS3ChunkId, &mdsClientMetric_.getAllOperation},
         start);
 
-    AllocateS3ChunkResponse response;
+    pb::mds::AllocateS3ChunkResponse response;
     mdsbasecli_->AllocS3ChunkId(fsId, idNum, &response, cntl, channel);
     if (cntl->Failed()) {
       LOG(WARNING) << "AllocS3ChunkId Failed, errorcode = " << cntl->ErrorCode()
@@ -711,9 +727,10 @@ FSStatusCode MdsClientImpl::AllocS3ChunkId(uint32_t fsId, uint32_t idNum,
 }
 
 FSStatusCode MdsClientImpl::RefreshSession(
-    const std::vector<PartitionTxId>& txIds,
-    std::vector<PartitionTxId>* latestTxIdList, const std::string& fsName,
-    const Mountpoint& mountpoint, std::atomic<bool>* enableSumInDir) {
+    const std::vector<pb::mds::topology::PartitionTxId>& txIds,
+    std::vector<pb::mds::topology::PartitionTxId>* latestTxIdList,
+    const std::string& fsName, const Mountpoint& mountpoint,
+    std::atomic<bool>* enableSumInDir) {
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
@@ -725,8 +742,8 @@ FSStatusCode MdsClientImpl::RefreshSession(
         {&mdsClientMetric_.refreshSession, &mdsClientMetric_.getAllOperation},
         start);
 
-    RefreshSessionRequest request;
-    RefreshSessionResponse response;
+    pb::mds::RefreshSessionRequest request;
+    pb::mds::RefreshSessionResponse response;
     *request.mutable_txids() = {txIds.begin(), txIds.end()};
     request.set_fsname(fsName);
     *request.mutable_mountpoint() = mountpoint;
@@ -844,8 +861,8 @@ FSStatusCode MdsClientImpl::CommitTx(const CommitTxRequest& request) {
   return ReturnError(rpcexcutor_.DoRPCTask(task, 0));
 }
 
-FSStatusCode MdsClientImpl::GetLatestTxId(uint32_t fsId,
-                                          std::vector<PartitionTxId>* txIds) {
+FSStatusCode MdsClientImpl::GetLatestTxId(
+    uint32_t fsId, std::vector<pb::mds::topology::PartitionTxId>* txIds) {
   GetLatestTxIdRequest request;
   GetLatestTxIdResponse response;
   request.set_fsid(fsId);
@@ -858,7 +875,8 @@ FSStatusCode MdsClientImpl::GetLatestTxId(uint32_t fsId,
 
 FSStatusCode MdsClientImpl::GetLatestTxIdWithLock(
     uint32_t fsId, const std::string& fsName, const std::string& uuid,
-    std::vector<PartitionTxId>* txIds, uint64_t* txSequence) {
+    std::vector<pb::mds::topology::PartitionTxId>* txIds,
+    uint64_t* txSequence) {
   GetLatestTxIdRequest request;
   GetLatestTxIdResponse response;
   request.set_lock(true);
@@ -873,15 +891,16 @@ FSStatusCode MdsClientImpl::GetLatestTxIdWithLock(
   return rc;
 }
 
-FSStatusCode MdsClientImpl::CommitTx(const std::vector<PartitionTxId>& txIds) {
+FSStatusCode MdsClientImpl::CommitTx(
+    const std::vector<pb::mds::topology::PartitionTxId>& txIds) {
   CommitTxRequest request;
   *request.mutable_partitiontxids() = {txIds.begin(), txIds.end()};
   return CommitTx(request);
 }
 
 FSStatusCode MdsClientImpl::CommitTxWithLock(
-    const std::vector<PartitionTxId>& txIds, const std::string& fsName,
-    const std::string& uuid, uint64_t sequence) {
+    const std::vector<pb::mds::topology::PartitionTxId>& txIds,
+    const std::string& fsName, const std::string& uuid, uint64_t sequence) {
   CommitTxRequest request;
   request.set_lock(true);
   request.set_fsname(fsName);
@@ -920,11 +939,11 @@ static SpaceErrCode ToSpaceErrCode(int err) {
 
 SpaceErrCode MdsClientImpl::AllocateVolumeBlockGroup(
     uint32_t fsId, uint32_t count, const std::string& owner,
-    std::vector<dingofs::mds::space::BlockGroup>* groups) {
+    std::vector<dingofs::pb::mds::space::BlockGroup>* groups) {
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
-    AllocateBlockGroupResponse response;
+    pb::mds::space::AllocateBlockGroupResponse response;
     mdsbasecli_->AllocateVolumeBlockGroup(fsId, count, owner, &response, cntl,
                                           channel);
 
@@ -955,11 +974,11 @@ SpaceErrCode MdsClientImpl::AllocateVolumeBlockGroup(
 
 SpaceErrCode MdsClientImpl::AcquireVolumeBlockGroup(
     uint32_t fsId, uint64_t blockGroupOffset, const std::string& owner,
-    dingofs::mds::space::BlockGroup* groups) {
+    dingofs::pb::mds::space::BlockGroup* groups) {
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
-    AcquireBlockGroupResponse response;
+    pb::mds::space::AcquireBlockGroupResponse response;
     mdsbasecli_->AcquireVolumeBlockGroup(fsId, blockGroupOffset, owner,
                                          &response, cntl, channel);
 
@@ -981,11 +1000,11 @@ SpaceErrCode MdsClientImpl::AcquireVolumeBlockGroup(
 
 SpaceErrCode MdsClientImpl::ReleaseVolumeBlockGroup(
     uint32_t fsId, const std::string& owner,
-    const std::vector<dingofs::mds::space::BlockGroup>& blockGroups) {
+    const std::vector<dingofs::pb::mds::space::BlockGroup>& blockGroups) {
   auto task = RPCTask {
     (void)addrindex;
     (void)rpctimeoutMS;
-    ReleaseBlockGroupResponse response;
+    pb::mds::space::ReleaseBlockGroupResponse response;
     mdsbasecli_->ReleaseVolumeBlockGroup(fsId, owner, blockGroups, &response,
                                          cntl, channel);
 

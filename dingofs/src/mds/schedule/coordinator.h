@@ -40,8 +40,11 @@
 namespace dingofs {
 namespace mds {
 namespace schedule {
-using ::dingofs::utils::InterruptibleSleeper;
-using ::dingofs::mds::heartbeat::ConfigChangeType;
+
+using utils::InterruptibleSleeper;
+
+using pb::mds::heartbeat::ConfigChangeType;
+
 class Coordinator {
  public:
   Coordinator() = default;
@@ -57,11 +60,11 @@ class Coordinator {
    *         UNINITIALIZE_ID if not
    */
   virtual MetaServerIdType CopySetHeartbeat(
-      const ::dingofs::mds::topology::CopySetInfo& origin_info,
-      const ::dingofs::mds::heartbeat::ConfigChangeInfo& config_ch_info,
-      ::dingofs::mds::heartbeat::CopySetConf* out);
+      const mds::topology::CopySetInfo& origin_info,
+      const pb::mds::heartbeat::ConfigChangeInfo& config_ch_info,
+      pb::mds::heartbeat::CopySetConf* out);
 
-  virtual ScheduleStatusCode QueryMetaServerRecoverStatus(
+  virtual pb::mds::schedule::ScheduleStatusCode QueryMetaServerRecoverStatus(
       const std::vector<MetaServerIdType>& id_list,
       std::map<MetaServerIdType, bool>* status_map);
 
@@ -138,7 +141,7 @@ class Coordinator {
    * @return true if succeeded and false if failed
    */
   bool BuildCopySetConf(const CopySetConf& res,
-                        ::dingofs::mds::heartbeat::CopySetConf* out);
+                        pb::mds::heartbeat::CopySetConf* out);
 
   /**
    * @brief ScheduleNeedRun Determine whether specific type of scheduler is

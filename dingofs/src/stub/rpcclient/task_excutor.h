@@ -26,30 +26,13 @@
 #include <brpc/channel.h>
 #include <brpc/controller.h>
 
-#include <list>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
-#include "dingofs/proto/common.pb.h"
 #include "dingofs/src/stub/common/common.h"
 #include "dingofs/src/stub/rpcclient/channel_manager.h"
 #include "dingofs/src/stub/rpcclient/metacache.h"
-#include "dingofs/src/utils/concurrent/rw_lock.h"
-#include "dingofs/src/utils/math_util.h"
-
-using ::dingofs::common::PartitionInfo;
-using ::dingofs::metaserver::Inode;
-using ::dingofs::metaserver::InodeAttr;
-using ::dingofs::metaserver::MetaStatusCode;
-using ::google::protobuf::RepeatedPtrField;
-
-using ::dingofs::stub::common::CopysetID;
-using ::dingofs::stub::common::ExcutorOpt;
-using ::dingofs::stub::common::LogicPoolID;
-using ::dingofs::stub::common::MetaserverID;
-using ::dingofs::stub::common::MetaServerOpType;
 
 namespace dingofs {
 namespace stub {
@@ -57,17 +40,17 @@ namespace rpcclient {
 
 class TaskExecutorDone;
 
-MetaStatusCode ConvertToMetaStatusCode(int retcode);
+pb::metaserver::MetaStatusCode ConvertToMetaStatusCode(int retcode);
 
 class TaskContext {
  public:
   using RpcFunc = std::function<int(
-      LogicPoolID poolID, CopysetID copysetID, PartitionID partitionID,
-      uint64_t txId, uint64_t applyIndex, brpc::Channel* channel,
-      brpc::Controller* cntl, TaskExecutorDone* done)>;
+      common::LogicPoolID poolID, common::CopysetID copysetID,
+      common::PartitionID partitionID, uint64_t txId, uint64_t applyIndex,
+      brpc::Channel* channel, brpc::Controller* cntl, TaskExecutorDone* done)>;
 
   TaskContext() = default;
-  TaskContext(MetaServerOpType type, RpcFunc func, uint32_t fsid = 0,
+  TaskContext(common::MetaServerOpType type, RpcFunc func, uint32_t fsid = 0,
               uint64_t inodeid = 0, bool streaming = false,
               bool refreshTxId = false)
       : optype(type),
@@ -85,7 +68,7 @@ class TaskContext {
   }
 
   uint64_t rpcTimeoutMs;
-  MetaServerOpType optype;
+  common::MetaServerOpType optype;
   RpcFunc rpctask = nullptr;
   uint32_t fsID = 0;
   // inode used to locate replacement of dentry or inode. for CreateDentry
@@ -110,10 +93,11 @@ class TaskContext {
 class TaskExecutor {
  public:
   TaskExecutor() {}
-  TaskExecutor(
-      const ExcutorOpt& opt, const std::shared_ptr<MetaCache>& metaCache,
-      const std::shared_ptr<ChannelManager<MetaserverID>>& channelManager,
-      std::shared_ptr<TaskContext> task)
+  TaskExecutor(const common::ExcutorOpt& opt,
+               const std::shared_ptr<MetaCache>& metaCache,
+               const std::shared_ptr<ChannelManager<common::MetaserverID>>&
+                   channelManager,
+               std::shared_ptr<TaskContext> task)
       : metaCache_(metaCache),
         channelManager_(channelManager),
         task_(std::move(task)),
@@ -137,7 +121,8 @@ class TaskExecutor {
   bool NeedRetry();
   int ExcuteTask(brpc::Channel* channel, TaskExecutorDone* done);
   virtual bool GetTarget();
-  void UpdateApplyIndex(const LogicPoolID& poolID, const CopysetID& copysetId,
+  void UpdateApplyIndex(const common::LogicPoolID& poolID,
+                        const common::CopysetID& copysetId,
                         uint64_t applyIndex);
 
   // handle a returned rpc
@@ -160,10 +145,10 @@ class TaskExecutor {
 
  protected:
   std::shared_ptr<MetaCache> metaCache_;
-  std::shared_ptr<ChannelManager<MetaserverID>> channelManager_;
+  std::shared_ptr<ChannelManager<common::MetaserverID>> channelManager_;
   std::shared_ptr<TaskContext> task_;
 
-  ExcutorOpt opt_;
+  common::ExcutorOpt opt_;
   uint64_t maxOverloadPow_;
   uint64_t maxTimeoutPow_;
 };
@@ -173,12 +158,12 @@ class MetaServerClientDone : public google::protobuf::Closure {
   MetaServerClientDone() {}
   ~MetaServerClientDone() {}
 
-  void SetMetaStatusCode(MetaStatusCode code) { code_ = code; }
+  void SetMetaStatusCode(pb::metaserver::MetaStatusCode code) { code_ = code; }
 
-  MetaStatusCode GetStatusCode() const { return code_; }
+  pb::metaserver::MetaStatusCode GetStatusCode() const { return code_; }
 
  private:
-  MetaStatusCode code_;
+  pb::metaserver::MetaStatusCode code_;
 };
 
 class BatchGetInodeAttrDone : public MetaServerClientDone {
@@ -186,16 +171,19 @@ class BatchGetInodeAttrDone : public MetaServerClientDone {
   BatchGetInodeAttrDone() {}
   ~BatchGetInodeAttrDone() {}
 
-  void SetInodeAttrs(const RepeatedPtrField<InodeAttr>& inodeAttrs) {
+  void SetInodeAttrs(
+      const google::protobuf::RepeatedPtrField<pb::metaserver::InodeAttr>&
+          inodeAttrs) {
     inodeAttrs_ = inodeAttrs;
   }
 
-  const RepeatedPtrField<InodeAttr>& GetInodeAttrs() const {
+  const google::protobuf::RepeatedPtrField<pb::metaserver::InodeAttr>&
+  GetInodeAttrs() const {
     return inodeAttrs_;
   }
 
  private:
-  RepeatedPtrField<InodeAttr> inodeAttrs_;
+  google::protobuf::RepeatedPtrField<pb::metaserver::InodeAttr> inodeAttrs_;
 };
 
 class TaskExecutorDone : public google::protobuf::Closure {
@@ -219,7 +207,6 @@ class TaskExecutorDone : public google::protobuf::Closure {
  private:
   friend class TaskExecutor;
 
- private:
   std::shared_ptr<TaskExecutor> excutor_;
   MetaServerClientDone* done_;
   int code_;
@@ -229,11 +216,14 @@ class BatchGetInodeAttrTaskExecutorDone : public TaskExecutorDone {
  public:
   using TaskExecutorDone::TaskExecutorDone;
 
-  void SetInodeAttrs(const RepeatedPtrField<InodeAttr>& inodeAttrs) {
+  void SetInodeAttrs(
+      const google::protobuf::RepeatedPtrField<pb::metaserver::InodeAttr>&
+          inodeAttrs) {
     dynamic_cast<BatchGetInodeAttrDone*>(GetDone())->SetInodeAttrs(inodeAttrs);
   }
 
-  const RepeatedPtrField<InodeAttr>& GetInodeAttrs() {
+  const google::protobuf::RepeatedPtrField<pb::metaserver::InodeAttr>&
+  GetInodeAttrs() {
     return dynamic_cast<BatchGetInodeAttrDone*>(GetDone())->GetInodeAttrs();
   }
 };
@@ -241,8 +231,10 @@ class BatchGetInodeAttrTaskExecutorDone : public TaskExecutorDone {
 class CreateInodeExcutor : public TaskExecutor {
  public:
   explicit CreateInodeExcutor(
-      const ExcutorOpt& opt, const std::shared_ptr<MetaCache>& metaCache,
-      const std::shared_ptr<ChannelManager<MetaserverID>>& channelManager,
+      const common::ExcutorOpt& opt,
+      const std::shared_ptr<MetaCache>& metaCache,
+      const std::shared_ptr<ChannelManager<common::MetaserverID>>&
+          channelManager,
       const std::shared_ptr<TaskContext>& task)
       : TaskExecutor(opt, metaCache, channelManager, task) {}
 

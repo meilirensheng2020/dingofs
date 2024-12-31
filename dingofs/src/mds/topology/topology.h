@@ -56,6 +56,8 @@ using ServerFilter = std::function<bool(const Server&)>;
 using ZoneFilter = std::function<bool(const Zone&)>;
 using PoolFilter = std::function<bool(const Pool&)>;
 
+using pb::mds::topology::TopoStatusCode;
+
 class CopysetCreateInfo {
  public:
   CopysetCreateInfo() = default;
@@ -119,7 +121,8 @@ class Topology {
   virtual TopoStatusCode UpdateZone(const Zone& data) = 0;
   virtual TopoStatusCode UpdateServer(const Server& data) = 0;
   virtual TopoStatusCode UpdateMetaServerOnlineState(
-      const OnlineState& online_state, MetaServerIdType id) = 0;
+      const pb::mds::topology::OnlineState& online_state,
+      MetaServerIdType id) = 0;
   virtual TopoStatusCode UpdateMetaServerSpace(const MetaServerSpace& space,
                                                MetaServerIdType id) = 0;
   virtual TopoStatusCode UpdateMetaServerStartUpTime(uint64_t time,
@@ -129,9 +132,9 @@ class Topology {
   virtual TopoStatusCode UpdatePartitionStatistic(
       uint32_t partition_id, PartitionStatistic statistic) = 0;
   virtual TopoStatusCode UpdatePartitionTxIds(
-      std::vector<PartitionTxId> tx_ids) = 0;
-  virtual TopoStatusCode UpdatePartitionStatus(PartitionIdType partition_id,
-                                               PartitionStatus status) = 0;
+      std::vector<pb::mds::topology::PartitionTxId> tx_ids) = 0;
+  virtual TopoStatusCode UpdatePartitionStatus(
+      PartitionIdType partition_id, pb::common::PartitionStatus status) = 0;
 
   virtual TopoStatusCode SetCopySetAvalFlag(const CopySetKey& key,
                                             bool aval) = 0;
@@ -270,8 +273,8 @@ class Topology {
   virtual std::vector<CopySetInfo> ListCopysetInfo() const = 0;
 
   virtual void GetMetaServersSpace(
-      ::google::protobuf::RepeatedPtrField<
-          dingofs::mds::topology::MetadataUsage>* spaces) = 0;
+      ::google::protobuf::RepeatedPtrField<pb::mds::topology::MetadataUsage>*
+          spaces) = 0;
 
   virtual std::string GetHostNameAndPortById(MetaServerIdType ms_id) = 0;
 
@@ -280,7 +283,7 @@ class Topology {
   virtual std::list<MemcacheServer> ListMemcacheServers() const = 0;
   virtual std::list<MemcacheCluster> ListMemcacheClusters() const = 0;
   virtual TopoStatusCode AllocOrGetMemcacheCluster(
-      FsIdType fs_id, MemcacheClusterInfo* cluster) = 0;
+      FsIdType fs_id, pb::mds::topology::MemcacheClusterInfo* cluster) = 0;
 };
 
 class TopologyImpl : public Topology {
@@ -333,8 +336,9 @@ class TopologyImpl : public Topology {
   TopoStatusCode UpdatePool(const Pool& data) override;
   TopoStatusCode UpdateZone(const Zone& data) override;
   TopoStatusCode UpdateServer(const Server& data) override;
-  TopoStatusCode UpdateMetaServerOnlineState(const OnlineState& online_state,
-                                             MetaServerIdType id) override;
+  TopoStatusCode UpdateMetaServerOnlineState(
+      const pb::mds::topology::OnlineState& online_state,
+      MetaServerIdType id) override;
   TopoStatusCode UpdateMetaServerSpace(const MetaServerSpace& space,
                                        MetaServerIdType id) override;
   TopoStatusCode UpdateMetaServerStartUpTime(uint64_t time,
@@ -345,9 +349,10 @@ class TopologyImpl : public Topology {
   TopoStatusCode UpdatePartitionStatistic(
       uint32_t partition_id, PartitionStatistic statistic) override;
   TopoStatusCode UpdatePartitionTxIds(
-      std::vector<PartitionTxId> tx_ids) override;
-  TopoStatusCode UpdatePartitionStatus(PartitionIdType partition_id,
-                                       PartitionStatus status) override;
+      std::vector<pb::mds::topology::PartitionTxId> tx_ids) override;
+  TopoStatusCode UpdatePartitionStatus(
+      PartitionIdType partition_id,
+      pb::common::PartitionStatus status) override;
 
   PoolIdType FindPool(const std::string& pool_name) const override;
   ZoneIdType FindZone(const std::string& zone_name,
@@ -513,8 +518,8 @@ class TopologyImpl : public Topology {
   std::vector<CopySetInfo> ListCopysetInfo() const override;
 
   void GetMetaServersSpace(
-      ::google::protobuf::RepeatedPtrField<
-          dingofs::mds::topology::MetadataUsage>* spaces) override;
+      ::google::protobuf::RepeatedPtrField<pb::mds::topology::MetadataUsage>*
+          spaces) override;
 
   std::string GetHostNameAndPortById(MetaServerIdType ms_id) override;
 
@@ -523,7 +528,7 @@ class TopologyImpl : public Topology {
   std::list<MemcacheServer> ListMemcacheServers() const override;
   std::list<MemcacheCluster> ListMemcacheClusters() const override;
   TopoStatusCode AllocOrGetMemcacheCluster(
-      FsIdType fs_id, MemcacheClusterInfo* cluster) override;
+      FsIdType fs_id, pb::mds::topology::MemcacheClusterInfo* cluster) override;
 
  private:
   TopoStatusCode LoadClusterInfo();

@@ -29,6 +29,9 @@
 namespace dingofs {
 namespace metaserver {
 
+using pb::metaserver::Dentry;
+using pb::metaserver::MetaStatusCode;
+
 DentryManager::DentryManager(std::shared_ptr<DentryStorage> dentryStorage,
                              std::shared_ptr<TxManager> txManager)
     : dentryStorage_(dentryStorage), txManager_(txManager) {}
@@ -62,7 +65,8 @@ MetaStatusCode DentryManager::CreateDentry(const Dentry& dentry) {
   return rc;
 }
 
-MetaStatusCode DentryManager::CreateDentry(const DentryVec& vec, bool merge) {
+MetaStatusCode DentryManager::CreateDentry(const pb::metaserver::DentryVec& vec,
+                                           bool merge) {
   VLOG(9) << "Receive CreateDentryVec request, dentryVec = ("
           << vec.ShortDebugString() << ")";
   MetaStatusCode rc = dentryStorage_->Insert(vec, merge);

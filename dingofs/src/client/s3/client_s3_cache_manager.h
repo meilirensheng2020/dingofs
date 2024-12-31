@@ -40,11 +40,6 @@
 #include "dingofs/src/client/inode_wrapper.h"
 #include "dingofs/src/client/kvclient/kvclient_manager.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
-#include "dingofs/src/aws/s3_adapter.h"
-
-using dingofs::utils::ReadLockGuard;
-using dingofs::utils::RWLock;
-using dingofs::utils::WriteLockGuard;
 
 namespace dingofs {
 namespace client {
@@ -58,16 +53,6 @@ using FileCacheManagerPtr = std::shared_ptr<FileCacheManager>;
 using ChunkCacheManagerPtr = std::shared_ptr<ChunkCacheManager>;
 using DataCachePtr = std::shared_ptr<DataCache>;
 using WeakDataCachePtr = std::weak_ptr<DataCache>;
-using ::dingofs::client::blockcache::BCACHE_ERROR;
-using ::dingofs::client::blockcache::BlockKey;
-using ::dingofs::client::datastream::DataStream;
-using dingofs::metaserver::Inode;
-using dingofs::metaserver::S3ChunkInfo;
-using dingofs::metaserver::S3ChunkInfoList;
-using dingofs::aws::GetObjectAsyncCallBack;
-using dingofs::aws::PutObjectAsyncCallBack;
-using ::dingofs::aws::PutObjectAsyncContext;
-using dingofs::aws::S3Adapter;
 
 enum CacheType { Write = 1, Read = 2 };
 
@@ -114,7 +99,7 @@ inline std::string S3ReadRequestVecDebugString(
 }
 
 struct ObjectChunkInfo {
-  S3ChunkInfo s3ChunkInfo;
+  pb::metaserver::S3ChunkInfo s3ChunkInfo;
   uint64_t objectOffset;  // s3 object's begin in the block
 };
 
@@ -132,11 +117,12 @@ enum DataCacheStatus {
 class DataCache : public std::enable_shared_from_this<DataCache> {
  public:
   struct FlushBlock {
-    FlushBlock(BlockKey key, std::shared_ptr<PutObjectAsyncContext> context)
+    FlushBlock(blockcache::BlockKey key,
+               std::shared_ptr<aws::PutObjectAsyncContext> context)
         : key(key), context(context) {}
 
-    BlockKey key;
-    std::shared_ptr<PutObjectAsyncContext> context;
+    blockcache::BlockKey key;
+    std::shared_ptr<aws::PutObjectAsyncContext> context;
   };
 
  public:
@@ -149,7 +135,7 @@ class DataCache : public std::enable_shared_from_this<DataCache> {
     for (; iter != dataMap_.end(); iter++) {
       auto pageIter = iter->second.begin();
       for (; pageIter != iter->second.end(); pageIter++) {
-        DataStream::GetInstance().FreePage(pageIter->second->data);
+        datastream::DataStream::GetInstance().FreePage(pageIter->second->data);
         delete pageIter->second;
       }
     }
@@ -205,7 +191,7 @@ class DataCache : public std::enable_shared_from_this<DataCache> {
 
  private:
   void PrepareS3ChunkInfo(uint64_t chunkId, uint64_t offset, uint64_t len,
-                          S3ChunkInfo* info);
+                          pb::metaserver::S3ChunkInfo* info);
   void CopyBufToDataCache(uint64_t dataCachePos, uint64_t len,
                           const char* data);
   void AddDataBefore(uint64_t len, const char* data);
@@ -219,7 +205,6 @@ class DataCache : public std::enable_shared_from_this<DataCache> {
       bool to_s3, const std::vector<FlushBlock>& s3Tasks,
       const std::vector<std::shared_ptr<SetKVCacheTask>>& kvCacheTasks);
 
- private:
   S3ClientAdaptorImpl* s3ClientAdaptor_;
   ChunkCacheManagerPtr chunkCacheManager_;
   uint64_t chunkPos_;        // useful chunkPos
@@ -281,7 +266,7 @@ class ChunkCacheManager
   virtual DINGOFS_ERROR Flush(uint64_t inodeId, bool force, bool toS3 = false);
   uint64_t GetIndex() { return index_; }
   bool IsEmpty() {
-    ReadLockGuard writeCacheLock(rwLockChunk_);
+    utils::ReadLockGuard writeCacheLock(rwLockChunk_);
     return (dataWCacheMap_.empty() && dataRCacheMap_.empty());
   }
   virtual void ReleaseReadDataCache(uint64_t key);
@@ -292,16 +277,15 @@ class ChunkCacheManager
   void AddWriteDataCacheForTest(DataCachePtr dataCache);
   void ReleaseCacheForTest() {
     {
-      WriteLockGuard writeLockGuard(rwLockWrite_);
+      utils::WriteLockGuard writeLockGuard(rwLockWrite_);
       dataWCacheMap_.clear();
     }
-    WriteLockGuard writeLockGuard(rwLockRead_);
+    utils::WriteLockGuard writeLockGuard(rwLockRead_);
     dataRCacheMap_.clear();
   }
 
- public:
-  RWLock rwLockChunk_;  //  for read write chunk
-  RWLock rwLockWrite_;  //  for dataWCacheMap_
+  utils::RWLock rwLockChunk_;  //  for read write chunk
+  utils::RWLock rwLockWrite_;  //  for dataWCacheMap_
 
  private:
   void ReleaseWriteDataCache(const DataCachePtr& dataCache);
@@ -309,13 +293,12 @@ class ChunkCacheManager
   void TruncateReadCache(uint64_t chunkPos);
   bool IsFlushDataEmpty() { return flushingDataCache_ == nullptr; }
 
- private:
   uint64_t index_;
   std::map<uint64_t, DataCachePtr> dataWCacheMap_;  // first is pos in chunk
   std::map<uint64_t, std::list<DataCachePtr>::iterator>
       dataRCacheMap_;  // first is pos in chunk
 
-  RWLock rwLockRead_;  //  for read cache
+  utils::RWLock rwLockRead_;  //  for read cache
   S3ClientAdaptorImpl* s3ClientAdaptor_;
   dingofs::utils::Mutex flushMtx_;
   DataCachePtr flushingDataCache_;
@@ -329,7 +312,7 @@ class FileCacheManager {
   FileCacheManager(uint32_t fsid, uint64_t inode,
                    S3ClientAdaptorImpl* s3ClientAdaptor,
                    std::shared_ptr<KVClientManager> kvClientManager,
-                   std::shared_ptr<TaskThreadPool<>> threadPool)
+                   std::shared_ptr<utils::TaskThreadPool<>> threadPool)
       : fsId_(fsid),
         inode_(inode),
         s3ClientAdaptor_(s3ClientAdaptor),
@@ -357,7 +340,7 @@ class FileCacheManager {
 
   void SetChunkCacheManagerForTest(uint64_t index,
                                    ChunkCacheManagerPtr chunk_cache_manager) {
-    WriteLockGuard lg(rwLock_);
+    utils::WriteLockGuard lg(rwLock_);
 
     auto ret = chunkCacheMap_.emplace(index, chunk_cache_manager);
     assert(ret.second);
@@ -368,15 +351,16 @@ class FileCacheManager {
   void WriteChunk(uint64_t index, uint64_t chunkPos, uint64_t writeLen,
                   const char* dataBuf);
   void GenerateS3Request(ReadRequest request,
-                         const S3ChunkInfoList& s3ChunkInfoList, char* dataBuf,
-                         std::vector<S3ReadRequest>* requests, uint64_t fsId,
-                         uint64_t inodeId);
+                         const pb::metaserver::S3ChunkInfoList& s3ChunkInfoList,
+                         char* dataBuf, std::vector<S3ReadRequest>* requests,
+                         uint64_t fsId, uint64_t inodeId);
 
   void PrefetchS3Objs(
-      const std::vector<std::pair<BlockKey, uint64_t>>& prefetchObjs);
+      const std::vector<std::pair<blockcache::BlockKey, uint64_t>>&
+          prefetchObjs);
 
   void HandleReadRequest(const ReadRequest& request,
-                         const S3ChunkInfo& s3ChunkInfo,
+                         const pb::metaserver::S3ChunkInfo& s3ChunkInfo,
                          std::vector<ReadRequest>* addReadRequests,
                          std::vector<uint64_t>* deletingReq,
                          std::vector<S3ReadRequest>* requests, char* dataBuf,
@@ -411,11 +395,12 @@ class FileCacheManager {
     S3_NOT_EXIST = -2,
   };
 
-  ReadStatus toReadStatus(BCACHE_ERROR rc) {
+  ReadStatus toReadStatus(blockcache::BCACHE_ERROR rc) {
     ReadStatus st = ReadStatus::OK;
-    if (rc != BCACHE_ERROR::OK) {
-      st = (rc == BCACHE_ERROR::NOT_FOUND) ? ReadStatus::S3_NOT_EXIST
-                                           : ReadStatus::S3_READ_FAIL;
+    if (rc != blockcache::BCACHE_ERROR::OK) {
+      st = (rc == blockcache::BCACHE_ERROR::NOT_FOUND)
+               ? ReadStatus::S3_NOT_EXIST
+               : ReadStatus::S3_READ_FAIL;
     }
     return st;
   }
@@ -428,11 +413,12 @@ class FileCacheManager {
   void ProcessKVRequest(const S3ReadRequest& req, char* data_buf,
                         uint64_t file_len, std::once_flag& cancel_flag,
                         std::atomic<bool>& is_canceled,
-                        std::atomic<BCACHE_ERROR>& ret_code);
+                        std::atomic<blockcache::BCACHE_ERROR>& ret_code);
 
   // read kv request from local disk cache
-  bool ReadKVRequestFromLocalCache(const BlockKey& key, char* buffer,
-                                   uint64_t offset, uint64_t length);
+  bool ReadKVRequestFromLocalCache(const blockcache::BlockKey& key,
+                                   char* buffer, uint64_t offset,
+                                   uint64_t length);
 
   // read kv request from remote cache like memcached
   bool ReadKVRequestFromRemoteCache(const std::string& name, char* databuf,
@@ -440,7 +426,8 @@ class FileCacheManager {
 
   // read kv request from s3
   bool ReadKVRequestFromS3(const std::string& name, char* databuf,
-                           uint64_t offset, uint64_t length, BCACHE_ERROR* rc);
+                           uint64_t offset, uint64_t length,
+                           blockcache::BCACHE_ERROR* rc);
 
   // read retry policy when read from s3 occur not exist error
   int HandleReadS3NotExist(uint32_t retry,
@@ -451,20 +438,19 @@ class FileCacheManager {
                         uint64_t blockSize, uint64_t chunkSize,
                         uint64_t startBlockIndex);
 
- private:
   friend class AsyncPrefetchCallback;
 
   uint64_t fsId_;
   uint64_t inode_;
   std::map<uint64_t, ChunkCacheManagerPtr> chunkCacheMap_;  // first is index
-  RWLock rwLock_;
+  utils::RWLock rwLock_;
   dingofs::utils::Mutex mtx_;
   S3ClientAdaptorImpl* s3ClientAdaptor_;
   dingofs::utils::Mutex downloadMtx_;
   std::set<std::string> downloadingObj_;
 
   std::shared_ptr<KVClientManager> kvClientManager_;
-  std::shared_ptr<TaskThreadPool<>> readTaskPool_;
+  std::shared_ptr<utils::TaskThreadPool<>> readTaskPool_;
 };
 
 class FsCacheManager {
@@ -512,7 +498,7 @@ class FsCacheManager {
 
   void SetFileCacheManagerForTest(uint64_t inodeId,
                                   FileCacheManagerPtr fileCacheManager) {
-    WriteLockGuard writeLockGuard(rwLock_);
+    utils::WriteLockGuard writeLockGuard(rwLock_);
 
     auto ret = fileCacheManagerMap_.emplace(inodeId, fileCacheManager);
     assert(ret.second);
@@ -536,7 +522,6 @@ class FsCacheManager {
    private:
     void ReleaseCache();
 
-   private:
     std::mutex mtx_;
     std::condition_variable cond_;
     std::list<DataCachePtr> retired_;
@@ -544,10 +529,9 @@ class FsCacheManager {
     std::thread t_;
   };
 
- private:
   std::unordered_map<uint64_t, FileCacheManagerPtr>
       fileCacheManagerMap_;  // first is inodeid
-  RWLock rwLock_;
+  utils::RWLock rwLock_;
   std::mutex lruMtx_;
 
   std::list<DataCachePtr> lruReadDataCacheList_;
@@ -565,8 +549,8 @@ class FsCacheManager {
 
   std::shared_ptr<KVClientManager> kvClientManager_;
 
-  std::shared_ptr<TaskThreadPool<>> readTaskPool_ =
-      std::make_shared<TaskThreadPool<>>();
+  std::shared_ptr<utils::TaskThreadPool<>> readTaskPool_ =
+      std::make_shared<utils::TaskThreadPool<>>();
 };
 
 }  // namespace client

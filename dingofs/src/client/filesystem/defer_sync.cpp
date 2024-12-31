@@ -28,14 +28,17 @@
 #include <vector>
 
 #include "dingofs/src/client/inode_wrapper.h"
-#include "glog/logging.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
+#include "glog/logging.h"
 
 namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::utils::LockGuard;
+using common::DeferSyncOption;
+using pb::metaserver::MetaStatusCode;
+using utils::LockGuard;
+using utils::Mutex;
 
 SyncInodeClosure::SyncInodeClosure(uint64_t sync_seq,
                                    std::shared_ptr<DeferSync> defer_sync)

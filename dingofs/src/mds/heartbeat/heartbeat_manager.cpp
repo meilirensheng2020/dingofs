@@ -29,17 +29,18 @@
 
 #include "dingofs/src/mds/topology/deal_peerid.h"
 
-using ::dingofs::mds::topology::CopySetIdType;
-using ::dingofs::mds::topology::CopySetKey;
-using ::dingofs::mds::topology::MetaServer;
-using ::dingofs::mds::topology::MetaServerSpace;
-using ::dingofs::mds::topology::PoolIdType;
-using ::dingofs::mds::topology::TopoStatusCode;
-using ::dingofs::mds::topology::UNINITIALIZE_ID;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
+
+using mds::topology::CopySetIdType;
+using mds::topology::CopySetKey;
+using mds::topology::MetaServer;
+using mds::topology::MetaServerSpace;
+using mds::topology::PoolIdType;
+using mds::topology::TopoStatusCode;
+using mds::topology::UNINITIALIZE_ID;
+
 HeartbeatManager::HeartbeatManager(
     const HeartbeatOption& option, const std::shared_ptr<Topology>& topology,
     const std::shared_ptr<Coordinator>& coordinator)
@@ -105,10 +106,10 @@ void HeartbeatManager::UpdateMetaServerSpace(
 void HeartbeatManager::MetaServerHeartbeat(
     const MetaServerHeartbeatRequest& request,
     MetaServerHeartbeatResponse* response) {
-  response->set_statuscode(HeartbeatStatusCode::hbOK);
+  response->set_statuscode(pb::mds::heartbeat::HeartbeatStatusCode::hbOK);
   // check validity of heartbeat request
-  HeartbeatStatusCode ret = CheckRequest(request);
-  if (ret != HeartbeatStatusCode::hbOK) {
+  pb::mds::heartbeat::HeartbeatStatusCode ret = CheckRequest(request);
+  if (ret != pb::mds::heartbeat::HeartbeatStatusCode::hbOK) {
     LOG(ERROR) << "heartbeatManager get error request";
     response->set_statuscode(ret);
     return;
@@ -127,28 +128,29 @@ void HeartbeatManager::MetaServerHeartbeat(
   // dealing with copysets included in the heartbeat request
   for (const auto& value : request.copysetinfos()) {
     // convert copysetInfo from heartbeat format to topology format
-    ::dingofs::mds::topology::CopySetInfo report_copy_set_info;
+    mds::topology::CopySetInfo report_copy_set_info;
     if (!TransformHeartbeatCopySetInfoToTopologyOne(value,
                                                     &report_copy_set_info)) {
       LOG(ERROR) << "heartbeatManager receive copyset(" << value.poolid() << ","
                  << value.copysetid()
                  << ") information, but can not transfer to topology one";
-      response->set_statuscode(HeartbeatStatusCode::hbAnalyseCopysetError);
+      response->set_statuscode(
+          pb::mds::heartbeat::HeartbeatStatusCode::hbAnalyseCopysetError);
       continue;
     }
 
     // forward reported copyset info to CopysetConfGenerator
-    CopySetConf conf;
+    pb::mds::heartbeat::CopySetConf conf;
     ConfigChangeInfo config_ch_info;
     if (copysetConfGenerator_->GenCopysetConf(
             request.metaserverid(), report_copy_set_info,
             value.configchangeinfo(), &conf)) {
-      CopySetConf* res = response->add_needupdatecopysets();
+      pb::mds::heartbeat::CopySetConf* res = response->add_needupdatecopysets();
       *res = conf;
     }
 
     // convert partitionInfo from heartbeat format to topology format
-    std::list<::dingofs::mds::topology::Partition> partition_list;
+    std::list<mds::topology::Partition> partition_list;
     for (int32_t i = 0; i < value.partitioninfolist_size(); i++) {
       partition_list.emplace_back(value.partitioninfolist(i));
     }
@@ -165,7 +167,7 @@ void HeartbeatManager::MetaServerHeartbeat(
   }
 }
 
-HeartbeatStatusCode HeartbeatManager::CheckRequest(
+pb::mds::heartbeat::HeartbeatStatusCode HeartbeatManager::CheckRequest(
     const MetaServerHeartbeatRequest& request) {
   MetaServer meta_server;
 
@@ -175,7 +177,7 @@ HeartbeatStatusCode HeartbeatManager::CheckRequest(
                << request.metaserverid() << ", ip:" << request.ip()
                << ", port:" << request.port()
                << ", but topology do not contain this one";
-    return HeartbeatStatusCode::hbMetaServerUnknown;
+    return pb::mds::heartbeat::HeartbeatStatusCode::hbMetaServerUnknown;
   }
 
   // mismatch ip address reported by metaserver and mds record
@@ -188,7 +190,7 @@ HeartbeatStatusCode HeartbeatManager::CheckRequest(
                << " do not consistent with topo record ip:"
                << meta_server.GetInternalIp()
                << ", record port:" << meta_server.GetInternalPort();
-    return HeartbeatStatusCode::hbMetaServerIpPortNotMatch;
+    return pb::mds::heartbeat::HeartbeatStatusCode::hbMetaServerIpPortNotMatch;
   }
 
   // mismatch token reported by metaserver and mds record
@@ -198,15 +200,15 @@ HeartbeatStatusCode HeartbeatManager::CheckRequest(
                << ", but fine report token:" << request.token()
                << " do not consistent with topo record token:"
                << meta_server.GetToken();
-    return HeartbeatStatusCode::hbMetaServerTokenNotMatch;
+    return pb::mds::heartbeat::HeartbeatStatusCode::hbMetaServerTokenNotMatch;
   }
-  return HeartbeatStatusCode::hbOK;
+  return pb::mds::heartbeat::HeartbeatStatusCode::hbOK;
 }
 
 bool HeartbeatManager::TransformHeartbeatCopySetInfoToTopologyOne(
-    const ::dingofs::mds::heartbeat::CopySetInfo& info,
-    ::dingofs::mds::topology::CopySetInfo* out) {
-  ::dingofs::mds::topology::CopySetInfo topo_copyset_info(
+    const pb::mds::heartbeat::CopySetInfo& info,
+    mds::topology::CopySetInfo* out) {
+  mds::topology::CopySetInfo topo_copyset_info(
       static_cast<PoolIdType>(info.poolid()), info.copysetid());
   // set epoch
   topo_copyset_info.SetEpoch(info.epoch());

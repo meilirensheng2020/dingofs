@@ -46,14 +46,14 @@ namespace dingofs {
 namespace tools {
 namespace query {
 
-using InfoType = dingofs::mds::topology::CopysetValue;
-using StatusType = dingofs::metaserver::copyset::CopysetStatusResponse;
-using StatusRequestType = dingofs::metaserver::copyset::CopysetsStatusRequest;
+using InfoType = pb::mds::topology::CopysetValue;
+using StatusType = pb::metaserver::copyset::CopysetStatusResponse;
+using StatusRequestType = pb::metaserver::copyset::CopysetsStatusRequest;
 
 class CopysetQueryTool
-    : public CurvefsToolRpc<dingofs::mds::topology::GetCopysetsInfoRequest,
-                            dingofs::mds::topology::GetCopysetsInfoResponse,
-                            dingofs::mds::topology::TopologyService_Stub> {
+    : public CurvefsToolRpc<pb::mds::topology::GetCopysetsInfoRequest,
+                            pb::mds::topology::GetCopysetsInfoResponse,
+                            pb::mds::topology::TopologyService_Stub> {
  public:
   explicit CopysetQueryTool(const std::string& cmd = kCopysetQueryCmd,
                             bool show = true)

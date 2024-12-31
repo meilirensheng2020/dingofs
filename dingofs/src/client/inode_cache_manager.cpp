@@ -32,14 +32,23 @@
 #include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/filesystem/error.h"
 #include "dingofs/src/client/inode_wrapper.h"
-
-using ::dingofs::metaserver::Inode;
-using ::dingofs::metaserver::MetaStatusCode_Name;
+#include "dingofs/src/utils/concurrent/concurrent.h"
 
 namespace dingofs {
 namespace client {
 
-using ::dingofs::client::filesystem::ToFSError;
+using filesystem::ToFSError;
+using utils::CountDownEvent;
+using utils::Mutex;
+
+using stub::rpcclient::InodeParam;
+
+using pb::metaserver::FsFileType;
+using pb::metaserver::Inode;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::MetaStatusCode_Name;
+using pb::metaserver::XAttr;
 
 using NameLockGuard = ::dingofs::utils::GenericNameLockGuard<Mutex>;
 

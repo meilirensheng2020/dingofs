@@ -43,15 +43,19 @@ class TopologyListTool;
 
 namespace topology {
 
-using ClusterInfo =
-    std::pair<std::string, std::vector<mds::topology::PoolIdType>>;
+using dingofs::mds::topology::MetaServerIdType;
+using dingofs::mds::topology::PoolIdType;
+using dingofs::mds::topology::ServerIdType;
+using dingofs::mds::topology::ZoneIdType;
+
+using ClusterInfo = std::pair<std::string, std::vector<PoolIdType>>;
 using PoolInfoType =
-    std::pair<mds::topology::PoolInfo, std::vector<mds::topology::ZoneIdType>>;
-using ZoneInfoType = std::pair<mds::topology::ZoneInfo,
-                               std::vector<mds::topology::ServerIdType>>;
-using ServerInfoType = std::pair<mds::topology::ServerInfo,
-                                 std::vector<mds::topology::MetaServerIdType>>;
-using MetaserverInfoType = mds::topology::MetaServerInfo;
+    std::pair<pb::mds::topology::PoolInfo, std::vector<ZoneIdType>>;
+using ZoneInfoType =
+    std::pair<pb::mds::topology::ZoneInfo, std::vector<ServerIdType>>;
+using ServerInfoType =
+    std::pair<pb::mds::topology::ServerInfo, std::vector<MetaServerIdType>>;
+using MetaserverInfoType = pb::mds::topology::MetaServerInfo;
 
 class TopologyTreeJson {
  public:
@@ -69,29 +73,28 @@ class TopologyTreeJson {
    *
    * @details
    */
-  std::map<mds::topology::PoolIdType, PoolInfoType> poolId2PoolInfo_;
+  std::map<PoolIdType, PoolInfoType> poolId2PoolInfo_;
 
   /**
    * @brief zoneId to zoneInfo and serverIds which belongs to zone
    *
    * @details
    */
-  std::map<mds::topology::ZoneIdType, ZoneInfoType> zoneId2ZoneInfo_;
+  std::map<ZoneIdType, ZoneInfoType> zoneId2ZoneInfo_;
 
   /**
    * @brief serverId to serverInfo and metaserverIds which belongs to server
    *
    * @details
    */
-  std::map<mds::topology::ServerIdType, ServerInfoType> serverId2ServerInfo_;
+  std::map<ServerIdType, ServerInfoType> serverId2ServerInfo_;
 
   /**
    * @brief metaserverId to metaserverInfo
    *
    * @details
    */
-  std::map<mds::topology::MetaServerIdType, MetaserverInfoType>
-      metaserverId2MetaserverInfo_;
+  std::map<MetaServerIdType, MetaserverInfoType> metaserverId2MetaserverInfo_;
 
  public:
   bool BuildClusterMapPools(Json::Value* pools);

@@ -22,11 +22,20 @@
 
 #include "dingofs/src/client/filesystem/attr_watcher.h"
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/filesystem/utils.h"
 
 namespace dingofs {
 namespace client {
 namespace filesystem {
+
+using common::AttrWatcherOption;
+using utils::LRUCache;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
+
+using pb::metaserver::InodeAttr;
 
 AttrWatcher::AttrWatcher(AttrWatcherOption option,
                          std::shared_ptr<OpenFiles> openFiles,
@@ -40,7 +49,7 @@ void AttrWatcher::RemeberMtime(const InodeAttr& attr) {
   modifiedAt_->Put(attr.inodeid(), AttrMtime(attr));
 }
 
-bool AttrWatcher::GetMtime(Ino ino, TimeSpec* time) {
+bool AttrWatcher::GetMtime(Ino ino, base::time::TimeSpec* time) {
   ReadLockGuard lk(rwlock_);
   return modifiedAt_->Get(ino, time);
 }

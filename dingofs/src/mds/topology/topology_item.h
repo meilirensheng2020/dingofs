@@ -38,13 +38,11 @@
 #include "dingofs/src/mds/topology/topology_id_generator.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
 
-using dingofs::common::PartitionStatus;
-
 namespace dingofs {
 namespace mds {
 namespace topology {
 
-using FileType = metaserver::FsFileType;
+using FileType = pb::metaserver::FsFileType;
 using ProtoFileType2InodeNumMap = ::google::protobuf::Map<int32_t, int64_t>;
 
 /**
@@ -257,7 +255,7 @@ class MetaServerSpace {
     diskUsedByte_ = diskUsed;
   }
 
-  explicit MetaServerSpace(heartbeat::MetaServerSpaceStatus status) {
+  explicit MetaServerSpace(pb::mds::heartbeat::MetaServerSpaceStatus status) {
     SetSpaceStatus(status);
   }
 
@@ -281,7 +279,7 @@ class MetaServerSpace {
   }
   uint64_t GetMemoryMinRequire() const { return memoryCopySetMinRequireByte_; }
 
-  void SetSpaceStatus(heartbeat::MetaServerSpaceStatus status) {
+  void SetSpaceStatus(pb::mds::heartbeat::MetaServerSpaceStatus status) {
     diskThresholdByte_ = status.diskthresholdbyte();
     diskCopysetMinRequireByte_ = status.diskcopysetminrequirebyte();
     diskUsedByte_ = status.diskusedbyte();
@@ -333,14 +331,15 @@ class MetaServer {
         externalIp_(""),
         externalPort_(0),
         startUpTime_(0),
-        onlineState_(OFFLINE),
+        onlineState_(pb::mds::topology::OnlineState::OFFLINE),
         dirty_(false) {}
 
   MetaServer(MetaServerIdType id, const std::string& hostName,
              const std::string& token, ServerIdType serverId,
              const std::string& internalIp, uint32_t internalPort,
              const std::string& externalIp, uint32_t externalPort,
-             OnlineState onlineState = OnlineState::OFFLINE)
+             pb::mds::topology::OnlineState onlineState =
+                 pb::mds::topology::OnlineState::OFFLINE)
       : id_(id),
         hostName_(hostName),
         token_(token),
@@ -414,9 +413,11 @@ class MetaServer {
 
   uint64_t GetStartUpTime() const { return startUpTime_; }
 
-  void SetOnlineState(OnlineState state) { onlineState_ = state; }
+  void SetOnlineState(pb::mds::topology::OnlineState state) {
+    onlineState_ = state;
+  }
 
-  OnlineState GetOnlineState() const { return onlineState_; }
+  pb::mds::topology::OnlineState GetOnlineState() const { return onlineState_; }
 
   void SetMetaServerSpace(const MetaServerSpace& space) { space_ = space; }
 
@@ -442,7 +443,7 @@ class MetaServer {
   std::string externalIp_;
   uint32_t externalPort_;
   uint64_t startUpTime_;
-  OnlineState onlineState_;  // 0:online、1: offline
+  pb::mds::topology::OnlineState onlineState_;  // 0:online、1: offline
   MetaServerSpace space_;
   bool dirty_;
   mutable ::dingofs::utils::RWLock mutex_;
@@ -606,7 +607,7 @@ class CopySetInfo {
 };
 
 struct PartitionStatistic {
-  common::PartitionStatus status;
+  pb::common::PartitionStatus status;
   uint64_t inodeNum;
   uint64_t dentryNum;
   uint64_t nextId;
@@ -624,7 +625,7 @@ class Partition {
         idEnd_(0),
         idNext_(0),
         txId_(0),
-        status_(PartitionStatus::READWRITE),
+        status_(pb::common::PartitionStatus::READWRITE),
         inodeNum_(0),
         dentryNum_(0) {
     InitFileType2InodeNum();
@@ -640,7 +641,7 @@ class Partition {
         idEnd_(idEnd),
         idNext_(0),
         txId_(0),
-        status_(PartitionStatus::READWRITE),
+        status_(pb::common::PartitionStatus::READWRITE),
         inodeNum_(0),
         dentryNum_(0) {
     InitFileType2InodeNum();
@@ -679,7 +680,7 @@ class Partition {
     return *this;
   }
 
-  explicit Partition(const common::PartitionInfo& v) {
+  explicit Partition(const pb::common::PartitionInfo& v) {
     fsId_ = v.fsid();
     poolId_ = v.poolid();
     copySetId_ = v.copysetid();
@@ -696,8 +697,8 @@ class Partition {
     idNext_ = v.has_nextid() ? v.nextid() : 0;
   }
 
-  explicit operator common::PartitionInfo() const {
-    common::PartitionInfo partition;
+  explicit operator pb::common::PartitionInfo() const {
+    pb::common::PartitionInfo partition;
     partition.set_fsid(fsId_);
     partition.set_poolid(poolId_);
     partition.set_copysetid(copySetId_);
@@ -752,9 +753,9 @@ class Partition {
 
   void SetTxId(uint64_t txId) { txId_ = txId; }
 
-  PartitionStatus GetStatus() const { return status_; }
+  pb::common::PartitionStatus GetStatus() const { return status_; }
 
-  void SetStatus(PartitionStatus status) { status_ = status; }
+  void SetStatus(pb::common::PartitionStatus status) { status_ = status; }
 
   uint64_t GetInodeNum() const { return inodeNum_; }
 
@@ -770,7 +771,7 @@ class Partition {
 
   bool ParseFromString(const std::string& value);
 
-  common::PartitionInfo ToPartitionInfo();
+  pb::common::PartitionInfo ToPartitionInfo();
 
   std::unordered_map<FileType, uint64_t> GetFileType2InodeNum() const {
     return fileType2InodeNum_;
@@ -781,8 +782,8 @@ class Partition {
   }
 
   void InitFileType2InodeNum() {
-    for (int i = metaserver::FsFileType_MIN; i <= metaserver::FsFileType_MAX;
-         ++i) {
+    for (int i = pb::metaserver::FsFileType_MIN;
+         i <= pb::metaserver::FsFileType_MAX; ++i) {
       fileType2InodeNum_.emplace(static_cast<FileType>(i), 0);
     }
   }
@@ -796,7 +797,7 @@ class Partition {
   uint64_t idEnd_;
   uint64_t idNext_;
   uint64_t txId_;
-  common::PartitionStatus status_;
+  pb::common::PartitionStatus status_;
   uint64_t inodeNum_;
   uint64_t dentryNum_;
   std::unordered_map<FileType, uint64_t> fileType2InodeNum_;
@@ -806,25 +807,25 @@ class Partition {
 class MemcacheServer {
  public:
   MemcacheServer() : port_(0) {}
-  explicit MemcacheServer(const MemcacheServerInfo& info)
+  explicit MemcacheServer(const pb::mds::topology::MemcacheServerInfo& info)
       : ip_(info.ip()), port_(info.port()) {}
   explicit MemcacheServer(const std::string&& ip, uint32_t port)
       : ip_(ip), port_(port) {}
 
-  MemcacheServer& operator=(const MemcacheServerInfo& info) {
+  MemcacheServer& operator=(const pb::mds::topology::MemcacheServerInfo& info) {
     ip_ = info.ip();
     port_ = info.port();
     return *this;
   }
 
-  operator MemcacheServerInfo() const {
-    MemcacheServerInfo info;
+  operator pb::mds::topology::MemcacheServerInfo() const {
+    pb::mds::topology::MemcacheServerInfo info;
     info.set_ip(ip_);
     info.set_port(port_);
     return info;
   }
 
-  bool operator==(const MemcacheServerInfo& server) const {
+  bool operator==(const pb::mds::topology::MemcacheServerInfo& server) const {
     return ip_ == server.ip() && port_ == server.port();
   }
 
@@ -840,7 +841,7 @@ class MemcacheServer {
 class MemcacheCluster {
  public:
   MemcacheCluster() : id_(UNINITIALIZE_ID) {}
-  explicit MemcacheCluster(const MemcacheClusterInfo& info)
+  explicit MemcacheCluster(const pb::mds::topology::MemcacheClusterInfo& info)
       : id_(info.clusterid()) {
     for (auto const& server : info.servers()) {
       servers_.emplace_back(server);
@@ -853,7 +854,8 @@ class MemcacheCluster {
   MemcacheCluster(MetaServerIdType id, const std::list<MemcacheServer>& servers)
       : id_(id), servers_(servers) {}
 
-  MemcacheCluster& operator=(const MemcacheClusterInfo& info) {
+  MemcacheCluster& operator=(
+      const pb::mds::topology::MemcacheClusterInfo& info) {
     id_ = info.clusterid();
     for (auto const& server : info.servers()) {
       servers_.emplace_back(server);
@@ -861,11 +863,12 @@ class MemcacheCluster {
     return *this;
   }
 
-  operator MemcacheClusterInfo() const {
-    MemcacheClusterInfo info;
+  operator pb::mds::topology::MemcacheClusterInfo() const {
+    pb::mds::topology::MemcacheClusterInfo info;
     info.set_clusterid(id_);
     for (auto const& server : servers_) {
-      (*info.add_servers()) = static_cast<MemcacheServerInfo>(server);
+      (*info.add_servers()) =
+          static_cast<pb::mds::topology::MemcacheServerInfo>(server);
     }
     return info;
   }

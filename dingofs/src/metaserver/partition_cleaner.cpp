@@ -23,13 +23,18 @@
 
 #include <list>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/copyset/meta_operator.h"
 
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::mds::FSStatusCode;
-using ::dingofs::mds::FSStatusCode_Name;
+using pb::mds::FsInfo;
+using pb::mds::FSStatusCode;
+using pb::mds::FSStatusCode_Name;
+
+using pb::metaserver::Inode;
+using pb::metaserver::MetaStatusCode;
 
 bool PartitionCleaner::ScanPartition() {
   if (!copysetNode_->IsLeaderTerm()) {
@@ -83,7 +88,7 @@ bool PartitionCleaner::ScanPartition() {
 
 MetaStatusCode PartitionCleaner::CleanDataAndDeleteInode(const Inode& inode) {
   // TODO(cw123) : consider FsFileType::TYPE_FILE
-  if (FsFileType::TYPE_S3 == inode.type()) {
+  if (pb::metaserver::FsFileType::TYPE_S3 == inode.type()) {
     // get s3info from mds
     FsInfo fsInfo;
     if (fsInfoMap_.find(inode.fsid()) == fsInfoMap_.end()) {
@@ -133,13 +138,13 @@ MetaStatusCode PartitionCleaner::CleanDataAndDeleteInode(const Inode& inode) {
 }
 
 MetaStatusCode PartitionCleaner::DeleteInode(const Inode& inode) {
-  DeleteInodeRequest request;
+  pb::metaserver::DeleteInodeRequest request;
   request.set_poolid(partition_->GetPoolId());
   request.set_copysetid(partition_->GetCopySetId());
   request.set_partitionid(partition_->GetPartitionId());
   request.set_fsid(inode.fsid());
   request.set_inodeid(inode.inodeid());
-  DeleteInodeResponse response;
+  pb::metaserver::DeleteInodeResponse response;
   PartitionCleanerClosure done;
   auto deleteInodeOp = new copyset::DeleteInodeOperator(
       copysetNode_, nullptr, &request, &response, &done);
@@ -149,11 +154,11 @@ MetaStatusCode PartitionCleaner::DeleteInode(const Inode& inode) {
 }
 
 MetaStatusCode PartitionCleaner::DeletePartition() {
-  DeletePartitionRequest request;
+  pb::metaserver::DeletePartitionRequest request;
   request.set_poolid(partition_->GetPoolId());
   request.set_copysetid(partition_->GetCopySetId());
   request.set_partitionid(partition_->GetPartitionId());
-  DeletePartitionResponse response;
+  pb::metaserver::DeletePartitionResponse response;
   PartitionCleanerClosure done;
   auto deletePartitionOp = new copyset::DeletePartitionOperator(
       copysetNode_, nullptr, &request, &response, &done);

@@ -18,6 +18,8 @@
 namespace dingofs {
 namespace client {
 
+using pb::metaserver::S3ChunkInfo;
+
 void FlatFileChunk::InsertChunkInfo(const FlatFileSlice& new_slice) {
   VLOG(6) << "Will insert new slice, " << new_slice.ToString();
 

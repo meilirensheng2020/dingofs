@@ -35,11 +35,12 @@
 #include "absl/cleanup/cleanup.h"
 #include "butil/time.h"
 #include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/common/define.h"
+#include "dingofs/src/common/rpc_stream.h"
+#include "dingofs/src/stub/common/common.h"
 #include "dingofs/src/stub/metric/metric.h"
 #include "dingofs/src/stub/rpcclient/metacache.h"
 #include "dingofs/src/stub/rpcclient/task_excutor.h"
-#include "dingofs/src/common/define.h"
-#include "dingofs/src/common/rpc_stream.h"
 #include "dingofs/src/utils/string_util.h"
 #include "fmt/core.h"
 
@@ -47,25 +48,50 @@ namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
-using dingofs::stub::metric::MetricListGuard;
-using dingofs::metaserver::BatchGetInodeAttrRequest;
-using dingofs::metaserver::BatchGetInodeAttrResponse;
-using dingofs::metaserver::BatchGetXAttrRequest;
-using dingofs::metaserver::BatchGetXAttrResponse;
-using dingofs::metaserver::GetOrModifyS3ChunkInfoRequest;
-using dingofs::metaserver::GetOrModifyS3ChunkInfoResponse;
-using ::dingofs::utils::StringToUll;
+using pb::metaserver::BatchGetInodeAttrRequest;
+using pb::metaserver::BatchGetInodeAttrResponse;
+using pb::metaserver::BatchGetXAttrRequest;
+using pb::metaserver::BatchGetXAttrResponse;
+using pb::metaserver::Dentry;
+using pb::metaserver::FlushDirUsagesRequest;
+using pb::metaserver::FlushDirUsagesResponse;
+using pb::metaserver::FlushFsUsageRequest;
+using pb::metaserver::FlushFsUsageResponse;
+using pb::metaserver::FsFileType;
+using pb::metaserver::GetFsQuotaRequest;
+using pb::metaserver::GetFsQuotaResponse;
+using pb::metaserver::GetOrModifyS3ChunkInfoRequest;
+using pb::metaserver::GetOrModifyS3ChunkInfoResponse;
+using pb::metaserver::Inode;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::LoadDirQuotasRequest;
+using pb::metaserver::LoadDirQuotasResponse;
+using pb::metaserver::MetaServerService_Stub;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::MetaStatusCode_Name;
+using pb::metaserver::Quota;
+using pb::metaserver::S3ChunkInfoList;
+using pb::metaserver::Time;
+using pb::metaserver::UpdateInodeRequest;
+using pb::metaserver::UpdateInodeResponse;
+using pb::metaserver::Usage;
+using pb::metaserver::VolumeExtentList;
+using pb::metaserver::XAttr;
 
-using dingofs::metaserver::FlushDirUsagesRequest;
-using dingofs::metaserver::FlushDirUsagesResponse;
-using dingofs::metaserver::FlushFsUsageRequest;
-using dingofs::metaserver::FlushFsUsageResponse;
-using dingofs::metaserver::GetFsQuotaRequest;
-using dingofs::metaserver::GetFsQuotaResponse;
-using dingofs::metaserver::LoadDirQuotasRequest;
-using dingofs::metaserver::LoadDirQuotasResponse;
+using common::CopysetID;
+using common::ExcutorOpt;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::MetaServerOpType;
+using common::PartitionID;
+using metric::MetaServerClientMetric;
+using metric::MetricListGuard;
+using rpcclient::ConvertToMetaStatusCode;
+using utils::StringToUll;
 
-using dingofs::metaserver::MetaServerService_Stub;
+using dingofs::common::StreamConnection;
+using dingofs::common::StreamOptions;
+using dingofs::common::StreamStatus;
 
 using CreateDentryExcutor = TaskExecutor;
 using GetDentryExcutor = TaskExecutor;
@@ -80,10 +106,6 @@ using BatchGetXAttrExcutor = TaskExecutor;
 using GetOrModifyS3ChunkInfoExcutor = TaskExecutor;
 using UpdateVolumeExtentExecutor = TaskExecutor;
 using GetVolumeExtentExecutor = TaskExecutor;
-
-using ::dingofs::common::StreamConnection;
-using ::dingofs::common::StreamOptions;
-using ::dingofs::metaserver::MetaServerService_Stub;
 
 MetaStatusCode MetaServerClientImpl::Init(
     const ExcutorOpt& excutorOpt, const ExcutorOpt& excutorInternalOpt,
@@ -144,8 +166,8 @@ MetaStatusCode MetaServerClientImpl::GetDentry(uint32_t fsId, uint64_t inodeid,
     MetricListGuard meta_guard(
         &is_ok, {&metric_.getDentry, &metric_.getAllOperation}, start);
 
-    GetDentryResponse response;
-    GetDentryRequest request;
+    pb::metaserver::GetDentryResponse response;
+    pb::metaserver::GetDentryRequest request;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
@@ -155,7 +177,7 @@ MetaStatusCode MetaServerClientImpl::GetDentry(uint32_t fsId, uint64_t inodeid,
     request.set_txid(txId);
     request.set_appliedindex(applyIndex);
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.GetDentry(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -212,8 +234,8 @@ MetaStatusCode MetaServerClientImpl::ListDentry(uint32_t fsId, uint64_t inodeid,
     MetricListGuard metaGuard(
         &is_ok, {&metric_.listDentry, &metric_.getAllOperation}, start);
 
-    ListDentryRequest request;
-    ListDentryResponse response;
+    pb::metaserver::ListDentryRequest request;
+    pb::metaserver::ListDentryResponse response;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
@@ -225,7 +247,7 @@ MetaStatusCode MetaServerClientImpl::ListDentry(uint32_t fsId, uint64_t inodeid,
     request.set_onlydir(onlyDir);
     request.set_appliedindex(applyIndex);
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.ListDentry(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -284,8 +306,8 @@ MetaStatusCode MetaServerClientImpl::CreateDentry(const Dentry& dentry) {
                                &metric_.getAllOperation},
                               start);
 
-    CreateDentryResponse response;
-    CreateDentryRequest request;
+    pb::metaserver::CreateDentryResponse response;
+    pb::metaserver::CreateDentryRequest request;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
@@ -297,7 +319,7 @@ MetaStatusCode MetaServerClientImpl::CreateDentry(const Dentry& dentry) {
     d->set_txid(txId);
     d->set_type(dentry.type());
     request.set_allocated_dentry(d);
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.CreateDentry(cntl, &request, &response, nullptr);
 
     std::ostringstream oss;
@@ -362,8 +384,8 @@ MetaStatusCode MetaServerClientImpl::DeleteDentry(uint32_t fsId,
                                &metric_.getAllOperation},
                               start);
 
-    DeleteDentryResponse response;
-    DeleteDentryRequest request;
+    pb::metaserver::DeleteDentryResponse response;
+    pb::metaserver::DeleteDentryRequest request;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
@@ -373,7 +395,7 @@ MetaStatusCode MetaServerClientImpl::DeleteDentry(uint32_t fsId,
     request.set_txid(txId);
     request.set_type(type);
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.DeleteDentry(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -430,14 +452,14 @@ MetaStatusCode MetaServerClientImpl::PrepareRenameTx(
          &metric_.getAllOperation},
         start);
 
-    PrepareRenameTxRequest request;
-    PrepareRenameTxResponse response;
+    pb::metaserver::PrepareRenameTxRequest request;
+    pb::metaserver::PrepareRenameTxResponse response;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
     *request.mutable_dentrys() = {dentrys.begin(), dentrys.end()};
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.PrepareRenameTx(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -489,8 +511,8 @@ MetaStatusCode MetaServerClientImpl::GetInode(uint32_t fsId, uint64_t inodeid,
     MetricListGuard metaGuard(
         &is_ok, {&metric_.getInode, &metric_.getAllOperation}, start);
 
-    GetInodeRequest request;
-    GetInodeResponse response;
+    pb::metaserver::GetInodeRequest request;
+    pb::metaserver::GetInodeResponse response;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
@@ -499,7 +521,7 @@ MetaStatusCode MetaServerClientImpl::GetInode(uint32_t fsId, uint64_t inodeid,
     request.set_appliedindex(applyIndex);
     request.set_supportstreaming(true);
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.GetInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -624,8 +646,7 @@ void BatchGetInodeAttrRpcDone::Run() {
 
   MetaStatusCode ret = response.statuscode();
   if (ret != MetaStatusCode::OK) {
-    LOG(WARNING) << "batchGetInodeAttr failed"
-                 << ", errcode = " << ret
+    LOG(WARNING) << "batchGetInodeAttr failed" << ", errcode = " << ret
                  << ", errmsg = " << MetaStatusCode_Name(ret);
   } else if (response.has_appliedindex()) {
     auto meta_cache = done_->GetTaskExcutor()->GetMetaCache();
@@ -682,7 +703,7 @@ MetaStatusCode MetaServerClientImpl::BatchGetInodeAttr(
       request.set_appliedindex(applyIndex);
       *request.mutable_inodeid() = {it.begin(), it.end()};
 
-      dingofs::metaserver::MetaServerService_Stub stub(channel);
+      dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
       stub.BatchGetInodeAttr(cntl, &request, &response, nullptr);
 
       if (cntl->Failed()) {
@@ -745,7 +766,7 @@ MetaStatusCode MetaServerClientImpl::BatchGetInodeAttrAsync(
     request.set_appliedindex(applyIndex);
     *request.mutable_inodeid() = {inodeIds.begin(), inodeIds.end()};
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.BatchGetInodeAttr(cntl, &request, &rpc_done->response, rpc_done);
     return MetaStatusCode::OK;
   };
@@ -796,7 +817,7 @@ MetaStatusCode MetaServerClientImpl::BatchGetXAttr(
       request.set_appliedindex(applyIndex);
       *request.mutable_inodeid() = {it.begin(), it.end()};
 
-      dingofs::metaserver::MetaServerService_Stub stub(channel);
+      dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
       stub.BatchGetXAttr(cntl, &request, &response, nullptr);
 
       if (cntl->Failed()) {
@@ -860,7 +881,7 @@ MetaStatusCode MetaServerClientImpl::UpdateInode(
     req.set_partitionid(partitionID);
 
     UpdateInodeResponse response;
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.UpdateInode(cntl, &req, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -1045,7 +1066,7 @@ void MetaServerClientImpl::UpdateInodeAsync(const UpdateInodeRequest& request,
     req.set_partitionid(partitionID);
 
     auto* rpcDone = new UpdateInodeRpcDone(taskExecutorDone, &metric_);
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.UpdateInode(cntl, &req, &rpcDone->response, rpcDone);
     return MetaStatusCode::OK;
   };
@@ -1140,7 +1161,7 @@ MetaStatusCode MetaServerClientImpl::GetOrModifyS3ChunkInfo(
     *(request.mutable_s3chunkinfoadd()) = s3ChunkInfos;
     request.set_supportstreaming(true);
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
 
     // stream connection for s3chunkinfo list
     std::shared_ptr<StreamConnection> connection;
@@ -1187,8 +1208,7 @@ MetaStatusCode MetaServerClientImpl::GetOrModifyS3ChunkInfo(
         CHECK(out != nullptr) << "out ptr should be set.";
         auto status = connection->WaitAllDataReceived();
         if (status != StreamStatus::STREAM_OK) {
-          LOG(ERROR) << "Receive stream data failed"
-                     << ", status=" << status;
+          LOG(ERROR) << "Receive stream data failed" << ", status=" << status;
           return MetaStatusCode::RPC_STREAM_ERROR;
         }
       }
@@ -1295,7 +1315,7 @@ void MetaServerClientImpl::GetOrModifyS3ChunkInfoAsync(
     auto* rpcDone =
         new GetOrModifyS3ChunkInfoRpcDone(taskExecutorDone, &metric_);
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.GetOrModifyS3ChunkInfo(cntl, &request, &rpcDone->response, rpcDone);
     return MetaStatusCode::OK;
   };
@@ -1323,8 +1343,8 @@ MetaStatusCode MetaServerClientImpl::CreateInode(const InodeParam& param,
                                 &metric_.getAllOperation},
                                start);
 
-    CreateInodeResponse response;
-    CreateInodeRequest request;
+    pb::metaserver::CreateInodeResponse response;
+    pb::metaserver::CreateInodeRequest request;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
@@ -1343,7 +1363,7 @@ MetaStatusCode MetaServerClientImpl::CreateInode(const InodeParam& param,
     tm->set_sec(now.tv_sec);
     tm->set_nsec(now.tv_nsec);
     request.set_allocated_create(tm);
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.CreateInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -1401,8 +1421,8 @@ MetaStatusCode MetaServerClientImpl::CreateManageInode(const InodeParam& param,
                                &metric_.getAllOperation},
                               start);
 
-    CreateManageInodeResponse response;
-    CreateManageInodeRequest request;
+    pb::metaserver::CreateManageInodeResponse response;
+    pb::metaserver::CreateManageInodeRequest request;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
@@ -1410,10 +1430,11 @@ MetaStatusCode MetaServerClientImpl::CreateManageInode(const InodeParam& param,
     request.set_uid(param.uid);
     request.set_gid(param.gid);
     request.set_mode(param.mode);
-    assert(param.manageType != ManageInodeType::TYPE_NOT_MANAGE);
+    assert(param.manageType !=
+           pb::metaserver::ManageInodeType::TYPE_NOT_MANAGE);
     request.set_managetype(param.manageType);
 
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.CreateManageInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -1475,14 +1496,14 @@ MetaStatusCode MetaServerClientImpl::DeleteInode(uint32_t fsId,
                                &metric_.getAllOperation},
                               start);
 
-    DeleteInodeResponse response;
-    DeleteInodeRequest request;
+    pb::metaserver::DeleteInodeResponse response;
+    pb::metaserver::DeleteInodeRequest request;
     request.set_poolid(poolID);
     request.set_copysetid(copysetID);
     request.set_partitionid(partitionID);
     request.set_fsid(fsId);
     request.set_inodeid(inodeid);
-    dingofs::metaserver::MetaServerService_Stub stub(channel);
+    dingofs::pb::metaserver::MetaServerService_Stub stub(channel);
     stub.DeleteInode(cntl, &request, &response, nullptr);
 
     if (cntl->Failed()) {
@@ -1525,7 +1546,7 @@ struct UpdateVolumeExtentRpcDone : MetaServerClientRpcDoneBase {
 
   void Run() override;
 
-  metaserver::UpdateVolumeExtentResponse response;
+  pb::metaserver::UpdateVolumeExtentResponse response;
 };
 
 void UpdateVolumeExtentRpcDone::Run() {
@@ -1584,7 +1605,7 @@ void MetaServerClientImpl::AsyncUpdateVolumeExtent(
     (void)txId;
     (void)applyIndex;
 
-    metaserver::UpdateVolumeExtentRequest request;
+    pb::metaserver::UpdateVolumeExtentRequest request;
     SET_COMMON_FIELDS;
     request.set_allocated_extents(new VolumeExtentList{extents});
 
@@ -1608,7 +1629,7 @@ struct ParseVolumeExtentCallBack {
   explicit ParseVolumeExtentCallBack(VolumeExtentList* ext) : extents(ext) {}
 
   bool operator()(butil::IOBuf* data) const {
-    metaserver::VolumeExtentSlice slice;
+    pb::metaserver::VolumeExtentSlice slice;
     if (!brpc::ParsePbFromIOBuf(&slice, *data)) {
       LOG(ERROR) << "Failed to parse volume extent slice failed";
       return false;
@@ -1637,8 +1658,8 @@ MetaStatusCode MetaServerClientImpl::GetVolumeExtent(
     MetricListGuard(
         &is_ok, {&metric_.getVolumeExtent, &metric_.getAllOperation}, start);
 
-    metaserver::GetVolumeExtentRequest request;
-    metaserver::GetVolumeExtentResponse response;
+    pb::metaserver::GetVolumeExtentRequest request;
+    pb::metaserver::GetVolumeExtentResponse response;
 
     SET_COMMON_FIELDS;
 

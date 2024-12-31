@@ -45,9 +45,9 @@ namespace usage {
  * @details
  */
 class MatedataUsageTool
-    : public CurvefsToolRpc<dingofs::mds::topology::StatMetadataUsageRequest,
-                            dingofs::mds::topology::StatMetadataUsageResponse,
-                            dingofs::mds::topology::TopologyService_Stub> {
+    : public CurvefsToolRpc<pb::mds::topology::StatMetadataUsageRequest,
+                            pb::mds::topology::StatMetadataUsageResponse,
+                            pb::mds::topology::TopologyService_Stub> {
  public:
   explicit MatedataUsageTool(const std::string& cmd = kMetedataUsageCmd)
       : CurvefsToolRpc(cmd) {}

@@ -24,28 +24,29 @@
 
 #include <glog/logging.h>
 
-#include <cstddef>
 #include <cstdint>
 #include <ctime>
 #include <memory>
-#include <mutex>
-#include <sstream>
-#include <vector>
 
 #include "dingofs/include/dingo_compiler_specific.h"
 #include "dingofs/proto/metaserver.pb.h"
-#include "dingofs/src/client/xattr_manager.h"
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
 #include "dingofs/src/stub/rpcclient/task_excutor.h"
-
-using ::dingofs::metaserver::MetaStatusCode_Name;
 
 namespace dingofs {
 namespace client {
 
-using ::dingofs::client::filesystem::ToFSError;
+using filesystem::ToFSError;
+using stub::rpcclient::DataIndices;
+using stub::rpcclient::MetaServerClientDone;
+using utils::TimeUtility;
 
-using dingofs::stub::rpcclient::DataIndices;
+using pb::metaserver::FsFileType;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::MetaStatusCode_Name;
+using pb::metaserver::S3ChunkInfo;
+using pb::metaserver::S3ChunkInfoList;
 
 bvar::Adder<int64_t> g_alive_inode_count{"alive_inode_count"};
 

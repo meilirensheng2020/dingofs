@@ -28,8 +28,13 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using dingofs::utils::ReadLockGuard;
-using dingofs::utils::WriteLockGuard;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
+
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::Quota;
+using pb::metaserver::Usage;
 
 USING_FLAG(flush_quota_interval_second);
 USING_FLAG(load_quota_interval_second);

@@ -35,17 +35,18 @@
 #include "dingofs/src/utils/string_util.h"
 #include "dingofs/src/utils/uri_parser.h"
 
-using ::dingofs::mds::topology::MetaServerRegistRequest;
-using ::dingofs::mds::topology::MetaServerRegistResponse;
-using ::dingofs::mds::topology::TopoStatusCode;
-
 namespace dingofs {
 namespace metaserver {
+
+using pb::mds::topology::MetaServerRegistRequest;
+using pb::mds::topology::MetaServerRegistResponse;
+using pb::mds::topology::TopoStatusCode;
+
 Register::Register(const RegisterOptions& ops) {
   this->ops_ = ops;
 
   // Resolve multiple addresses of mds
-  ::dingofs::utils::SplitString(ops.mdsListenAddr, ",", &mdsEps_);
+  utils::SplitString(ops.mdsListenAddr, ",", &mdsEps_);
   // Check the legitimacy of each address
   for (const auto& addr : mdsEps_) {
     butil::EndPoint endpt;
@@ -56,7 +57,7 @@ Register::Register(const RegisterOptions& ops) {
   inServiceIndex_ = 0;
 }
 
-int Register::RegisterToMDS(MetaServerMetadata* metadata) {
+int Register::RegisterToMDS(pb::metaserver::MetaServerMetadata* metadata) {
   MetaServerRegistRequest req;
   MetaServerRegistResponse resp;
 
@@ -94,7 +95,7 @@ int Register::RegisterToMDS(MetaServerMetadata* metadata) {
                  << " Fail to init channel to MDS " << mdsEps_[inServiceIndex_];
       return -1;
     }
-    dingofs::mds::topology::TopologyService_Stub stub(&channel);
+    pb::mds::topology::TopologyService_Stub stub(&channel);
 
     stub.RegistMetaServer(&cntl, &req, &resp, nullptr);
     if (!cntl.Failed() && resp.statuscode() == TopoStatusCode::TOPO_OK) {
@@ -106,8 +107,7 @@ int Register::RegisterToMDS(MetaServerMetadata* metadata) {
                    << ", cntl errorCode: " << cntl.ErrorCode() << ","
                    << " cntl error: " << cntl.ErrorText() << ","
                    << " statusCode: " << TopoStatusCode_Name(resp.statuscode())
-                   << ","
-                   << " going to sleep and try again.";
+                   << "," << " going to sleep and try again.";
       if (cntl.ErrorCode() == EHOSTDOWN || cntl.ErrorCode() == brpc::ELOGOFF) {
         inServiceIndex_ = (inServiceIndex_ + 1) % mdsEps_.size();
       }

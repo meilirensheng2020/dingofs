@@ -34,8 +34,6 @@
 namespace dingofs {
 namespace client {
 
-using dingofs::stub::rpcclient::MdsClient;
-
 // resolve cyclic dependency
 namespace filesystem {
 class FileSystem;
@@ -47,8 +45,9 @@ class RenameOperator {
                  std::string name, uint64_t new_parent_id, std::string newname,
                  std::shared_ptr<DentryCacheManager> dentry_manager,
                  std::shared_ptr<InodeCacheManager> inode_manager,
-                 std::shared_ptr<MetaServerClient> meta_client,
-                 std::shared_ptr<MdsClient> mds_client, bool enable_parallel);
+                 std::shared_ptr<stub::rpcclient::MetaServerClient> meta_client,
+                 std::shared_ptr<stub::rpcclient::MdsClient> mds_client,
+                 bool enable_parallel);
 
   DINGOFS_ERROR GetTxId();
   DINGOFS_ERROR Precheck();
@@ -64,7 +63,7 @@ class RenameOperator {
   void UpdateCache();
 
   void GetOldInode(uint64_t* old_inode_id, int64_t* old_inode_size,
-                   FsFileType* old_inode_type);
+                   pb::metaserver::FsFileType* old_inode_type);
 
   // related to quota and stat
   void UpdateSrcDirUsage(std::shared_ptr<filesystem::FileSystem>& fs);
@@ -84,7 +83,8 @@ class RenameOperator {
 
   void SetTxId(uint32_t partition_id, uint64_t tx_id);
 
-  DINGOFS_ERROR PrepareRenameTx(const std::vector<Dentry>& dentrys);
+  DINGOFS_ERROR PrepareRenameTx(
+      const std::vector<pb::metaserver::Dentry>& dentrys);
 
   DINGOFS_ERROR LinkInode(uint64_t inode_id, uint64_t parent = 0);
 
@@ -112,18 +112,18 @@ class RenameOperator {
   uint64_t oldInodeId_;
   // if dest exist, record the size and type of file or empty dir
   int64_t oldInodeSize_{0};
-  FsFileType oldInodeType_;
-  Dentry srcDentry_;
-  Dentry dstDentry_;
-  Dentry dentry_;
-  Dentry newDentry_;
+  pb::metaserver::FsFileType oldInodeType_;
+  pb::metaserver::Dentry srcDentry_;
+  pb::metaserver::Dentry dstDentry_;
+  pb::metaserver::Dentry dentry_;
+  pb::metaserver::Dentry newDentry_;
 
-  InodeAttr src_inode_attr_;
+  pb::metaserver::InodeAttr src_inode_attr_;
 
   std::shared_ptr<DentryCacheManager> dentryManager_;
   std::shared_ptr<InodeCacheManager> inodeManager_;
-  std::shared_ptr<MetaServerClient> metaClient_;
-  std::shared_ptr<MdsClient> mdsClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
 
   // whether support execute rename with parallel
   bool enableParallel_;

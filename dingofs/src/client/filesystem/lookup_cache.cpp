@@ -33,6 +33,12 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
+using common::LookupCacheOption;
+using utils::LRUCache;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
+
 #define RETURN_FALSE_IF_DISABLED() \
   do {                             \
     if (!enable_) {                \
@@ -84,7 +90,8 @@ bool LookupCache::Put(Ino parent, const std::string& name) {
     entry.uses = 0;
   }
 
-  entry.expireTime = Now() + TimeSpec(option_.negativeTimeoutSec, 0);
+  entry.expireTime =
+      Now() + base::time::TimeSpec(option_.negativeTimeoutSec, 0);
   lru_->Put(key, entry);
   return true;
 }

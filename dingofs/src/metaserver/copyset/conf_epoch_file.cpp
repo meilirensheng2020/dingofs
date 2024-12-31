@@ -34,6 +34,8 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
+using pb::metaserver::copyset::ConfEpoch;
+
 constexpr uint32_t kConfEpochFileMaxSize = 4096;
 
 int ConfEpochFile::Load(const std::string& path, PoolId* poolID,
@@ -146,7 +148,7 @@ struct CRC32Helper {
   template <typename T>
   CRC32Helper& operator()(const T& val) {
     crc32c = dingofs::utils::CRC32(crc32c, reinterpret_cast<const char*>(&val),
-                                  sizeof(val));
+                                   sizeof(val));
 
     return *this;
   }

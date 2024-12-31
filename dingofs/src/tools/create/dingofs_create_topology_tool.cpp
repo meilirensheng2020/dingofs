@@ -33,11 +33,11 @@ DECLARE_string(cluster_map);
 DECLARE_string(confPath);
 DECLARE_string(op);
 
-using ::dingofs::utils::SplitString;
-
 namespace dingofs {
-namespace mds {
+namespace tools {
 namespace topology {
+
+using ::dingofs::utils::SplitString;
 
 void UpdateFlagsFromConf(dingofs::utils::Configuration* conf) {
   LOG_IF(FATAL, !conf->LoadConfig());
@@ -64,14 +64,14 @@ int CurvefsBuildTopologyTool::Init() {
   SplitString(FLAGS_mds_addr, ",", &mdsAddressStr_);
   if (mdsAddressStr_.size() <= 0) {
     LOG(ERROR) << "no avaliable mds address.";
-    return kRetCodeCommonErr;
+    return mds::topology::kRetCodeCommonErr;
   }
 
   for (const auto& addr : mdsAddressStr_) {
     butil::EndPoint endpt;
     if (butil::str2endpoint(addr.c_str(), &endpt) < 0) {
       LOG(ERROR) << "Invalid sub mds ip:port provided: " << addr;
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
   }
   mdsAddressIndex_ = -1;
@@ -81,7 +81,7 @@ int CurvefsBuildTopologyTool::Init() {
 int CurvefsBuildTopologyTool::TryAnotherMdsAddress() {
   if (mdsAddressStr_.size() == 0) {
     LOG(ERROR) << "no avaliable mds address.";
-    return kRetCodeCommonErr;
+    return mds::topology::kRetCodeCommonErr;
   }
   mdsAddressIndex_ = (mdsAddressIndex_ + 1) % mdsAddressStr_.size();
   std::string mds_address = mdsAddressStr_[mdsAddressIndex_];
@@ -94,7 +94,7 @@ int CurvefsBuildTopologyTool::TryAnotherMdsAddress() {
 }
 
 int CurvefsBuildTopologyTool::DealFailedRet(int ret, std::string operation) {
-  if (kRetCodeRedirectMds == ret) {
+  if (mds::topology::kRetCodeRedirectMds == ret) {
     LOG(WARNING) << operation
                  << " fail on mds: " << mdsAddressStr_[mdsAddressIndex_];
   } else {
@@ -182,32 +182,32 @@ int CurvefsBuildTopologyTool::ReadClusterMap() {
 }
 
 int CurvefsBuildTopologyTool::InitPoolData() {
-  if (clusterMap_[kPools].isNull()) {
+  if (clusterMap_[mds::topology::kPools].isNull()) {
     LOG(ERROR) << "No pools in cluster map";
     return -1;
   }
-  for (const auto& pool : clusterMap_[kPools]) {
+  for (const auto& pool : clusterMap_[mds::topology::kPools]) {
     Pool pool_data;
-    if (!pool[kName].isString()) {
+    if (!pool[mds::topology::kName].isString()) {
       LOG(ERROR) << "pool name must be string";
       return -1;
     }
-    pool_data.name = pool[kName].asString();
-    if (!pool[kReplicasNum].isUInt()) {
+    pool_data.name = pool[mds::topology::kName].asString();
+    if (!pool[mds::topology::kReplicasNum].isUInt()) {
       LOG(ERROR) << "pool replicasnum must be uint";
       return -1;
     }
-    pool_data.replicasNum = pool[kReplicasNum].asUInt();
-    if (!pool[kCopysetNum].isUInt64()) {
+    pool_data.replicasNum = pool[mds::topology::kReplicasNum].asUInt();
+    if (!pool[mds::topology::kCopysetNum].isUInt64()) {
       LOG(ERROR) << "pool copysetnum must be uint64";
       return -1;
     }
-    pool_data.copysetNum = pool[kCopysetNum].asUInt64();
-    if (!pool[kZoneNum].isUInt64()) {
+    pool_data.copysetNum = pool[mds::topology::kCopysetNum].asUInt64();
+    if (!pool[mds::topology::kZoneNum].isUInt64()) {
       LOG(ERROR) << "pool zonenum must be uint64";
       return -1;
     }
-    pool_data.zoneNum = pool[kZoneNum].asUInt();
+    pool_data.zoneNum = pool[mds::topology::kZoneNum].asUInt();
 
     poolDatas_.emplace_back(pool_data);
   }
@@ -215,50 +215,50 @@ int CurvefsBuildTopologyTool::InitPoolData() {
 }
 
 int CurvefsBuildTopologyTool::InitServerZoneData() {
-  if (clusterMap_[kServers].isNull()) {
+  if (clusterMap_[mds::topology::kServers].isNull()) {
     LOG(ERROR) << "No servers in cluster map";
     return -1;
   }
-  for (const auto& server : clusterMap_[kServers]) {
+  for (const auto& server : clusterMap_[mds::topology::kServers]) {
     Server server_data;
     Zone zone_data;
-    if (!server[kName].isString()) {
+    if (!server[mds::topology::kName].isString()) {
       LOG(ERROR) << "server name must be string";
       return -1;
     }
-    server_data.name = server[kName].asString();
-    if (!server[kInternalIp].isString()) {
+    server_data.name = server[mds::topology::kName].asString();
+    if (!server[mds::topology::kInternalIp].isString()) {
       LOG(ERROR) << "server internal ip must be string";
       return -1;
     }
-    server_data.internalIp = server[kInternalIp].asString();
-    if (!server[kInternalPort].isUInt()) {
+    server_data.internalIp = server[mds::topology::kInternalIp].asString();
+    if (!server[mds::topology::kInternalPort].isUInt()) {
       LOG(ERROR) << "server internal port must be uint";
       return -1;
     }
-    server_data.internalPort = server[kInternalPort].asUInt();
-    if (!server[kExternalIp].isString()) {
+    server_data.internalPort = server[mds::topology::kInternalPort].asUInt();
+    if (!server[mds::topology::kExternalIp].isString()) {
       LOG(ERROR) << "server internal port must be string";
       return -1;
     }
-    server_data.externalIp = server[kExternalIp].asString();
-    if (!server[kExternalPort].isUInt()) {
+    server_data.externalIp = server[mds::topology::kExternalIp].asString();
+    if (!server[mds::topology::kExternalPort].isUInt()) {
       LOG(ERROR) << "server internal port must be string";
       return -1;
     }
-    server_data.externalPort = server[kExternalPort].asUInt();
-    if (!server[kZone].isString()) {
+    server_data.externalPort = server[mds::topology::kExternalPort].asUInt();
+    if (!server[mds::topology::kZone].isString()) {
       LOG(ERROR) << "server zone must be string";
       return -1;
     }
-    server_data.zoneName = server[kZone].asString();
-    zone_data.name = server[kZone].asString();
-    if (!server[kPool].isString()) {
+    server_data.zoneName = server[mds::topology::kZone].asString();
+    zone_data.name = server[mds::topology::kZone].asString();
+    if (!server[mds::topology::kPool].isString()) {
       LOG(ERROR) << "server pool must be string";
       return -1;
     }
-    server_data.poolName = server[kPool].asString();
-    zone_data.poolName = server[kPool].asString();
+    server_data.poolName = server[mds::topology::kPool].asString();
+    zone_data.poolName = server[mds::topology::kPool].asString();
 
     serverDatas_.emplace_back(server_data);
 
@@ -276,7 +276,7 @@ int CurvefsBuildTopologyTool::InitServerZoneData() {
 int CurvefsBuildTopologyTool::ScanCluster() {
   // get pools and compare
   // De-duplication
-  std::list<PoolInfo> pool_infos;
+  std::list<pb::mds::topology::PoolInfo> pool_infos;
   int ret = ListPool(&pool_infos);
   if (ret != 0) {
     return ret;
@@ -295,7 +295,7 @@ int CurvefsBuildTopologyTool::ScanCluster() {
 
   // get zone and compare
   // De-duplication
-  std::list<ZoneInfo> zone_infos;
+  std::list<pb::mds::topology::ZoneInfo> zone_infos;
   for (const auto& pool : pool_infos) {
     ret = GetZonesInPool(pool.poolid(), &zone_infos);
     if (ret != 0) {
@@ -318,7 +318,7 @@ int CurvefsBuildTopologyTool::ScanCluster() {
 
   // get server and compare
   // De-duplication
-  std::list<ServerInfo> server_infos;
+  std::list<pb::mds::topology::ServerInfo> server_infos;
   for (const auto& zone : zone_infos) {
     ret = GetServersInZone(zone.zoneid(), &server_infos);
     if (ret != 0) {
@@ -343,20 +343,21 @@ int CurvefsBuildTopologyTool::ScanCluster() {
   return 0;
 }
 
-int CurvefsBuildTopologyTool::ListPool(std::list<PoolInfo>* pool_infos) {
-  TopologyService_Stub stub(&channel_);
-  ListPoolRequest request;
-  ListPoolResponse response;
+int CurvefsBuildTopologyTool::ListPool(
+    std::list<pb::mds::topology::PoolInfo>* pool_infos) {
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
+  pb::mds::topology::ListPoolRequest request;
+  pb::mds::topology::ListPoolResponse response;
   brpc::Controller cntl;
   cntl.set_timeout_ms(FLAGS_rpcTimeoutMs);
 
   LOG(INFO) << "ListPool send request: " << request.DebugString();
   stub.ListPool(&cntl, &request, &response, nullptr);
   if (cntl.Failed()) {
-    return kRetCodeRedirectMds;
+    return mds::topology::kRetCodeRedirectMds;
   }
 
-  if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+  if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
     LOG(ERROR) << "ListPool Rpc response fail. "
                << "Message is :" << response.DebugString();
     return response.statuscode();
@@ -371,11 +372,12 @@ int CurvefsBuildTopologyTool::ListPool(std::list<PoolInfo>* pool_infos) {
   return 0;
 }
 
-int CurvefsBuildTopologyTool::GetZonesInPool(PoolIdType poolid,
-                                             std::list<ZoneInfo>* zone_infos) {
-  TopologyService_Stub stub(&channel_);
-  ListPoolZoneRequest request;
-  ListPoolZoneResponse response;
+int CurvefsBuildTopologyTool::GetZonesInPool(
+    mds::topology::PoolIdType poolid,
+    std::list<pb::mds::topology::ZoneInfo>* zone_infos) {
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
+  pb::mds::topology::ListPoolZoneRequest request;
+  pb::mds::topology::ListPoolZoneResponse response;
   request.set_poolid(poolid);
 
   brpc::Controller cntl;
@@ -386,9 +388,9 @@ int CurvefsBuildTopologyTool::GetZonesInPool(PoolIdType poolid,
   stub.ListPoolZone(&cntl, &request, &response, nullptr);
 
   if (cntl.Failed()) {
-    return kRetCodeRedirectMds;
+    return mds::topology::kRetCodeRedirectMds;
   }
-  if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+  if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
     LOG(ERROR) << "ListPoolZone rpc response fail. "
                << "Message is :" << response.DebugString()
                << " , physicalpoolid = " << poolid;
@@ -405,10 +407,11 @@ int CurvefsBuildTopologyTool::GetZonesInPool(PoolIdType poolid,
 }
 
 int CurvefsBuildTopologyTool::GetServersInZone(
-    ZoneIdType zoneid, std::list<ServerInfo>* server_infos) {
-  TopologyService_Stub stub(&channel_);
-  ListZoneServerRequest request;
-  ListZoneServerResponse response;
+    mds::topology::ZoneIdType zoneid,
+    std::list<pb::mds::topology::ServerInfo>* server_infos) {
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
+  pb::mds::topology::ListZoneServerRequest request;
+  pb::mds::topology::ListZoneServerResponse response;
   request.set_zoneid(zoneid);
   brpc::Controller cntl;
   cntl.set_timeout_ms(FLAGS_rpcTimeoutMs);
@@ -418,9 +421,9 @@ int CurvefsBuildTopologyTool::GetServersInZone(
   stub.ListZoneServer(&cntl, &request, &response, nullptr);
 
   if (cntl.Failed()) {
-    return kRetCodeRedirectMds;
+    return mds::topology::kRetCodeRedirectMds;
   }
-  if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+  if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
     LOG(ERROR) << "ListZoneServer rpc response fail. "
                << "Message is :" << response.DebugString()
                << " , zoneid = " << zoneid;
@@ -437,10 +440,10 @@ int CurvefsBuildTopologyTool::GetServersInZone(
 }
 
 int CurvefsBuildTopologyTool::RemovePoolsNotInNewTopo() {
-  TopologyService_Stub stub(&channel_);
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
   for (auto it : poolToDel_) {
-    DeletePoolRequest request;
-    DeletePoolResponse response;
+    pb::mds::topology::DeletePoolRequest request;
+    pb::mds::topology::DeletePoolResponse response;
     request.set_poolid(it);
 
     brpc::Controller cntl;
@@ -451,15 +454,15 @@ int CurvefsBuildTopologyTool::RemovePoolsNotInNewTopo() {
     stub.DeletePool(&cntl, &request, &response, nullptr);
 
     if (cntl.ErrorCode() == EHOSTDOWN || cntl.ErrorCode() == brpc::ELOGOFF) {
-      return kRetCodeRedirectMds;
+      return mds::topology::kRetCodeRedirectMds;
     } else if (cntl.Failed()) {
       LOG(ERROR) << "ClearPool errcorde = " << response.statuscode()
                  << ", error content:" << cntl.ErrorText()
                  << " , poolId = " << it;
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
 
-    if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+    if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
       LOG(ERROR) << "ClearPool rpc response fail. "
                  << "Message is :" << response.DebugString()
                  << " , poolId =" << it;
@@ -473,10 +476,10 @@ int CurvefsBuildTopologyTool::RemovePoolsNotInNewTopo() {
 }
 
 int CurvefsBuildTopologyTool::RemoveZonesNotInNewTopo() {
-  TopologyService_Stub stub(&channel_);
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
   for (auto it : zoneToDel_) {
-    DeleteZoneRequest request;
-    DeleteZoneResponse response;
+    pb::mds::topology::DeleteZoneRequest request;
+    pb::mds::topology::DeleteZoneResponse response;
     request.set_zoneid(it);
 
     brpc::Controller cntl;
@@ -487,14 +490,14 @@ int CurvefsBuildTopologyTool::RemoveZonesNotInNewTopo() {
     stub.DeleteZone(&cntl, &request, &response, nullptr);
 
     if (cntl.ErrorCode() == EHOSTDOWN || cntl.ErrorCode() == brpc::ELOGOFF) {
-      return kRetCodeRedirectMds;
+      return mds::topology::kRetCodeRedirectMds;
     } else if (cntl.Failed()) {
       LOG(ERROR) << "ClearZone, errcorde = " << response.statuscode()
                  << ", error content:" << cntl.ErrorText()
                  << " , zoneId = " << it;
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
-    if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+    if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
       LOG(ERROR) << "ClearZone Rpc response fail. "
                  << "Message is :" << response.DebugString()
                  << " , zoneId = " << it;
@@ -507,10 +510,10 @@ int CurvefsBuildTopologyTool::RemoveZonesNotInNewTopo() {
 }
 
 int CurvefsBuildTopologyTool::RemoveServersNotInNewTopo() {
-  TopologyService_Stub stub(&channel_);
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
   for (auto it : serverToDel_) {
-    DeleteServerRequest request;
-    DeleteServerResponse response;
+    pb::mds::topology::DeleteServerRequest request;
+    pb::mds::topology::DeleteServerResponse response;
     request.set_serverid(it);
 
     brpc::Controller cntl;
@@ -521,14 +524,14 @@ int CurvefsBuildTopologyTool::RemoveServersNotInNewTopo() {
     stub.DeleteServer(&cntl, &request, &response, nullptr);
 
     if (cntl.ErrorCode() == EHOSTDOWN || cntl.ErrorCode() == brpc::ELOGOFF) {
-      return kRetCodeRedirectMds;
+      return mds::topology::kRetCodeRedirectMds;
     } else if (cntl.Failed()) {
       LOG(ERROR) << "ClearServer, errcorde = " << response.statuscode()
                  << ", error content : " << cntl.ErrorText()
                  << " , serverId = " << it;
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
-    if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+    if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
       LOG(ERROR) << "ClearServer Rpc response fail. "
                  << "Message is :" << response.DebugString()
                  << " , serverId = " << it;
@@ -542,10 +545,10 @@ int CurvefsBuildTopologyTool::RemoveServersNotInNewTopo() {
 }
 
 int CurvefsBuildTopologyTool::CreatePool() {
-  TopologyService_Stub stub(&channel_);
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
   for (auto it : poolDatas_) {
-    CreatePoolRequest request;
-    CreatePoolResponse response;
+    pb::mds::topology::CreatePoolRequest request;
+    pb::mds::topology::CreatePoolResponse response;
     request.set_poolname(it.name);
     std::string replica_num_str = std::to_string(it.replicasNum);
     std::string copyset_num_str = std::to_string(it.copysetNum);
@@ -563,15 +566,15 @@ int CurvefsBuildTopologyTool::CreatePool() {
     stub.CreatePool(&cntl, &request, &response, nullptr);
 
     if (cntl.ErrorCode() == EHOSTDOWN || cntl.ErrorCode() == brpc::ELOGOFF) {
-      return kRetCodeRedirectMds;
+      return mds::topology::kRetCodeRedirectMds;
     } else if (cntl.Failed()) {
       LOG(ERROR) << "CreatePool errcorde = " << response.statuscode()
                  << ", error content:" << cntl.ErrorText()
                  << " , poolName = " << it.name;
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
 
-    if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+    if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
       LOG(ERROR) << "CreatePool rpc response fail. "
                  << "Message is :" << response.DebugString()
                  << " , poolName =" << it.name;
@@ -585,10 +588,10 @@ int CurvefsBuildTopologyTool::CreatePool() {
 }
 
 int CurvefsBuildTopologyTool::CreateZone() {
-  TopologyService_Stub stub(&channel_);
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
   for (auto it : zoneDatas_) {
-    CreateZoneRequest request;
-    CreateZoneResponse response;
+    pb::mds::topology::CreateZoneRequest request;
+    pb::mds::topology::CreateZoneResponse response;
     request.set_zonename(it.name);
     request.set_poolname(it.poolName);
 
@@ -600,14 +603,14 @@ int CurvefsBuildTopologyTool::CreateZone() {
     stub.CreateZone(&cntl, &request, &response, nullptr);
 
     if (cntl.ErrorCode() == EHOSTDOWN || cntl.ErrorCode() == brpc::ELOGOFF) {
-      return kRetCodeRedirectMds;
+      return mds::topology::kRetCodeRedirectMds;
     } else if (cntl.Failed()) {
       LOG(ERROR) << "CreateZone, errcorde = " << response.statuscode()
                  << ", error content:" << cntl.ErrorText()
                  << " , zoneName = " << it.name;
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
-    if (response.statuscode() != TopoStatusCode::TOPO_OK) {
+    if (response.statuscode() != pb::mds::topology::TopoStatusCode::TOPO_OK) {
       LOG(ERROR) << "CreateZone Rpc response fail. "
                  << "Message is :" << response.DebugString()
                  << " , zoneName = " << it.name;
@@ -621,10 +624,10 @@ int CurvefsBuildTopologyTool::CreateZone() {
 }
 
 int CurvefsBuildTopologyTool::CreateServer() {
-  TopologyService_Stub stub(&channel_);
+  pb::mds::topology::TopologyService_Stub stub(&channel_);
   for (auto it : serverDatas_) {
-    ServerRegistRequest request;
-    ServerRegistResponse response;
+    pb::mds::topology::ServerRegistRequest request;
+    pb::mds::topology::ServerRegistResponse response;
     request.set_hostname(it.name);
     request.set_internalip(it.internalIp);
     request.set_internalport(it.internalPort);
@@ -641,18 +644,18 @@ int CurvefsBuildTopologyTool::CreateServer() {
     stub.RegistServer(&cntl, &request, &response, nullptr);
 
     if (cntl.ErrorCode() == EHOSTDOWN || cntl.ErrorCode() == brpc::ELOGOFF) {
-      return kRetCodeRedirectMds;
+      return mds::topology::kRetCodeRedirectMds;
     } else if (cntl.Failed()) {
       LOG(ERROR) << "RegistServer, errcorde = " << response.statuscode()
                  << ", error content : " << cntl.ErrorText()
                  << " , serverName = " << it.name;
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
-    if (response.statuscode() == TopoStatusCode::TOPO_OK) {
+    if (response.statuscode() == pb::mds::topology::TopoStatusCode::TOPO_OK) {
       LOG(INFO) << "Received RegistServer Rpc response success, "
                 << response.DebugString();
     } else if (response.statuscode() ==
-               TopoStatusCode::TOPO_IP_PORT_DUPLICATED) {
+               pb::mds::topology::TopoStatusCode::TOPO_IP_PORT_DUPLICATED) {
       LOG(INFO) << "Server already exist";
     } else {
       LOG(ERROR) << "RegistServer Rpc response fail. "
@@ -671,17 +674,17 @@ int CurvefsBuildTopologyTool::RunCommand() {
   for (; retry < max_try; retry++) {
     ret = TryAnotherMdsAddress();
     if (ret < 0) {
-      return kRetCodeCommonErr;
+      return mds::topology::kRetCodeCommonErr;
     }
 
     ret = HandleBuildCluster();
-    if (ret != kRetCodeRedirectMds) {
+    if (ret != mds::topology::kRetCodeRedirectMds) {
       break;
     }
   }
   if (retry >= max_try) {
     LOG(ERROR) << "rpc retry times exceed.";
-    return kRetCodeCommonErr;
+    return mds::topology::kRetCodeCommonErr;
   }
   if (ret != 0) {
     LOG(ERROR) << "exec fail, ret = " << ret;
@@ -692,5 +695,5 @@ int CurvefsBuildTopologyTool::RunCommand() {
 }
 
 }  // namespace topology
-}  // namespace mds
+}  // namespace tools
 }  // namespace dingofs

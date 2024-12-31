@@ -25,10 +25,16 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-USING_FLAG(fs_usage_flush_interval_second)
+using filesystem::Ino;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
 
-using dingofs::utils::ReadLockGuard;
-using dingofs::utils::WriteLockGuard;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::Quota;
+using pb::metaserver::Usage;
+
+USING_FLAG(fs_usage_flush_interval_second)
 
 void FsQuota::UpdateUsage(int64_t new_space, int64_t new_inodes) {
   VLOG(6) << "UpdateFsUsage new_space:" << new_space

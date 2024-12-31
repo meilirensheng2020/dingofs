@@ -45,67 +45,7 @@ namespace copyset {
 class CopysetNode;
 }  // namespace copyset
 
-using ::dingofs::metaserver::superpartition::SuperPartition;
-
-// super partition
-using ::dingofs::metaserver::DeleteDirQuotaRequest;
-using ::dingofs::metaserver::DeleteDirQuotaResponse;
-using ::dingofs::metaserver::FlushDirUsagesRequest;
-using ::dingofs::metaserver::FlushDirUsagesResponse;
-using ::dingofs::metaserver::FlushFsUsageRequest;
-using ::dingofs::metaserver::FlushFsUsageResponse;
-using ::dingofs::metaserver::GetDirQuotaRequest;
-using ::dingofs::metaserver::GetDirQuotaResponse;
-using ::dingofs::metaserver::GetFsQuotaRequest;
-using ::dingofs::metaserver::GetFsQuotaResponse;
-using ::dingofs::metaserver::LoadDirQuotasRequest;
-using ::dingofs::metaserver::LoadDirQuotasResponse;
-using ::dingofs::metaserver::SetDirQuotaRequest;
-using ::dingofs::metaserver::SetDirQuotaResponse;
-using ::dingofs::metaserver::SetFsQuotaRequest;
-using ::dingofs::metaserver::SetFsQuotaResponse;
-
-// dentry
-using dingofs::metaserver::CreateDentryRequest;
-using dingofs::metaserver::CreateDentryResponse;
-using dingofs::metaserver::DeleteDentryRequest;
-using dingofs::metaserver::DeleteDentryResponse;
-using dingofs::metaserver::GetDentryRequest;
-using dingofs::metaserver::GetDentryResponse;
-using dingofs::metaserver::ListDentryRequest;
-using dingofs::metaserver::ListDentryResponse;
-
-// inode
-using dingofs::metaserver::BatchGetInodeAttrRequest;
-using dingofs::metaserver::BatchGetInodeAttrResponse;
-using dingofs::metaserver::BatchGetXAttrRequest;
-using dingofs::metaserver::BatchGetXAttrResponse;
-using dingofs::metaserver::CreateInodeRequest;
-using dingofs::metaserver::CreateInodeResponse;
-using dingofs::metaserver::CreateManageInodeRequest;
-using dingofs::metaserver::CreateManageInodeResponse;
-using dingofs::metaserver::CreateRootInodeRequest;
-using dingofs::metaserver::CreateRootInodeResponse;
-using dingofs::metaserver::DeleteInodeRequest;
-using dingofs::metaserver::DeleteInodeResponse;
-using dingofs::metaserver::GetInodeRequest;
-using dingofs::metaserver::GetInodeResponse;
-using dingofs::metaserver::UpdateInodeRequest;
-using dingofs::metaserver::UpdateInodeResponse;
-
-// partition
-using dingofs::metaserver::CreatePartitionRequest;
-using dingofs::metaserver::CreatePartitionResponse;
-using dingofs::metaserver::DeletePartitionRequest;
-using dingofs::metaserver::DeletePartitionResponse;
-
-using ::dingofs::common::StreamConnection;
-using ::dingofs::common::StreamServer;
-using ::dingofs::metaserver::copyset::OnSnapshotSaveDoneClosure;
-using ::dingofs::metaserver::storage::Iterator;
 using S3ChunkInfoMap = google::protobuf::Map<uint64_t, S3ChunkInfoList>;
-
-using ::dingofs::metaserver::storage::StorageOptions;
 
 class MetaStore {
  public:
@@ -114,105 +54,127 @@ class MetaStore {
 
   virtual bool Load(const std::string& pathname) = 0;
   virtual bool Save(const std::string& dir,
-                    OnSnapshotSaveDoneClosure* done) = 0;
+                    copyset::OnSnapshotSaveDoneClosure* done) = 0;
   virtual bool Clear() = 0;
   virtual bool Destroy() = 0;
 
   // super partition
-  virtual MetaStatusCode SetFsQuota(const SetFsQuotaRequest* request,
-                                    SetFsQuotaResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode SetFsQuota(
+      const pb::metaserver::SetFsQuotaRequest* request,
+      pb::metaserver::SetFsQuotaResponse* response) = 0;
 
-  virtual MetaStatusCode GetFsQuota(const GetFsQuotaRequest* request,
-                                    GetFsQuotaResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode GetFsQuota(
+      const pb::metaserver::GetFsQuotaRequest* request,
+      pb::metaserver::GetFsQuotaResponse* response) = 0;
 
-  virtual MetaStatusCode FlushFsUsage(const FlushFsUsageRequest* request,
-                                      FlushFsUsageResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode FlushFsUsage(
+      const pb::metaserver::FlushFsUsageRequest* request,
+      pb::metaserver::FlushFsUsageResponse* response) = 0;
 
-  virtual MetaStatusCode SetDirQuota(const SetDirQuotaRequest* request,
-                                     SetDirQuotaResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode SetDirQuota(
+      const pb::metaserver::SetDirQuotaRequest* request,
+      pb::metaserver::SetDirQuotaResponse* response) = 0;
 
-  virtual MetaStatusCode GetDirQuota(const GetDirQuotaRequest* request,
-                                     GetDirQuotaResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode GetDirQuota(
+      const pb::metaserver::GetDirQuotaRequest* request,
+      pb::metaserver::GetDirQuotaResponse* response) = 0;
 
-  virtual MetaStatusCode DeleteDirQuota(const DeleteDirQuotaRequest* request,
-                                        DeleteDirQuotaResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode DeleteDirQuota(
+      const pb::metaserver::DeleteDirQuotaRequest* request,
+      pb::metaserver::DeleteDirQuotaResponse* response) = 0;
 
-  virtual MetaStatusCode LoadDirQuotas(const LoadDirQuotasRequest* request,
-                                       LoadDirQuotasResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode LoadDirQuotas(
+      const pb::metaserver::LoadDirQuotasRequest* request,
+      pb::metaserver::LoadDirQuotasResponse* response) = 0;
 
-  virtual MetaStatusCode FlushDirUsages(const FlushDirUsagesRequest* request,
-                                        FlushDirUsagesResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode FlushDirUsages(
+      const pb::metaserver::FlushDirUsagesRequest* request,
+      pb::metaserver::FlushDirUsagesResponse* response) = 0;
 
   // partition
-  virtual MetaStatusCode CreatePartition(const CreatePartitionRequest* request,
-                                         CreatePartitionResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode CreatePartition(
+      const pb::metaserver::CreatePartitionRequest* request,
+      pb::metaserver::CreatePartitionResponse* response) = 0;
 
-  virtual MetaStatusCode DeletePartition(const DeletePartitionRequest* request,
-                                         DeletePartitionResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode DeletePartition(
+      const pb::metaserver::DeletePartitionRequest* request,
+      pb::metaserver::DeletePartitionResponse* response) = 0;
 
   virtual bool GetPartitionInfoList(
-      std::list<PartitionInfo>* partitionInfoList) = 0;
+      std::list<pb::common::PartitionInfo>* partitionInfoList) = 0;
 
-  virtual std::shared_ptr<StreamServer> GetStreamServer() = 0;
+  virtual std::shared_ptr<common::StreamServer> GetStreamServer() = 0;
 
   // dentry
-  virtual MetaStatusCode CreateDentry(const CreateDentryRequest* request,
-                                      CreateDentryResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode CreateDentry(
+      const pb::metaserver::CreateDentryRequest* request,
+      pb::metaserver::CreateDentryResponse* response) = 0;
 
-  virtual MetaStatusCode GetDentry(const GetDentryRequest* request,
-                                   GetDentryResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode GetDentry(
+      const pb::metaserver::GetDentryRequest* request,
+      pb::metaserver::GetDentryResponse* response) = 0;
 
-  virtual MetaStatusCode DeleteDentry(const DeleteDentryRequest* request,
-                                      DeleteDentryResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode DeleteDentry(
+      const pb::metaserver::DeleteDentryRequest* request,
+      pb::metaserver::DeleteDentryResponse* response) = 0;
 
-  virtual MetaStatusCode ListDentry(const ListDentryRequest* request,
-                                    ListDentryResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode ListDentry(
+      const pb::metaserver::ListDentryRequest* request,
+      pb::metaserver::ListDentryResponse* response) = 0;
 
-  virtual MetaStatusCode PrepareRenameTx(const PrepareRenameTxRequest* request,
-                                         PrepareRenameTxResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode PrepareRenameTx(
+      const pb::metaserver::PrepareRenameTxRequest* request,
+      pb::metaserver::PrepareRenameTxResponse* response) = 0;
 
   // inode
-  virtual MetaStatusCode CreateInode(const CreateInodeRequest* request,
-                                     CreateInodeResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode CreateInode(
+      const pb::metaserver::CreateInodeRequest* request,
+      pb::metaserver::CreateInodeResponse* response) = 0;
 
-  virtual MetaStatusCode CreateRootInode(const CreateRootInodeRequest* request,
-                                         CreateRootInodeResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode CreateRootInode(
+      const pb::metaserver::CreateRootInodeRequest* request,
+      pb::metaserver::CreateRootInodeResponse* response) = 0;
 
-  virtual MetaStatusCode CreateManageInode(
-      const CreateManageInodeRequest* request,
-      CreateManageInodeResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode CreateManageInode(
+      const pb::metaserver::CreateManageInodeRequest* request,
+      pb::metaserver::CreateManageInodeResponse* response) = 0;
 
-  virtual MetaStatusCode GetInode(const GetInodeRequest* request,
-                                  GetInodeResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode GetInode(
+      const pb::metaserver::GetInodeRequest* request,
+      pb::metaserver::GetInodeResponse* response) = 0;
 
-  virtual MetaStatusCode BatchGetInodeAttr(
-      const BatchGetInodeAttrRequest* request,
-      BatchGetInodeAttrResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode BatchGetInodeAttr(
+      const pb::metaserver::BatchGetInodeAttrRequest* request,
+      pb::metaserver::BatchGetInodeAttrResponse* response) = 0;
 
-  virtual MetaStatusCode BatchGetXAttr(const BatchGetXAttrRequest* request,
-                                       BatchGetXAttrResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode BatchGetXAttr(
+      const pb::metaserver::BatchGetXAttrRequest* request,
+      pb::metaserver::BatchGetXAttrResponse* response) = 0;
 
-  virtual MetaStatusCode DeleteInode(const DeleteInodeRequest* request,
-                                     DeleteInodeResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode DeleteInode(
+      const pb::metaserver::DeleteInodeRequest* request,
+      pb::metaserver::DeleteInodeResponse* response) = 0;
 
-  virtual MetaStatusCode UpdateInode(const UpdateInodeRequest* request,
-                                     UpdateInodeResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode UpdateInode(
+      const pb::metaserver::UpdateInodeRequest* request,
+      pb::metaserver::UpdateInodeResponse* response) = 0;
 
-  virtual MetaStatusCode GetOrModifyS3ChunkInfo(
-      const GetOrModifyS3ChunkInfoRequest* request,
-      GetOrModifyS3ChunkInfoResponse* response,
-      std::shared_ptr<Iterator>* iterator) = 0;
+  virtual pb::metaserver::MetaStatusCode GetOrModifyS3ChunkInfo(
+      const pb::metaserver::GetOrModifyS3ChunkInfoRequest* request,
+      pb::metaserver::GetOrModifyS3ChunkInfoResponse* response,
+      std::shared_ptr<storage::Iterator>* iterator) = 0;
 
-  virtual MetaStatusCode SendS3ChunkInfoByStream(
-      std::shared_ptr<StreamConnection> connection,
-      std::shared_ptr<Iterator> iterator) = 0;
+  virtual pb::metaserver::MetaStatusCode SendS3ChunkInfoByStream(
+      std::shared_ptr<common::StreamConnection> connection,
+      std::shared_ptr<storage::Iterator> iterator) = 0;
 
-  virtual MetaStatusCode GetVolumeExtent(const GetVolumeExtentRequest* request,
-                                         GetVolumeExtentResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode GetVolumeExtent(
+      const pb::metaserver::GetVolumeExtentRequest* request,
+      pb::metaserver::GetVolumeExtentResponse* response) = 0;
 
-  virtual MetaStatusCode UpdateVolumeExtent(
-      const UpdateVolumeExtentRequest* request,
-      UpdateVolumeExtentResponse* response) = 0;
+  virtual pb::metaserver::MetaStatusCode UpdateVolumeExtent(
+      const pb::metaserver::UpdateVolumeExtentRequest* request,
+      pb::metaserver::UpdateVolumeExtentResponse* response) = 0;
 };
 
 class MetaStoreImpl : public MetaStore {
@@ -222,107 +184,130 @@ class MetaStoreImpl : public MetaStore {
       const storage::StorageOptions& storageOptions);
 
   bool Load(const std::string& checkpoint) override;
-  bool Save(const std::string& dir, OnSnapshotSaveDoneClosure* done) override;
+  bool Save(const std::string& dir,
+            copyset::OnSnapshotSaveDoneClosure* done) override;
   bool Clear() override;
   bool Destroy() override;
 
   // super partition
-  MetaStatusCode SetFsQuota(const SetFsQuotaRequest* request,
-                            SetFsQuotaResponse* response) override;
+  pb::metaserver::MetaStatusCode SetFsQuota(
+      const pb::metaserver::SetFsQuotaRequest* request,
+      pb::metaserver::SetFsQuotaResponse* response) override;
 
-  MetaStatusCode GetFsQuota(const GetFsQuotaRequest* request,
-                            GetFsQuotaResponse* response) override;
+  pb::metaserver::MetaStatusCode GetFsQuota(
+      const pb::metaserver::GetFsQuotaRequest* request,
+      pb::metaserver::GetFsQuotaResponse* response) override;
 
-  MetaStatusCode FlushFsUsage(const FlushFsUsageRequest* request,
-                              FlushFsUsageResponse* response) override;
+  pb::metaserver::MetaStatusCode FlushFsUsage(
+      const pb::metaserver::FlushFsUsageRequest* request,
+      pb::metaserver::FlushFsUsageResponse* response) override;
 
-  MetaStatusCode SetDirQuota(const SetDirQuotaRequest* request,
-                             SetDirQuotaResponse* response) override;
+  pb::metaserver::MetaStatusCode SetDirQuota(
+      const pb::metaserver::SetDirQuotaRequest* request,
+      pb::metaserver::SetDirQuotaResponse* response) override;
 
-  MetaStatusCode GetDirQuota(const GetDirQuotaRequest* request,
-                             GetDirQuotaResponse* response) override;
+  pb::metaserver::MetaStatusCode GetDirQuota(
+      const pb::metaserver::GetDirQuotaRequest* request,
+      pb::metaserver::GetDirQuotaResponse* response) override;
 
-  MetaStatusCode DeleteDirQuota(const DeleteDirQuotaRequest* request,
-                                DeleteDirQuotaResponse* response) override;
+  pb::metaserver::MetaStatusCode DeleteDirQuota(
+      const pb::metaserver::DeleteDirQuotaRequest* request,
+      pb::metaserver::DeleteDirQuotaResponse* response) override;
 
-  MetaStatusCode LoadDirQuotas(const LoadDirQuotasRequest* request,
-                               LoadDirQuotasResponse* response) override;
+  pb::metaserver::MetaStatusCode LoadDirQuotas(
+      const pb::metaserver::LoadDirQuotasRequest* request,
+      pb::metaserver::LoadDirQuotasResponse* response) override;
 
-  MetaStatusCode FlushDirUsages(const FlushDirUsagesRequest* request,
-                                FlushDirUsagesResponse* response) override;
+  pb::metaserver::MetaStatusCode FlushDirUsages(
+      const pb::metaserver::FlushDirUsagesRequest* request,
+      pb::metaserver::FlushDirUsagesResponse* response) override;
 
   // partition
-  MetaStatusCode CreatePartition(const CreatePartitionRequest* request,
-                                 CreatePartitionResponse* response) override;
+  pb::metaserver::MetaStatusCode CreatePartition(
+      const pb::metaserver::CreatePartitionRequest* request,
+      pb::metaserver::CreatePartitionResponse* response) override;
 
-  MetaStatusCode DeletePartition(const DeletePartitionRequest* request,
-                                 DeletePartitionResponse* response) override;
+  pb::metaserver::MetaStatusCode DeletePartition(
+      const pb::metaserver::DeletePartitionRequest* request,
+      pb::metaserver::DeletePartitionResponse* response) override;
 
   bool GetPartitionInfoList(
-      std::list<PartitionInfo>* partitionInfoList) override;
+      std::list<pb::common::PartitionInfo>* partitionInfoList) override;
 
-  std::shared_ptr<StreamServer> GetStreamServer() override;
+  std::shared_ptr<common::StreamServer> GetStreamServer() override;
 
   // dentry
-  MetaStatusCode CreateDentry(const CreateDentryRequest* request,
-                              CreateDentryResponse* response) override;
+  pb::metaserver::MetaStatusCode CreateDentry(
+      const pb::metaserver::CreateDentryRequest* request,
+      pb::metaserver::CreateDentryResponse* response) override;
 
-  MetaStatusCode GetDentry(const GetDentryRequest* request,
-                           GetDentryResponse* response) override;
+  pb::metaserver::MetaStatusCode GetDentry(
+      const pb::metaserver::GetDentryRequest* request,
+      pb::metaserver::GetDentryResponse* response) override;
 
-  MetaStatusCode DeleteDentry(const DeleteDentryRequest* request,
-                              DeleteDentryResponse* response) override;
+  pb::metaserver::MetaStatusCode DeleteDentry(
+      const pb::metaserver::DeleteDentryRequest* request,
+      pb::metaserver::DeleteDentryResponse* response) override;
 
-  MetaStatusCode ListDentry(const ListDentryRequest* request,
-                            ListDentryResponse* response) override;
+  pb::metaserver::MetaStatusCode ListDentry(
+      const pb::metaserver::ListDentryRequest* request,
+      pb::metaserver::ListDentryResponse* response) override;
 
-  MetaStatusCode PrepareRenameTx(const PrepareRenameTxRequest* request,
-                                 PrepareRenameTxResponse* response) override;
+  pb::metaserver::MetaStatusCode PrepareRenameTx(
+      const pb::metaserver::PrepareRenameTxRequest* request,
+      pb::metaserver::PrepareRenameTxResponse* response) override;
 
   // inode
-  MetaStatusCode CreateInode(const CreateInodeRequest* request,
-                             CreateInodeResponse* response) override;
+  pb::metaserver::MetaStatusCode CreateInode(
+      const pb::metaserver::CreateInodeRequest* request,
+      pb::metaserver::CreateInodeResponse* response) override;
 
-  MetaStatusCode CreateRootInode(const CreateRootInodeRequest* request,
-                                 CreateRootInodeResponse* response) override;
+  pb::metaserver::MetaStatusCode CreateRootInode(
+      const pb::metaserver::CreateRootInodeRequest* request,
+      pb::metaserver::CreateRootInodeResponse* response) override;
 
-  MetaStatusCode CreateManageInode(
-      const CreateManageInodeRequest* request,
-      CreateManageInodeResponse* response) override;
+  pb::metaserver::MetaStatusCode CreateManageInode(
+      const pb::metaserver::CreateManageInodeRequest* request,
+      pb::metaserver::CreateManageInodeResponse* response) override;
 
-  MetaStatusCode GetInode(const GetInodeRequest* request,
-                          GetInodeResponse* response) override;
+  pb::metaserver::MetaStatusCode GetInode(
+      const pb::metaserver::GetInodeRequest* request,
+      pb::metaserver::GetInodeResponse* response) override;
 
-  MetaStatusCode BatchGetInodeAttr(
-      const BatchGetInodeAttrRequest* request,
-      BatchGetInodeAttrResponse* response) override;
+  pb::metaserver::MetaStatusCode BatchGetInodeAttr(
+      const pb::metaserver::BatchGetInodeAttrRequest* request,
+      pb::metaserver::BatchGetInodeAttrResponse* response) override;
 
-  MetaStatusCode BatchGetXAttr(const BatchGetXAttrRequest* request,
-                               BatchGetXAttrResponse* response) override;
+  pb::metaserver::MetaStatusCode BatchGetXAttr(
+      const pb::metaserver::BatchGetXAttrRequest* request,
+      pb::metaserver::BatchGetXAttrResponse* response) override;
 
-  MetaStatusCode DeleteInode(const DeleteInodeRequest* request,
-                             DeleteInodeResponse* response) override;
+  pb::metaserver::MetaStatusCode DeleteInode(
+      const pb::metaserver::DeleteInodeRequest* request,
+      pb::metaserver::DeleteInodeResponse* response) override;
 
-  MetaStatusCode UpdateInode(const UpdateInodeRequest* request,
-                             UpdateInodeResponse* response) override;
+  pb::metaserver::MetaStatusCode UpdateInode(
+      const pb::metaserver::UpdateInodeRequest* request,
+      pb::metaserver::UpdateInodeResponse* response) override;
 
   std::shared_ptr<Partition> GetPartition(uint32_t partitionId);
 
-  MetaStatusCode GetOrModifyS3ChunkInfo(
-      const GetOrModifyS3ChunkInfoRequest* request,
-      GetOrModifyS3ChunkInfoResponse* response,
-      std::shared_ptr<Iterator>* iterator) override;
+  pb::metaserver::MetaStatusCode GetOrModifyS3ChunkInfo(
+      const pb::metaserver::GetOrModifyS3ChunkInfoRequest* request,
+      pb::metaserver::GetOrModifyS3ChunkInfoResponse* response,
+      std::shared_ptr<storage::Iterator>* iterator) override;
 
-  MetaStatusCode SendS3ChunkInfoByStream(
-      std::shared_ptr<StreamConnection> connection,
-      std::shared_ptr<Iterator> iterator) override;
+  pb::metaserver::MetaStatusCode SendS3ChunkInfoByStream(
+      std::shared_ptr<common::StreamConnection> connection,
+      std::shared_ptr<storage::Iterator> iterator) override;
 
-  MetaStatusCode GetVolumeExtent(const GetVolumeExtentRequest* request,
-                                 GetVolumeExtentResponse* response) override;
+  pb::metaserver::MetaStatusCode GetVolumeExtent(
+      const pb::metaserver::GetVolumeExtentRequest* request,
+      pb::metaserver::GetVolumeExtentResponse* response) override;
 
-  MetaStatusCode UpdateVolumeExtent(
-      const UpdateVolumeExtentRequest* request,
-      UpdateVolumeExtentResponse* response) override;
+  pb::metaserver::MetaStatusCode UpdateVolumeExtent(
+      const pb::metaserver::UpdateVolumeExtentRequest* request,
+      pb::metaserver::UpdateVolumeExtentResponse* response) override;
 
  private:
   FRIEND_TEST(MetastoreTest, partition);
@@ -340,13 +325,13 @@ class MetaStoreImpl : public MetaStore {
   FRIEND_TEST(MetastoreTest, persist_deleting_partition_success);
 
   MetaStoreImpl(copyset::CopysetNode* node,
-                const StorageOptions& storageOptions);
+                const storage::StorageOptions& storageOptions);
 
   void PrepareStreamBuffer(butil::IOBuf* buffer, uint64_t chunkIndex,
                            const std::string& value);
 
-  void SaveBackground(const std::string& path, DumpFileClosure* child,
-                      OnSnapshotSaveDoneClosure* done);
+  void SaveBackground(const std::string& path, storage::DumpFileClosure* child,
+                      copyset::OnSnapshotSaveDoneClosure* done);
 
   bool InitStorage();
 
@@ -354,16 +339,15 @@ class MetaStoreImpl : public MetaStore {
   // REQUIRES: rwLock_ is held with write permission
   bool ClearInternal();
 
- private:
-  RWLock rwLock_;  // protect partitionMap_
-  std::shared_ptr<KVStorage> kvStorage_;
-  std::unique_ptr<SuperPartition> super_partition_;
+  utils::RWLock rwLock_;  // protect partitionMap_
+  std::shared_ptr<storage::KVStorage> kvStorage_;
+  std::unique_ptr<superpartition::SuperPartition> super_partition_;
   std::map<uint32_t, std::shared_ptr<Partition>> partitionMap_;
   std::list<uint32_t> partitionIds_;
 
   copyset::CopysetNode* copysetNode_;
 
-  std::shared_ptr<StreamServer> streamServer_;
+  std::shared_ptr<common::StreamServer> streamServer_;
 
   storage::StorageOptions storageOptions_;
 };

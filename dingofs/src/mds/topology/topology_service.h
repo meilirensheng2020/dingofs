@@ -37,6 +37,8 @@ namespace dingofs {
 namespace mds {
 namespace topology {
 
+using namespace pb::mds::topology;
+
 class TopologyServiceImpl : public TopologyService {
  public:
   explicit TopologyServiceImpl(std::shared_ptr<TopologyManager> topology)
@@ -160,11 +162,10 @@ class TopologyServiceImpl : public TopologyService {
                        ListCopysetInfoResponse* response,
                        ::google::protobuf::Closure* done) override;
 
-  void StatMetadataUsage(
-      ::google::protobuf::RpcController* controller,
-      const ::dingofs::mds::topology::StatMetadataUsageRequest* request,
-      ::dingofs::mds::topology::StatMetadataUsageResponse* response,
-      ::google::protobuf::Closure* done) override;
+  void StatMetadataUsage(::google::protobuf::RpcController* controller,
+                         const StatMetadataUsageRequest* request,
+                         StatMetadataUsageResponse* response,
+                         ::google::protobuf::Closure* done) override;
 
   void ListTopology(::google::protobuf::RpcController* controller,
                     const ListTopologyRequest* request,

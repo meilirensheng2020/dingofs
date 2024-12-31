@@ -30,10 +30,16 @@ namespace dingofs {
 namespace metaserver {
 namespace superpartition {
 
-using ::dingofs::metaserver::storage::Key4DirQuota;
-using ::dingofs::metaserver::storage::Key4FsQuota;
-using ::dingofs::metaserver::storage::NameGenerator;
-using ::dingofs::metaserver::storage::Prefix4DirQuotas;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::Quota;
+using pb::metaserver::Usage;
+
+using storage::Key4DirQuota;
+using storage::Key4FsQuota;
+using storage::KVStorage;
+using storage::NameGenerator;
+using storage::Prefix4DirQuotas;
+using storage::StorageTransaction;
 
 SuperPartitionStorageImpl::SuperPartitionStorageImpl(
     std::shared_ptr<KVStorage> kv)

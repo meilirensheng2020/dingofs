@@ -49,7 +49,8 @@ int MetaserverQueryTool::Init() {
   google::CommandLineFlagInfo info;
   if (CheckMetaserverIdDefault(&info) && !CheckMetaserverAddrDefault(&info)) {
     // only use mateserverAddr in this case
-    dingofs::utils::SplitString(FLAGS_metaserverAddr, ",", &metaserver_addr_vec);
+    dingofs::utils::SplitString(FLAGS_metaserverAddr, ",",
+                                &metaserver_addr_vec);
   } else {
     dingofs::utils::SplitString(FLAGS_metaserverId, ",", &metaserver_id_vec);
   }
@@ -57,8 +58,8 @@ int MetaserverQueryTool::Init() {
   for (auto const& i : metaserver_addr_vec) {
     std::string ip;
     uint32_t port;
-    if (dingofs::mds::topology::SplitAddrToIpPort(i, &ip, &port)) {
-      dingofs::mds::topology::GetMetaServerInfoRequest request;
+    if (mds::topology::SplitAddrToIpPort(i, &ip, &port)) {
+      pb::mds::topology::GetMetaServerInfoRequest request;
       request.set_hostip(ip);
       request.set_port(port);
       requestQueue_.push(request);
@@ -69,13 +70,13 @@ int MetaserverQueryTool::Init() {
   }
 
   for (auto const& i : metaserver_id_vec) {
-    dingofs::mds::topology::GetMetaServerInfoRequest request;
+    pb::mds::topology::GetMetaServerInfoRequest request;
     request.set_metaserverid(std::stoul(i));
     requestQueue_.push(request);
   }
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::topology::TopologyService_Stub::GetMetaServer,
+      std::bind(&pb::mds::topology::TopologyService_Stub::GetMetaServer,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
   return 0;

@@ -41,19 +41,87 @@
 #include "dingofs/src/metaserver/storage/memory_storage.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
+#include "dingofs/src/metaserver/trash_manager.h"
 
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::metaserver::storage::DumpFileClosure;
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::WriteLockGuard;
-using KVStorage = ::dingofs::metaserver::storage::KVStorage;
-using Key4S3ChunkInfoList = ::dingofs::metaserver::storage::Key4S3ChunkInfoList;
+// super partition
+using pb::metaserver::DeleteDirQuotaRequest;
+using pb::metaserver::DeleteDirQuotaResponse;
+using pb::metaserver::FlushDirUsagesRequest;
+using pb::metaserver::FlushDirUsagesResponse;
+using pb::metaserver::FlushFsUsageRequest;
+using pb::metaserver::FlushFsUsageResponse;
+using pb::metaserver::GetDirQuotaRequest;
+using pb::metaserver::GetDirQuotaResponse;
+using pb::metaserver::GetFsQuotaRequest;
+using pb::metaserver::GetFsQuotaResponse;
+using pb::metaserver::LoadDirQuotasRequest;
+using pb::metaserver::LoadDirQuotasResponse;
+using pb::metaserver::SetDirQuotaRequest;
+using pb::metaserver::SetDirQuotaResponse;
+using pb::metaserver::SetFsQuotaRequest;
+using pb::metaserver::SetFsQuotaResponse;
 
-using ::dingofs::metaserver::storage::MemoryStorage;
-using ::dingofs::metaserver::storage::RocksDBStorage;
-using ::dingofs::metaserver::storage::StorageOptions;
+// dentry
+using pb::metaserver::CreateDentryRequest;
+using pb::metaserver::CreateDentryResponse;
+using pb::metaserver::DeleteDentryRequest;
+using pb::metaserver::DeleteDentryResponse;
+using pb::metaserver::GetDentryRequest;
+using pb::metaserver::GetDentryResponse;
+using pb::metaserver::ListDentryRequest;
+using pb::metaserver::ListDentryResponse;
+
+// inode
+using pb::metaserver::BatchGetInodeAttrRequest;
+using pb::metaserver::BatchGetInodeAttrResponse;
+using pb::metaserver::BatchGetXAttrRequest;
+using pb::metaserver::BatchGetXAttrResponse;
+using pb::metaserver::CreateInodeRequest;
+using pb::metaserver::CreateInodeResponse;
+using pb::metaserver::CreateManageInodeRequest;
+using pb::metaserver::CreateManageInodeResponse;
+using pb::metaserver::CreateRootInodeRequest;
+using pb::metaserver::CreateRootInodeResponse;
+using pb::metaserver::DeleteInodeRequest;
+using pb::metaserver::DeleteInodeResponse;
+using pb::metaserver::GetInodeRequest;
+using pb::metaserver::GetInodeResponse;
+using pb::metaserver::UpdateInodeRequest;
+using pb::metaserver::UpdateInodeResponse;
+
+// partition
+using pb::metaserver::CreatePartitionRequest;
+using pb::metaserver::CreatePartitionResponse;
+using pb::metaserver::DeletePartitionRequest;
+using pb::metaserver::DeletePartitionResponse;
+
+using pb::common::PartitionInfo;
+using pb::common::PartitionStatus;
+using pb::metaserver::Dentry;
+using pb::metaserver::FsFileType;
+using pb::metaserver::Inode;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::PrepareRenameTxRequest;
+using pb::metaserver::PrepareRenameTxResponse;
+using pb::metaserver::Quota;
+
+using storage::DumpFileClosure;
+using storage::Iterator;
+using storage::MemoryStorage;
+using storage::RocksDBStorage;
+using storage::StorageOptions;
+
+using common::StreamConnection;
+using common::StreamServer;
+using copyset::OnSnapshotSaveDoneClosure;
+using utils::ReadLockGuard;
+using utils::WriteLockGuard;
+
+using KVStorage = storage::KVStorage;
+using Key4S3ChunkInfoList = metaserver::storage::Key4S3ChunkInfoList;
 
 namespace {
 const char* const kMetaDataFilename = "metadata";
@@ -620,13 +688,13 @@ MetaStatusCode MetaStoreImpl::CreateManageInode(
   param.length = 0;
   param.rdev = 0;
 
-  if (request->managetype() == ManageInodeType::TYPE_RECYCLE) {
+  if (request->managetype() == pb::metaserver::ManageInodeType::TYPE_RECYCLE) {
     param.type = FsFileType::TYPE_DIRECTORY;
     param.parent = ROOTINODEID;
   } else {
     LOG(ERROR) << "unsupport manage inode type"
                << ManageInodeType_Name(request->managetype());
-    return PARAM_ERROR;
+    return pb::metaserver::PARAM_ERROR;
   }
 
   ReadLockGuard readLockGuard(rwLock_);
@@ -650,7 +718,7 @@ MetaStatusCode MetaStoreImpl::CreateManageInode(
   }
 
   // if create trash inode, start backgroud trash scan
-  if (request->managetype() == ManageInodeType::TYPE_RECYCLE) {
+  if (request->managetype() == pb::metaserver::ManageInodeType::TYPE_RECYCLE) {
     std::shared_ptr<RecycleCleaner> recycleCleaner =
         std::make_shared<RecycleCleaner>(partition);
     RecycleManager::GetInstance().Add(request->partitionid(), recycleCleaner,
@@ -720,7 +788,7 @@ MetaStatusCode MetaStoreImpl::BatchGetInodeAttr(
   uint32_t fsId = request->fsid();
   MetaStatusCode status = MetaStatusCode::OK;
   for (int i = 0; i < request->inodeid_size(); i++) {
-    InodeAttr* attr = response->add_attr();
+    pb::metaserver::InodeAttr* attr = response->add_attr();
     status = partition->GetInodeAttr(fsId, request->inodeid(i), attr);
 
     if (status != MetaStatusCode::OK) {
@@ -803,8 +871,8 @@ MetaStatusCode MetaStoreImpl::UpdateInode(const UpdateInodeRequest* request,
 }
 
 MetaStatusCode MetaStoreImpl::GetOrModifyS3ChunkInfo(
-    const GetOrModifyS3ChunkInfoRequest* request,
-    GetOrModifyS3ChunkInfoResponse* response,
+    const pb::metaserver::GetOrModifyS3ChunkInfoRequest* request,
+    pb::metaserver::GetOrModifyS3ChunkInfoResponse* response,
     std::shared_ptr<Iterator>* iterator) {
   MetaStatusCode rc;
   ReadLockGuard readLockGuard(rwLock_);
@@ -844,7 +912,7 @@ MetaStatusCode MetaStoreImpl::SendS3ChunkInfoByStream(
     std::shared_ptr<Iterator> iterator) {
   butil::IOBuf buffer;
   Key4S3ChunkInfoList key;
-  Converter conv;
+  storage::Converter conv;
   for (iterator->SeekToFirst(); iterator->Valid(); iterator->Next()) {
     std::string skey = iterator->Key();
     if (!conv.ParseFromString(skey, &key)) {
@@ -877,7 +945,8 @@ std::shared_ptr<Partition> MetaStoreImpl::GetPartition(uint32_t partitionId) {
 }
 
 MetaStatusCode MetaStoreImpl::GetVolumeExtent(
-    const GetVolumeExtentRequest* request, GetVolumeExtentResponse* response) {
+    const pb::metaserver::GetVolumeExtentRequest* request,
+    pb::metaserver::GetVolumeExtentResponse* response) {
   ReadLockGuard guard(rwLock_);
   auto partition = GetPartition(request->partitionid());
   if (!partition) {
@@ -899,8 +968,8 @@ MetaStatusCode MetaStoreImpl::GetVolumeExtent(
 }
 
 MetaStatusCode MetaStoreImpl::UpdateVolumeExtent(
-    const UpdateVolumeExtentRequest* request,
-    UpdateVolumeExtentResponse* response) {
+    const pb::metaserver::UpdateVolumeExtentRequest* request,
+    pb::metaserver::UpdateVolumeExtentResponse* response) {
   ReadLockGuard guard(rwLock_);
   auto partition = GetPartition(request->partitionid());
   if (!partition) {
@@ -927,7 +996,8 @@ bool MetaStoreImpl::InitStorage() {
     return false;
   }
 
-  super_partition_ = std::make_unique<SuperPartition>(kvStorage_);
+  super_partition_ =
+      std::make_unique<superpartition::SuperPartition>(kvStorage_);
   return kvStorage_->Open();
 }
 

@@ -30,6 +30,8 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
+using pb::metaserver::MetaStatusCode;
+
 static const std::map<DINGOFS_ERROR, std::pair<int, std::string>> errors = {
     {DINGOFS_ERROR::OK, {0, "OK"}},
     {DINGOFS_ERROR::INTERNAL, {EIO, "internal error"}},

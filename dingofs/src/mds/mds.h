@@ -28,52 +28,24 @@
 #include <memory>
 #include <string>
 
-#include "dingofs/src/mds/kvstorageclient/etcd_client.h"
-#include "dingofs/src/mds/leader_election/leader_election.h"
+#include "dingofs/src/aws/s3_adapter.h"
 #include "dingofs/src/mds/chunkid_allocator.h"
 #include "dingofs/src/mds/dlock/dlock.h"
 #include "dingofs/src/mds/fs_manager.h"
-#include "dingofs/src/mds/heartbeat/heartbeat_service.h"
-#include "dingofs/src/mds/schedule/coordinator.h"
+#include "dingofs/src/mds/heartbeat/copyset_conf_generator.h"
+#include "dingofs/src/mds/heartbeat/heartbeat_manager.h"
+#include "dingofs/src/mds/heartbeat/metaserver_healthy_checker.h"
+#include "dingofs/src/mds/leader_election/leader_election.h"
+#include "dingofs/src/mds/schedule/schedule_define.h"
 #include "dingofs/src/mds/topology/topology.h"
 #include "dingofs/src/mds/topology/topology_config.h"
 #include "dingofs/src/mds/topology/topology_metric.h"
-#include "dingofs/src/mds/topology/topology_service.h"
-#include "dingofs/src/mds/topology/topology_storge_etcd.h"
 #include "dingofs/src/utils/configuration.h"
-#include "dingofs/src/aws/s3_adapter.h"
-
-using ::dingofs::utils::Configuration;
-using ::dingofs::aws::S3Adapter;
-using ::dingofs::kvstorage::EtcdClientImp;
-using ::dingofs::mds::heartbeat::HeartbeatOption;
-using ::dingofs::mds::heartbeat::HeartbeatServiceImpl;
-using ::dingofs::mds::schedule::Coordinator;
-using ::dingofs::mds::schedule::ScheduleMetrics;
-using ::dingofs::mds::schedule::ScheduleOption;
-using ::dingofs::mds::schedule::TopoAdapterImpl;
-using ::dingofs::mds::topology::DefaultIdGenerator;
-using ::dingofs::mds::topology::DefaultTokenGenerator;
-using ::dingofs::mds::topology::TopologyImpl;
-using ::dingofs::mds::topology::TopologyManager;
-using ::dingofs::mds::topology::TopologyMetricService;
-using ::dingofs::mds::topology::TopologyOption;
-using ::dingofs::mds::topology::TopologyServiceImpl;
-using ::dingofs::mds::topology::TopologyStorageCodec;
-using ::dingofs::mds::topology::TopologyStorageEtcd;
 
 namespace dingofs {
 namespace mds {
 
-using ::dingofs::utils::Configuration;
-using ::dingofs::election::LeaderElection;
-using ::dingofs::election::LeaderElectionOptions;
-using dingofs::kvstorage::EtcdClientImp;
-using ::dingofs::kvstorage::KVStorageClient;
-
 // TODO(split InitEtcdConf): split this InitEtcdConf to a single module
-
-using ::dingofs::mds::dlock::DLockOptions;
 
 struct MDSOptions {
   int dummyPort;
@@ -81,11 +53,11 @@ struct MDSOptions {
   MetaserverOptions metaserverOptions;
   // TODO(add EtcdConf): add etcd configure
 
-  TopologyOption topologyOptions;
-  HeartbeatOption heartbeatOption;
-  ScheduleOption scheduleOption;
+  topology::TopologyOption topologyOptions;
+  heartbeat::HeartbeatOption heartbeatOption;
+  schedule::ScheduleOption scheduleOption;
 
-  DLockOptions dLockOptions;
+  dlock::DLockOptions dLockOptions;
 };
 
 class MDS {
@@ -96,7 +68,7 @@ class MDS {
   MDS(const MDS&) = delete;
   MDS& operator=(const MDS&) = delete;
 
-  void InitOptions(std::shared_ptr<Configuration> conf);
+  void InitOptions(std::shared_ptr<utils::Configuration> conf);
   void Init();
   void Run();
   void Stop();
@@ -112,22 +84,22 @@ class MDS {
   void InitEtcdConf(EtcdConf* etcd_conf);
   bool CheckEtcd();
 
-  void InitLeaderElectionOption(LeaderElectionOptions* option);
-  void InitLeaderElection(const LeaderElectionOptions& option);
+  void InitLeaderElectionOption(election::LeaderElectionOptions* option);
+  void InitLeaderElection(const election::LeaderElectionOptions& option);
 
-  void InitHeartbeatOption(HeartbeatOption* heartbeat_option);
-  void InitScheduleOption(ScheduleOption* schedule_option);
+  void InitHeartbeatOption(heartbeat::HeartbeatOption* heartbeat_option);
+  void InitScheduleOption(schedule::ScheduleOption* schedule_option);
 
-  void InitDLockOptions(DLockOptions* d_lock_options);
+  void InitDLockOptions(dlock::DLockOptions* d_lock_options);
 
   void InitMetaServerOption(MetaserverOptions* metaserver_option);
-  void InitTopologyOption(TopologyOption* topology_option);
+  void InitTopologyOption(topology::TopologyOption* topology_option);
 
-  void InitTopology(const TopologyOption& option);
+  void InitTopology(const topology::TopologyOption& option);
 
-  void InitTopologyManager(const TopologyOption& option);
+  void InitTopologyManager(const topology::TopologyOption& option);
 
-  void InitTopologyMetricService(const TopologyOption& option);
+  void InitTopologyMetricService(const topology::TopologyOption& option);
 
   void InitHeartbeatManager();
 
@@ -136,7 +108,7 @@ class MDS {
   void InitFsManagerOptions(FsManagerOption* fs_manager_option);
 
   // mds configuration items
-  std::shared_ptr<Configuration> conf_;
+  std::shared_ptr<utils::Configuration> conf_;
   // initialized or not
   bool inited_;
   // running as the main MDS or not
@@ -145,12 +117,12 @@ class MDS {
   std::shared_ptr<FsStorage> fsStorage_;
   std::shared_ptr<MetaserverClient> metaserverClient_;
   std::shared_ptr<ChunkIdAllocator> chunkIdAllocator_;
-  std::shared_ptr<TopologyImpl> topology_;
-  std::shared_ptr<TopologyManager> topologyManager_;
-  std::shared_ptr<Coordinator> coordinator_;
-  std::shared_ptr<HeartbeatManager> heartbeatManager_;
-  std::shared_ptr<TopologyMetricService> topologyMetricService_;
-  std::shared_ptr<S3Adapter> s3Adapter_;
+  std::shared_ptr<topology::TopologyImpl> topology_;
+  std::shared_ptr<schedule::TopologyManager> topologyManager_;
+  std::shared_ptr<heartbeat::Coordinator> coordinator_;
+  std::shared_ptr<heartbeat::HeartbeatManager> heartbeatManager_;
+  std::shared_ptr<topology::TopologyMetricService> topologyMetricService_;
+  std::shared_ptr<aws::S3Adapter> s3Adapter_;
   MDSOptions options_;
 
   bool etcdClientInited_;

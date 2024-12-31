@@ -27,8 +27,10 @@
 #include "dingofs/src/client/blockcache/block_cache.h"
 #include "dingofs/src/client/blockcache/s3_client.h"
 #include "dingofs/src/client/datastream/data_stream.h"
-#include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/src/client/kvclient/memcache_client.h"
+#include "dingofs/src/common/define.h"
+#include "dingofs/src/stub/filesystem/xattr.h"
+#include "dingofs/src/utils/fast_align.h"
 #include "dingofs/src/utils/net_common.h"
 
 namespace dingofs {
@@ -45,16 +47,23 @@ DECLARE_bool(supportKVcache);
 namespace dingofs {
 namespace client {
 
-using ::dingofs::base::string::StrFormat;
-using ::dingofs::client::blockcache::BlockCacheImpl;
-using ::dingofs::client::blockcache::S3ClientImpl;
-using dingofs::client::common::FLAGS_enableCto;
-using dingofs::client::common::FLAGS_supportKVcache;
-using ::dingofs::client::datastream::DataStream;
-using dingofs::mds::topology::MemcacheClusterInfo;
+using aws::GetObjectAsyncCallBack;
+using base::string::StrFormat;
+using blockcache::BlockCacheImpl;
+using blockcache::S3ClientImpl;
+using datastream::DataStream;
+using filesystem::EntryOut;
+using utils::is_aligned;
 
-DINGOFS_ERROR FuseS3Client::Init(const FuseClientOption& option) {
-  FuseClientOption opt(option);
+using pb::mds::topology::MemcacheClusterInfo;
+using pb::metaserver::FsFileType;
+using pb::metaserver::InodeAttr;
+
+using common::FLAGS_enableCto;
+using common::FLAGS_supportKVcache;
+
+DINGOFS_ERROR FuseS3Client::Init(const common::FuseClientOption& option) {
+  common::FuseClientOption opt(option);
 
   DINGOFS_ERROR ret = FuseClient::Init(opt);
   if (ret != DINGOFS_ERROR::OK) {
@@ -73,8 +82,8 @@ DINGOFS_ERROR FuseS3Client::Init(const FuseClientOption& option) {
 
   // set fs S3Option
   const auto& s3Info = fsInfo_->detail().s3info();
-  ::dingofs::aws::S3InfoOption fsS3Option;
-  ::dingofs::client::common::S3Info2FsS3Option(s3Info, &fsS3Option);
+  aws::S3InfoOption fsS3Option;
+  common::S3Info2FsS3Option(s3Info, &fsS3Option);
   SetFuseClientS3Option(&opt, fsS3Option);
 
   S3ClientImpl::GetInstance()->Init(opt.s3Opt.s3AdaptrOpt);
@@ -106,7 +115,7 @@ DINGOFS_ERROR FuseS3Client::Init(const FuseClientOption& option) {
                           block_cache, kvClientManager_, true);
 }
 
-bool FuseS3Client::InitKVCache(const KVClientManagerOpt& opt) {
+bool FuseS3Client::InitKVCache(const common::KVClientManagerOpt& opt) {
   // get kvcache cluster
   MemcacheClusterInfo kvcachecluster;
   if (!mdsClient_->AllocOrGetMemcacheCluster(fsInfo_->fsid(),
@@ -143,7 +152,7 @@ void FuseS3Client::UnInit() {
   s3Adaptor_->Stop();
   S3ClientImpl::GetInstance()->Destroy();
   DataStream::GetInstance().Shutdown();
-  dingofs::aws::S3Adapter::Shutdown();
+  aws::S3Adapter::Shutdown();
 }
 
 DINGOFS_ERROR FuseS3Client::FuseOpInit(void* userdata,
@@ -158,7 +167,7 @@ DINGOFS_ERROR FuseS3Client::FuseOpInit(void* userdata,
 DINGOFS_ERROR FuseS3Client::FuseOpWrite(fuse_req_t req, fuse_ino_t ino,
                                         const char* buf, size_t size, off_t off,
                                         struct fuse_file_info* fi,
-                                        FileOut* file_out) {
+                                        filesystem::FileOut* file_out) {
   size_t* w_size = &file_out->nwritten;
   // check align
   if (fi->flags & O_DIRECT) {
@@ -198,7 +207,7 @@ DINGOFS_ERROR FuseS3Client::FuseOpWrite(fuse_req_t req, fuse_ino_t ino,
   size_t change_size = 0;
 
   {
-    ::dingofs::utils::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
+    utils::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
 
     *w_size = w_ret;
     // update file len
@@ -294,7 +303,7 @@ DINGOFS_ERROR FuseS3Client::FuseOpRead(fuse_req_t req, fuse_ino_t ino,
     fsMetric_->userReadIoSize.set_value(r_ret);
   }
 
-  ::dingofs::utils::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
+  utils::UniqueLock lg_guard = inode_wrapper->GetUniqueLock();
   inode_wrapper->UpdateTimestampLocked(kAccessTime);
   inodeManager_->ShipToFlush(inode_wrapper);
 
@@ -305,13 +314,14 @@ DINGOFS_ERROR FuseS3Client::FuseOpRead(fuse_req_t req, fuse_ino_t ino,
 DINGOFS_ERROR FuseS3Client::FuseOpCreate(fuse_req_t req, fuse_ino_t parent,
                                          const char* name, mode_t mode,
                                          struct fuse_file_info* fi,
-                                         EntryOut* entry_out) {
+                                         filesystem::EntryOut* entry_out) {
   VLOG(1) << "FuseOpCreate, parent: " << parent << ", name: " << name
           << ", mode: " << mode;
 
   std::shared_ptr<InodeWrapper> inode;
   DINGOFS_ERROR ret =
-      MakeNode(req, parent, name, mode, FsFileType::TYPE_S3, 0, false, inode);
+      MakeNode(req, parent, name, mode, pb::metaserver::FsFileType::TYPE_S3, 0,
+               false, inode);
   if (ret != DINGOFS_ERROR::OK) {
     return ret;
   }
@@ -329,13 +339,15 @@ DINGOFS_ERROR FuseS3Client::FuseOpCreate(fuse_req_t req, fuse_ino_t parent,
 
 DINGOFS_ERROR FuseS3Client::FuseOpMkNod(fuse_req_t req, fuse_ino_t parent,
                                         const char* name, mode_t mode,
-                                        dev_t rdev, EntryOut* entry_out) {
+                                        dev_t rdev,
+                                        filesystem::EntryOut* entry_out) {
   VLOG(1) << "FuseOpMkNod, parent: " << parent << ", name: " << name
           << ", mode: " << mode << ", rdev: " << rdev;
 
   std::shared_ptr<InodeWrapper> inode;
-  DINGOFS_ERROR rc = MakeNode(req, parent, name, mode, FsFileType::TYPE_S3,
-                              rdev, false, inode);
+  DINGOFS_ERROR rc =
+      MakeNode(req, parent, name, mode, pb::metaserver::FsFileType::TYPE_S3,
+               rdev, false, inode);
   if (rc != DINGOFS_ERROR::OK) {
     return rc;
   }
@@ -389,7 +401,7 @@ DINGOFS_ERROR FuseS3Client::FuseOpFsync(fuse_req_t req, fuse_ino_t ino,
                << ", inodeId=" << ino;
     return ret;
   }
-  ::dingofs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+  utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
   return inodeWrapper->Sync();
 }
 
@@ -455,7 +467,7 @@ DINGOFS_ERROR FuseS3Client::FuseOpFlush(fuse_req_t req, fuse_ino_t ino,
       return ret;
     }
 
-    ::dingofs::utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
+    utils::UniqueLock lgGuard = inodeWrapper->GetUniqueLock();
     ret = inodeWrapper->Sync();
     if (ret != DINGOFS_ERROR::OK) {
       LOG(ERROR) << "FuseOpFlush, inode sync s3 chunk info fail, ret = " << ret
@@ -526,13 +538,13 @@ DINGOFS_ERROR FuseS3Client::InitBrpcServer() {
   }
 
   std::string local_ip;
-  if (!dingofs::utils::NetCommon::GetLocalIP(&local_ip)) {
+  if (!utils::NetCommon::GetLocalIP(&local_ip)) {
     LOG(ERROR) << "Get local ip failed!";
     return DINGOFS_ERROR::INTERNAL;
   }
 
-  dingofs::stub::common::ClientDummyServerInfo::GetInstance().SetPort(listen_port);
-  dingofs::stub::common::ClientDummyServerInfo::GetInstance().SetIP(local_ip);
+  stub::common::ClientDummyServerInfo::GetInstance().SetPort(listen_port);
+  stub::common::ClientDummyServerInfo::GetInstance().SetIP(local_ip);
 
   return DINGOFS_ERROR::OK;
 }

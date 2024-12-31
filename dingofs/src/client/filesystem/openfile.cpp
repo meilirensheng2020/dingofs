@@ -31,6 +31,10 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
+using common::OpenFilesOption;
+using utils::ReadLockGuard;
+using utils::WriteLockGuard;
+
 OpenFiles::OpenFiles(OpenFilesOption option,
                      std::shared_ptr<DeferSync> defer_sync)
     : option_(option), deferSync_(defer_sync) {
@@ -112,7 +116,7 @@ void OpenFiles::CloseAll() {
   }
 }
 
-bool OpenFiles::GetFileAttr(Ino ino, InodeAttr* attr) {
+bool OpenFiles::GetFileAttr(Ino ino, pb::metaserver::InodeAttr* attr) {
   ReadLockGuard lk(rwlock_);
   auto iter = files_.find(ino);
   if (iter == files_.end()) {

@@ -28,7 +28,43 @@ namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
-using ::dingofs::mds::space::SpaceService_Stub;
+using pb::mds::AllocateS3ChunkRequest;
+using pb::mds::AllocateS3ChunkResponse;
+using pb::mds::CommitTxRequest;
+using pb::mds::CommitTxResponse;
+using pb::mds::GetFsInfoRequest;
+using pb::mds::GetFsInfoResponse;
+using pb::mds::GetLatestTxIdRequest;
+using pb::mds::GetLatestTxIdResponse;
+using pb::mds::MountFsRequest;
+using pb::mds::MountFsResponse;
+using pb::mds::Mountpoint;
+using pb::mds::RefreshSessionRequest;
+using pb::mds::RefreshSessionResponse;
+using pb::mds::UmountFsRequest;
+using pb::mds::UmountFsResponse;
+using pb::mds::space::AcquireBlockGroupRequest;
+using pb::mds::space::AcquireBlockGroupResponse;
+using pb::mds::space::AllocateBlockGroupRequest;
+using pb::mds::space::AllocateBlockGroupResponse;
+using pb::mds::space::ReleaseBlockGroupRequest;
+using pb::mds::space::ReleaseBlockGroupResponse;
+using pb::mds::space::SpaceService_Stub;
+using pb::mds::topology::AllocOrGetMemcacheClusterRequest;
+using pb::mds::topology::AllocOrGetMemcacheClusterResponse;
+using pb::mds::topology::CreatePartitionRequest;
+using pb::mds::topology::CreatePartitionResponse;
+using pb::mds::topology::GetCopysetOfPartitionRequest;
+using pb::mds::topology::GetCopysetOfPartitionResponse;
+using pb::mds::topology::GetMetaServerInfoRequest;
+using pb::mds::topology::GetMetaServerInfoResponse;
+using pb::mds::topology::GetMetaServerListInCopySetsRequest;
+using pb::mds::topology::GetMetaServerListInCopySetsResponse;
+using pb::mds::topology::ListPartitionRequest;
+using pb::mds::topology::ListPartitionResponse;
+
+using common::CopysetID;
+using common::LogicPoolID;
 
 void MDSBaseClient::MountFs(const std::string& fsName,
                             const Mountpoint& mountPt,
@@ -37,7 +73,7 @@ void MDSBaseClient::MountFs(const std::string& fsName,
   MountFsRequest request;
   request.set_fsname(fsName);
   request.set_allocated_mountpoint(new Mountpoint(mountPt));
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.MountFs(cntl, &request, response, nullptr);
 }
 
@@ -48,7 +84,7 @@ void MDSBaseClient::UmountFs(const std::string& fsName,
   UmountFsRequest request;
   request.set_fsname(fsName);
   request.set_allocated_mountpoint(new Mountpoint(mountPt));
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.UmountFs(cntl, &request, response, nullptr);
 }
 
@@ -57,7 +93,7 @@ void MDSBaseClient::GetFsInfo(const std::string& fsName,
                               brpc::Controller* cntl, brpc::Channel* channel) {
   GetFsInfoRequest request;
   request.set_fsname(fsName);
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.GetFsInfo(cntl, &request, response, nullptr);
 }
 
@@ -65,7 +101,7 @@ void MDSBaseClient::GetFsInfo(uint32_t fsId, GetFsInfoResponse* response,
                               brpc::Controller* cntl, brpc::Channel* channel) {
   GetFsInfoRequest request;
   request.set_fsid(fsId);
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.GetFsInfo(cntl, &request, response, nullptr);
 }
 
@@ -77,7 +113,7 @@ void MDSBaseClient::GetMetaServerInfo(uint32_t port, std::string ip,
   request.set_hostip(ip);
   request.set_port(port);
 
-  dingofs::mds::topology::TopologyService_Stub stub(channel);
+  dingofs::pb::mds::topology::TopologyService_Stub stub(channel);
   stub.GetMetaServer(cntl, &request, response, nullptr);
 }
 
@@ -91,7 +127,7 @@ void MDSBaseClient::GetMetaServerListInCopysets(
     request.add_copysetid(copysetid);
   }
 
-  dingofs::mds::topology::TopologyService_Stub stub(channel);
+  dingofs::pb::mds::topology::TopologyService_Stub stub(channel);
   stub.GetMetaServerListInCopysets(cntl, &request, response, nullptr);
 }
 
@@ -103,7 +139,7 @@ void MDSBaseClient::CreatePartition(uint32_t fsID, uint32_t count,
   request.set_fsid(fsID);
   request.set_count(count);
 
-  dingofs::mds::topology::TopologyService_Stub stub(channel);
+  dingofs::pb::mds::topology::TopologyService_Stub stub(channel);
   stub.CreatePartition(cntl, &request, response, nullptr);
 }
 
@@ -116,7 +152,7 @@ void MDSBaseClient::GetCopysetOfPartitions(
     request.add_partitionid(partitionId);
   }
 
-  dingofs::mds::topology::TopologyService_Stub stub(channel);
+  dingofs::pb::mds::topology::TopologyService_Stub stub(channel);
   stub.GetCopysetOfPartition(cntl, &request, response, nullptr);
 }
 
@@ -127,7 +163,7 @@ void MDSBaseClient::ListPartition(uint32_t fsID,
   ListPartitionRequest request;
   request.set_fsid(fsID);
 
-  dingofs::mds::topology::TopologyService_Stub stub(channel);
+  dingofs::pb::mds::topology::TopologyService_Stub stub(channel);
   stub.ListPartition(cntl, &request, response, nullptr);
 }
 
@@ -139,7 +175,7 @@ void MDSBaseClient::AllocS3ChunkId(uint32_t fsId, uint32_t idNum,
   request.set_fsid(fsId);
   request.set_chunkidnum(idNum);
 
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.AllocateS3Chunk(cntl, &request, response, nullptr);
 }
 
@@ -147,7 +183,7 @@ void MDSBaseClient::RefreshSession(const RefreshSessionRequest& request,
                                    RefreshSessionResponse* response,
                                    brpc::Controller* cntl,
                                    brpc::Channel* channel) {
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.RefreshSession(cntl, &request, response, nullptr);
 }
 
@@ -155,14 +191,14 @@ void MDSBaseClient::GetLatestTxId(const GetLatestTxIdRequest& request,
                                   GetLatestTxIdResponse* response,
                                   brpc::Controller* cntl,
                                   brpc::Channel* channel) {
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.GetLatestTxId(cntl, &request, response, nullptr);
 }
 
 void MDSBaseClient::CommitTx(const CommitTxRequest& request,
                              CommitTxResponse* response, brpc::Controller* cntl,
                              brpc::Channel* channel) {
-  dingofs::mds::MdsService_Stub stub(channel);
+  dingofs::pb::mds::MdsService_Stub stub(channel);
   stub.CommitTx(cntl, &request, response, nullptr);
 }
 
@@ -198,15 +234,15 @@ void MDSBaseClient::AcquireVolumeBlockGroup(uint32_t fsId,
 
 void MDSBaseClient::ReleaseVolumeBlockGroup(
     uint32_t fsId, const std::string& owner,
-    const std::vector<dingofs::mds::space::BlockGroup>& blockGroups,
+    const std::vector<dingofs::pb::mds::space::BlockGroup>& blockGroups,
     ReleaseBlockGroupResponse* response, brpc::Controller* cntl,
     brpc::Channel* channel) {
   ReleaseBlockGroupRequest request;
   request.set_fsid(fsId);
   request.set_owner(owner);
 
-  google::protobuf::RepeatedPtrField<dingofs::mds::space::BlockGroup> groups(
-      blockGroups.begin(), blockGroups.end());
+  google::protobuf::RepeatedPtrField<dingofs::pb::mds::space::BlockGroup>
+      groups(blockGroups.begin(), blockGroups.end());
 
   request.mutable_blockgroups()->Swap(&groups);
 
@@ -220,7 +256,7 @@ void MDSBaseClient::AllocOrGetMemcacheCluster(
   AllocOrGetMemcacheClusterRequest request;
   request.set_fsid(fsId);
 
-  dingofs::mds::topology::TopologyService_Stub stub(channel);
+  dingofs::pb::mds::topology::TopologyService_Stub stub(channel);
   stub.AllocOrGetMemcacheCluster(cntl, &request, response, nullptr);
 }
 

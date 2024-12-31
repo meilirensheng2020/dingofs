@@ -19,12 +19,17 @@
 #include "brpc/closure_guard.h"
 #include "brpc/controller.h"
 #include "brpc/errno.pb.h"
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/inode_wrapper.h"
 #include "dingofs/src/client/service/flat_file.h"
 #include "glog/logging.h"
 
 namespace dingofs {
 namespace client {
+
+using pb::client::InodeObjectsRequest;
+using pb::client::InodeObjectsResponse;
+using pb::metaserver::Inode;
 
 void InodeObjectsService::default_method(
     google::protobuf::RpcController* controller,

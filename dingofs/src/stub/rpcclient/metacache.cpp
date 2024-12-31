@@ -30,12 +30,28 @@
 #include <utility>
 #include <vector>
 
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::WriteLockGuard;
-
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
+
+using common::CopysetID;
+using common::CopysetInfo;
+using common::CopysetPeerInfo;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PartitionID;
+using common::PeerAddr;
+
+using pb::common::PartitionInfo;
+using pb::common::PartitionStatus;
+using pb::mds::FSStatusCode;
+using pb::mds::topology::Copyset;
+using pb::mds::topology::PartitionTxId;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
+
+using Mutex = ::bthread::Mutex;
 
 void MetaCache::SetTxId(uint32_t partitionId, uint64_t txId) {
   WriteLockGuard w(txIdLock_);
@@ -430,8 +446,7 @@ bool MetaCache::UpdateLeaderInternal(
       groupID.poolID, groupID.copysetID, toupdateCopyset->csinfos_,
       toupdateCopyset->leaderindex_, &leaderAddr, &metaserverID);
   if (!getLeaderOk) {
-    LOG(WARNING) << "get leader failed!"
-                 << ", copyset:" << groupID.ToString();
+    LOG(WARNING) << "get leader failed!" << ", copyset:" << groupID.ToString();
     return false;
   }
 

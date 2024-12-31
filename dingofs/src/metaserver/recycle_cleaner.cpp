@@ -25,12 +25,21 @@
 #include <list>
 #include <vector>
 
-using dingofs::mds::FsInfo;
-using dingofs::mds::FSStatusCode;
-using dingofs::mds::topology::PartitionTxId;
+#include "dingofs/proto/metaserver.pb.h"
 
 namespace dingofs {
 namespace metaserver {
+
+using pb::mds::FsInfo;
+using pb::mds::FSStatusCode;
+using pb::mds::topology::PartitionTxId;
+
+using pb::metaserver::Dentry;
+using pb::metaserver::FsFileType;
+using pb::metaserver::Inode;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::MetaStatusCode;
+
 bool RecycleCleaner::UpdateFsInfo() {
   uint32_t fsId = partition_->GetFsId();
   FsInfo fsInfo;
@@ -311,8 +320,7 @@ bool RecycleCleaner::ScanRecycle() {
 
     for (const auto& it : tempDentrys) {
       if (isStop_) {
-        LOG(WARNING) << "recycle cleaner is stop"
-                     << ", fsId = " << GetFsId()
+        LOG(WARNING) << "recycle cleaner is stop" << ", fsId = " << GetFsId()
                      << ", partitionId = " << GetPartitionId();
         return true;
       }

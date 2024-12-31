@@ -23,7 +23,7 @@
 
 namespace dingofs {
 namespace client {
-class InodeObjectsService : public inode_objects {
+class InodeObjectsService : public pb::client::inode_objects {
  public:
   InodeObjectsService() = default;
 
@@ -38,8 +38,8 @@ class InodeObjectsService : public inode_objects {
   }
 
   void default_method(google::protobuf::RpcController* controller,
-                      const InodeObjectsRequest* request,
-                      InodeObjectsResponse* response,
+                      const pb::client::InodeObjectsRequest* request,
+                      pb::client::InodeObjectsResponse* response,
                       google::protobuf::Closure* done) override;
 
  private:

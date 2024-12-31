@@ -312,21 +312,22 @@ extern std::function<bool(google::CommandLineFlagInfo*)> CheckInodeIdDefault;
 /* translate to string */
 std::string StrVec2Str(const std::vector<std::string>&);
 
-std::string HeartbeatCopysetInfo2Str(const mds::heartbeat::CopySetInfo&);
+std::string HeartbeatCopysetInfo2Str(const pb::mds::heartbeat::CopySetInfo&);
 
-std::string CommomPeer2Str(const common::Peer&);
+std::string CommomPeer2Str(const pb::common::Peer&);
 
-std::string CommomPartitionInfo2Str(const common::PartitionInfo&);
+std::string CommomPartitionInfo2Str(const pb::common::PartitionInfo&);
 
-std::string CopysetOpStatus2Str(const metaserver::copyset::COPYSET_OP_STATUS&);
+std::string CopysetOpStatus2Str(
+    const pb::metaserver::copyset::COPYSET_OP_STATUS&);
 
-std::string PoolInfo2Str(const mds::topology::PoolInfo&);
+std::string PoolInfo2Str(const pb::mds::topology::PoolInfo&);
 
-std::string ZoneInfo2Str(const mds::topology::ZoneInfo&);
+std::string ZoneInfo2Str(const pb::mds::topology::ZoneInfo&);
 
-std::string ServerInfo2Str(const mds::topology::ServerInfo&);
+std::string ServerInfo2Str(const pb::mds::topology::ServerInfo&);
 
-std::string MetaserverInfo2Str(const mds::topology::MetaServerInfo&);
+std::string MetaserverInfo2Str(const pb::mds::topology::MetaServerInfo&);
 
 }  // namespace tools
 }  // namespace dingofs

@@ -42,10 +42,10 @@ namespace dingofs {
 namespace tools {
 namespace query {
 
-using InodeBase = dingofs::metaserver::GetInodeRequest;
+using InodeBase = pb::metaserver::GetInodeRequest;
 
 using PartitionInfoList =
-    google::protobuf::RepeatedPtrField<common::PartitionInfo>;
+    google::protobuf::RepeatedPtrField<pb::common::PartitionInfo>;
 
 class InodeQueryTool : public CurvefsTool {
  public:

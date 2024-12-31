@@ -37,9 +37,9 @@ namespace tools {
 namespace list {
 
 class CopysetInfoListTool
-    : public CurvefsToolRpc<dingofs::mds::topology::ListCopysetInfoRequest,
-                            dingofs::mds::topology::ListCopysetInfoResponse,
-                            dingofs::mds::topology::TopologyService_Stub> {
+    : public CurvefsToolRpc<pb::mds::topology::ListCopysetInfoRequest,
+                            pb::mds::topology::ListCopysetInfoResponse,
+                            pb::mds::topology::TopologyService_Stub> {
  public:
   explicit CopysetInfoListTool(const std::string& cmd = kCopysetInfoListCmd,
                                bool show = true)

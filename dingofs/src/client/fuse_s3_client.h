@@ -29,19 +29,9 @@
 #include "dingofs/src/client/fuse_client.h"
 #include "dingofs/src/client/s3/client_s3_cache_manager.h"
 #include "dingofs/src/client/service/inode_objects_service.h"
-#include "dingofs/src/client/warmup/warmup_manager.h"
-#include "dingofs/src/aws/s3_adapter.h"
 
 namespace dingofs {
 namespace client {
-
-using dingofs::aws::GetObjectAsyncCallBack;
-using dingofs::aws::GetObjectAsyncContext;
-
-namespace warmup {
-class WarmupManager;
-class WarmupManagerS3Impl;
-}  // namespace warmup
 
 class FuseS3Client : public FuseClient {
  public:
@@ -57,17 +47,18 @@ class FuseS3Client : public FuseClient {
         s3Adaptor_, nullptr);
   }
 
-  FuseS3Client(const std::shared_ptr<MdsClient>& mdsClient,
-               const std::shared_ptr<MetaServerClient>& metaClient,
-               const std::shared_ptr<InodeCacheManager>& inodeManager,
-               const std::shared_ptr<DentryCacheManager>& dentryManager,
-               const std::shared_ptr<S3ClientAdaptor>& s3Adaptor,
-               const std::shared_ptr<warmup::WarmupManager>& warmupManager)
+  FuseS3Client(
+      const std::shared_ptr<stub::rpcclient::MdsClient>& mdsClient,
+      const std::shared_ptr<stub::rpcclient::MetaServerClient>& metaClient,
+      const std::shared_ptr<InodeCacheManager>& inodeManager,
+      const std::shared_ptr<DentryCacheManager>& dentryManager,
+      const std::shared_ptr<S3ClientAdaptor>& s3Adaptor,
+      const std::shared_ptr<warmup::WarmupManager>& warmupManager)
       : FuseClient(mdsClient, metaClient, inodeManager, dentryManager,
                    warmupManager),
         s3Adaptor_(s3Adaptor) {}
 
-  DINGOFS_ERROR Init(const FuseClientOption& option) override;
+  DINGOFS_ERROR Init(const common::FuseClientOption& option) override;
 
   void UnInit() override;
 
@@ -76,7 +67,7 @@ class FuseS3Client : public FuseClient {
 
   DINGOFS_ERROR FuseOpWrite(fuse_req_t req, fuse_ino_t ino, const char* buf,
                             size_t size, off_t off, struct fuse_file_info* fi,
-                            FileOut* file_out) override;
+                            filesystem::FileOut* file_out) override;
 
   DINGOFS_ERROR FuseOpRead(fuse_req_t req, fuse_ino_t ino, size_t size,
                            off_t off, struct fuse_file_info* fi, char* buffer,
@@ -85,14 +76,15 @@ class FuseS3Client : public FuseClient {
   DINGOFS_ERROR FuseOpCreate(fuse_req_t req, fuse_ino_t parent,
                              const char* name, mode_t mode,
                              struct fuse_file_info* fi,
-                             EntryOut* entry_out) override;
+                             filesystem::EntryOut* entry_out) override;
 
   DINGOFS_ERROR FuseOpMkNod(fuse_req_t req, fuse_ino_t parent, const char* name,
                             mode_t mode, dev_t rdev,
-                            EntryOut* entry_out) override;
+                            filesystem::EntryOut* entry_out) override;
 
   DINGOFS_ERROR FuseOpLink(fuse_req_t req, fuse_ino_t ino, fuse_ino_t newparent,
-                           const char* newname, EntryOut* entry_out) override;
+                           const char* newname,
+                           filesystem::EntryOut* entry_out) override;
 
   DINGOFS_ERROR FuseOpUnlink(fuse_req_t req, fuse_ino_t parent,
                              const char* name) override;
@@ -106,7 +98,7 @@ class FuseS3Client : public FuseClient {
   DINGOFS_ERROR Truncate(InodeWrapper* inode, uint64_t length) override;
 
  private:
-  bool InitKVCache(const KVClientManagerOpt& opt);
+  bool InitKVCache(const common::KVClientManagerOpt& opt);
 
   void FlushData() override;
 

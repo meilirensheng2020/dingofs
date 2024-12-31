@@ -31,7 +31,7 @@
 
 #include "dingofs/src/metaserver/s3compact_inode.h"
 
-using dingofs::aws::S3Adapter;
+usingS3Adapter;
 using dingofs::metaserver::copyset::CopysetNode;
 
 namespace dingofs {

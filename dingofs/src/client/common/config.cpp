@@ -51,11 +51,15 @@ namespace dingofs {
 namespace client {
 namespace common {
 
+using dingofs::aws::S3InfoOption;
 using ::dingofs::base::filepath::PathJoin;
 using ::dingofs::base::math::kMiB;
 using ::dingofs::base::string::Str2Int;
-using ::dingofs::base::string::StrFormat;
+using dingofs::utils::Configuration;
+
 using ::dingofs::base::string::StrSplit;
+using dingofs::stub::common::ExcutorOpt;
+using dingofs::stub::common::MetaCacheOpt;
 
 static bool pass_bool(const char*, bool) { return true; }
 DEFINE_bool(enableCto, true, "acheieve cto consistency");
@@ -479,8 +483,7 @@ void SetFuseClientS3Option(FuseClientOption* clientOption,
   clientOption->s3Opt.s3AdaptrOpt.bucketName = fsS3Opt.bucketName;
 }
 
-void S3Info2FsS3Option(const dingofs::common::S3Info& s3,
-                       S3InfoOption* fsS3Opt) {
+void S3Info2FsS3Option(const pb::common::S3Info& s3, S3InfoOption* fsS3Opt) {
   fsS3Opt->ak = s3.ak();
   fsS3Opt->sk = s3.sk();
   fsS3Opt->s3Address = s3.endpoint();

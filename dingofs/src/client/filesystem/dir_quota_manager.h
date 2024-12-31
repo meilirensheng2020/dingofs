@@ -31,16 +31,10 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using base::timer::Timer;
-using dingofs::metaserver::Quota;
-using dingofs::metaserver::Usage;
-using dingofs::utils::RWLock;
-
-using dingofs::stub::rpcclient::MetaServerClient;
-
 class DirQuota {
  public:
-  DirQuota(Ino ino, Quota quota) : ino_(ino), quota_(std::move(quota)) {}
+  DirQuota(Ino ino, pb::metaserver::Quota quota)
+      : ino_(ino), quota_(std::move(quota)) {}
 
   Ino GetIno() const { return ino_; }
 
@@ -50,11 +44,11 @@ class DirQuota {
 
   bool CheckQuota(int64_t new_space, int64_t new_inodes);
 
-  void Refresh(Quota quota);
+  void Refresh(pb::metaserver::Quota quota);
 
-  Usage GetUsage();
+  pb::metaserver::Usage GetUsage();
 
-  Quota GetQuota();
+  pb::metaserver::Quota GetQuota();
 
   std::string ToString();
 
@@ -63,15 +57,17 @@ class DirQuota {
   std::atomic<int64_t> new_space_{0};
   std::atomic<int64_t> new_inodes_{0};
 
-  RWLock rwlock_;
-  Quota quota_;
+  utils::RWLock rwlock_;
+  pb::metaserver::Quota quota_;
 };
 
 class DirQuotaManager {
  public:
-  DirQuotaManager(uint32_t fs_id, std::shared_ptr<MetaServerClient> meta_client,
-                  std::shared_ptr<DirParentWatcher> dir_parent_watcher,
-                  std::shared_ptr<Timer> timer)
+  DirQuotaManager(
+      uint32_t fs_id,
+      std::shared_ptr<stub::rpcclient::MetaServerClient> meta_client,
+      std::shared_ptr<DirParentWatcher> dir_parent_watcher,
+      std::shared_ptr<base::timer::Timer> timer)
       : fs_id_(fs_id),
         meta_client_(std::move(meta_client)),
         dir_parent_watcher_(std::move(dir_parent_watcher)),
@@ -99,12 +95,12 @@ class DirQuotaManager {
   DINGOFS_ERROR DoLoadQuotas();
 
   uint32_t fs_id_;
-  std::shared_ptr<MetaServerClient> meta_client_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> meta_client_;
   std::shared_ptr<DirParentWatcher> dir_parent_watcher_;
-  std::shared_ptr<Timer> timer_;
+  std::shared_ptr<base::timer::Timer> timer_;
 
   std::atomic<bool> running_{false};
-  RWLock rwock_;
+  utils::RWLock rwock_;
   std::unordered_map<Ino, std::shared_ptr<DirQuota>> quotas_;
 };
 

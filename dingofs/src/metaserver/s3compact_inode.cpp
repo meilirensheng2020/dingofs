@@ -23,7 +23,6 @@
 #include "dingofs/src/metaserver/s3compact_inode.h"
 
 #include <algorithm>
-#include <deque>
 #include <list>
 #include <map>
 #include <memory>
@@ -33,19 +32,21 @@
 #include <vector>
 
 #include "absl/cleanup/cleanup.h"
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/common/s3util.h"
-#include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/src/metaserver/copyset/meta_operator.h"
-
-using dingofs::utils::Configuration;
-using dingofs::aws::InitS3AdaptorOptionExceptS3InfoOption;
-using dingofs::aws::S3Adapter;
-using dingofs::aws::S3AdapterOption;
-using dingofs::utils::TaskThreadPool;
-using dingofs::metaserver::copyset::GetOrModifyS3ChunkInfoOperator;
+#include "dingofs/src/metaserver/s3compact_manager.h"
 
 namespace dingofs {
 namespace metaserver {
+
+using aws::S3Adapter;
+using copyset::GetOrModifyS3ChunkInfoOperator;
+
+using pb::common::S3Info;
+using pb::metaserver::Inode;
+using pb::metaserver::MetaStatusCode;
 
 std::vector<uint64_t> CompactInodeJob::GetNeedCompact(
     const ::google::protobuf::Map<uint64_t, S3ChunkInfoList>& s3chunkinfoMap,
@@ -190,9 +191,9 @@ void CompactInodeJob::GenS3ReadRequests(const struct S3CompactCtx& ctx,
     for (uint64_t index = startIndex;
          beginRoundDown + index * blockSize <= curr->end; index++) {
       // read the block obj
-      std::string objName = dingofs::common::s3util::GenObjName(
-          curr->chunkid, index, curr->compaction, ctx.fsId, ctx.inodeId,
-          ctx.objectPrefix);
+      std::string objName =
+          common::s3util::GenObjName(curr->chunkid, index, curr->compaction,
+                                     ctx.fsId, ctx.inodeId, ctx.objectPrefix);
       uint64_t s3objBegin =
           std::max(curr->chunkoff, beginRoundDown + index * blockSize);
       uint64_t s3objEnd =
@@ -307,10 +308,11 @@ int CompactInodeJob::ReadFullChunk(const struct S3CompactCtx& ctx,
 }
 
 MetaStatusCode CompactInodeJob::UpdateInode(
-    CopysetNode* copysetNode, const PartitionInfo& pinfo, uint64_t inodeId,
+    copyset::CopysetNode* copysetNode, const pb::common::PartitionInfo& pinfo,
+    uint64_t inodeId,
     ::google::protobuf::Map<uint64_t, S3ChunkInfoList>&& s3ChunkInfoAdd,
     ::google::protobuf::Map<uint64_t, S3ChunkInfoList>&& s3ChunkInfoRemove) {
-  GetOrModifyS3ChunkInfoRequest request;
+  pb::metaserver::GetOrModifyS3ChunkInfoRequest request;
   request.set_poolid(pinfo.poolid());
   request.set_copysetid(pinfo.copysetid());
   request.set_partitionid(pinfo.partitionid());
@@ -320,7 +322,7 @@ MetaStatusCode CompactInodeJob::UpdateInode(
   *request.mutable_s3chunkinforemove() = std::move(s3ChunkInfoRemove);
   request.set_returns3chunkinfomap(false);
   request.set_froms3compaction(true);
-  GetOrModifyS3ChunkInfoResponse response;
+  pb::metaserver::GetOrModifyS3ChunkInfoResponse response;
   GetOrModifyS3ChunkInfoClosure done;
   // if copysetnode change to nullptr, maybe crash
   auto GetOrModifyS3ChunkInfoOp = new GetOrModifyS3ChunkInfoOperator(
@@ -342,7 +344,7 @@ int CompactInodeJob::WriteFullChunk(const struct S3CompactCtx& ctx,
   uint64_t startIndex = (newOff - newOff / chunkSize * chunkSize) / blockSize;
   for (uint64_t index = startIndex;
        index * blockSize + offRoundDown < newOff + chunkLen; index += 1) {
-    std::string objName = dingofs::common::s3util::GenObjName(
+    std::string objName = common::s3util::GenObjName(
         newChunkInfo.newChunkId, index, newChunkInfo.newCompaction, ctx.fsId,
         ctx.inodeId, ctx.objectPrefix);
     const Aws::String aws_key(objName.c_str(), objName.size());
@@ -520,7 +522,7 @@ void CompactInodeJob::DeleteObjsOfS3ChunkInfoList(
     uint64_t startIndex = (off - offRoundDown) / ctx.blockSize;
     for (uint64_t index = startIndex;
          offRoundDown + index * ctx.blockSize < off + len; index++) {
-      std::string objName = dingofs::common::s3util::GenObjName(
+      std::string objName = common::s3util::GenObjName(
           chunkinfo.chunkid(), index, chunkinfo.compaction(), ctx.fsId,
           ctx.inodeId, ctx.objectPrefix);
       VLOG(6) << "s3compact: delete " << objName;

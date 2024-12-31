@@ -14,6 +14,7 @@
 
 #include "dingofs/src/client/filesystem/dir_parent_watcher.h"
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/inode_wrapper.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
 
@@ -21,8 +22,11 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using dingofs::utils::ReadLockGuard;
-using dingofs::utils::WriteLockGuard;
+using utils::ReadLockGuard;
+using utils::RWLock;
+using utils::WriteLockGuard;
+
+using pb::metaserver::InodeAttr;
 
 void DirParentWatcherImpl::Remeber(Ino ino, Ino parent) {
   VLOG(3) << "DirParentWatcherImpl remeber ino: " << ino

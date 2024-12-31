@@ -161,7 +161,7 @@ bool InodeQueryTool::GetInodeInfo(InodeBase* inode) {
   // find partition which inode belongs to
   auto partitionIter = std::find_if(
       fs2ParListIter->second.begin(), fs2ParListIter->second.end(),
-      [=](const common::PartitionInfo& a) -> bool {
+      [=](const pb::common::PartitionInfo& a) -> bool {
         return a.fsid() == inode->fsid() && a.start() <= inode->inodeid() &&
                a.end() >= inode->inodeid();
       });

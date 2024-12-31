@@ -38,7 +38,8 @@ namespace dingofs {
 namespace mds {
 namespace schedule {
 using ::dingofs::utils::StringStatus;
-using ::dingofs::mds::heartbeat::ConfigChangeType;
+
+using pb::mds::heartbeat::ConfigChangeType;
 
 const char ADDPEER[] = "AddPeer";
 const char REMOVEPEER[] = "RemovePeer";

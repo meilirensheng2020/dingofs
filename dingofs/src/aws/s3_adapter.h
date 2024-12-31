@@ -65,9 +65,6 @@
 namespace dingofs {
 namespace aws {
 
-using dingofs::utils::Configuration;
-using dingofs::utils::Throttle;
-
 struct GetObjectAsyncContext;
 struct PutObjectAsyncContext;
 class S3Adapter;
@@ -108,10 +105,10 @@ struct S3InfoOption {
   uint32_t objectPrefix;
 };
 
-void InitS3AdaptorOptionExceptS3InfoOption(Configuration* conf,
+void InitS3AdaptorOptionExceptS3InfoOption(utils::Configuration* conf,
                                            S3AdapterOption* s3_opt);
 
-void InitS3AdaptorOption(Configuration* conf, S3AdapterOption* s3_opt);
+void InitS3AdaptorOption(utils::Configuration* conf, S3AdapterOption* s3_opt);
 
 using GetObjectAsyncCallBack = std::function<void(
     const S3Adapter*, const std::shared_ptr<GetObjectAsyncContext>&)>;
@@ -358,9 +355,9 @@ class S3Adapter {
   // aws sdk的配置
   Aws::Client::ClientConfiguration* clientCfg_;
   Aws::S3::S3Client* s3Client_;
-  Configuration conf_;
+  utils::Configuration conf_;
 
-  Throttle* throttle_;
+  utils::Throttle* throttle_;
 
   std::unique_ptr<AsyncRequestInflightBytesThrottle> inflightBytesThrottle_;
 

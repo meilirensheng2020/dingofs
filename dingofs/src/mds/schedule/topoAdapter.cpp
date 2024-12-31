@@ -26,7 +26,6 @@
 
 #include <cfloat>
 #include <list>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -34,13 +33,13 @@
 #include "dingofs/proto/topology.pb.h"
 #include "dingofs/src/mds/common/mds_define.h"
 
-using ::dingofs::mds::heartbeat::CandidateError;
-using ::dingofs::mds::topology::PoolIdType;
-using ::dingofs::mds::topology::TopoStatusCode;
-
 namespace dingofs {
 namespace mds {
 namespace schedule {
+
+using mds::topology::PoolIdType;
+using mds::topology::TopoStatusCode;
+
 PeerInfo::PeerInfo(MetaServerIdType id, ZoneIdType zoneId, ServerIdType sid,
                    const std::string& ip, uint32_t port) {
   this->id = id;
@@ -127,7 +126,7 @@ std::vector<PoolIdType> TopoAdapterImpl::Getpools() {
 }
 
 bool TopoAdapterImpl::GetCopySetInfo(const CopySetKey& id, CopySetInfo* info) {
-  ::dingofs::mds::topology::CopySetInfo csInfo;
+  mds::topology::CopySetInfo csInfo;
   // cannot get copyset info
   if (!topo_->GetCopySet(id, &csInfo)) {
     return false;
@@ -183,7 +182,7 @@ bool TopoAdapterImpl::GetMetaServerInfo(MetaServerIdType id,
                                         MetaServerInfo* out) {
   assert(out != nullptr);
 
-  ::dingofs::mds::topology::MetaServer ms;
+  mds::topology::MetaServer ms;
   if (!topo_->GetMetaServer(id, &ms)) {
     LOG(ERROR) << "can not get metaServer:" << id << " from topology";
     return false;
@@ -234,7 +233,7 @@ std::list<ZoneIdType> TopoAdapterImpl::GetZoneInPool(PoolIdType poolId) {
 }
 
 uint16_t TopoAdapterImpl::GetStandardZoneNumInPool(PoolIdType id) {
-  ::dingofs::mds::topology::Pool pool;
+  mds::topology::Pool pool;
   if (topo_->GetPool(id, &pool)) {
     return pool.GetRedundanceAndPlaceMentPolicy().zoneNum;
   }
@@ -242,7 +241,7 @@ uint16_t TopoAdapterImpl::GetStandardZoneNumInPool(PoolIdType id) {
 }
 
 uint16_t TopoAdapterImpl::GetStandardReplicaNumInPool(PoolIdType id) {
-  ::dingofs::mds::topology::Pool pool;
+  mds::topology::Pool pool;
   if (topo_->GetPool(id, &pool)) {
     return pool.GetReplicaNum();
   }
@@ -250,8 +249,8 @@ uint16_t TopoAdapterImpl::GetStandardReplicaNumInPool(PoolIdType id) {
 }
 
 bool TopoAdapterImpl::GetPeerInfo(MetaServerIdType id, PeerInfo* peerInfo) {
-  ::dingofs::mds::topology::MetaServer ms;
-  ::dingofs::mds::topology::Server server;
+  mds::topology::MetaServer ms;
+  mds::topology::Server server;
 
   bool canGetMetaServer, canGetServer;
   if ((canGetMetaServer = topo_->GetMetaServer(id, &ms)) &&
@@ -268,8 +267,7 @@ bool TopoAdapterImpl::GetPeerInfo(MetaServerIdType id, PeerInfo* peerInfo) {
 }
 
 bool TopoAdapterImpl::CopySetFromTopoToSchedule(
-    const ::dingofs::mds::topology::CopySetInfo& origin,
-    ::dingofs::mds::schedule::CopySetInfo* out) {
+    const mds::topology::CopySetInfo& origin, mds::schedule::CopySetInfo* out) {
   assert(out != nullptr);
 
   out->id.first = origin.GetPoolId();
@@ -298,11 +296,11 @@ bool TopoAdapterImpl::CopySetFromTopoToSchedule(
 }
 
 bool TopoAdapterImpl::MetaServerFromTopoToSchedule(
-    const ::dingofs::mds::topology::MetaServer& origin,
-    ::dingofs::mds::schedule::MetaServerInfo* out) {
+    const mds::topology::MetaServer& origin,
+    mds::schedule::MetaServerInfo* out) {
   assert(out != nullptr);
 
-  ::dingofs::mds::topology::Server server;
+  mds::topology::Server server;
   if (topo_->GetServer(origin.GetServerId(), &server)) {
     out->info = PeerInfo{origin.GetId(), server.GetZoneId(), server.GetId(),
                          origin.GetInternalIp(), origin.GetInternalPort()};

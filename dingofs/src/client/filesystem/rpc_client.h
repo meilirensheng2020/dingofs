@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/common/config.h"
 #include "dingofs/src/client/filesystem/dir_cache.h"
 #include "dingofs/src/client/filesystem/meta.h"
@@ -35,13 +36,11 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::client::common::RPCOption;
-
 class RPCClient {
  public:
-  RPCClient(RPCOption option, ExternalMember member);
+  RPCClient(common::RPCOption option, ExternalMember member);
 
-  DINGOFS_ERROR GetAttr(Ino ino, InodeAttr* attr);
+  DINGOFS_ERROR GetAttr(Ino ino, pb::metaserver::InodeAttr* attr);
 
   DINGOFS_ERROR Lookup(Ino parent, const std::string& name, EntryOut* entryOut);
 
@@ -50,7 +49,7 @@ class RPCClient {
   DINGOFS_ERROR Open(Ino ino, std::shared_ptr<InodeWrapper>* inode);
 
  private:
-  RPCOption option_;
+  common::RPCOption option_;
   std::shared_ptr<InodeCacheManager> inodeManager_;
   std::shared_ptr<DentryCacheManager> dentryManager_;
 };

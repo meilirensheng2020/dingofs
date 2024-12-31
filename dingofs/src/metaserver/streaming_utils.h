@@ -29,10 +29,9 @@
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::common::StreamConnection;
-
-MetaStatusCode StreamingSendVolumeExtent(StreamConnection* connection,
-                                         const VolumeExtentList& extents);
+pb::metaserver::MetaStatusCode StreamingSendVolumeExtent(
+    common::StreamConnection* connection,
+    const pb::metaserver::VolumeExtentList& extents);
 
 }  // namespace metaserver
 }  // namespace dingofs

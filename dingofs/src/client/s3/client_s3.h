@@ -33,8 +33,6 @@ namespace client {
 using dingofs::aws::FakeS3Adapter;
 using dingofs::aws::GetObjectAsyncContext;
 using dingofs::aws::PutObjectAsyncContext;
-using dingofs::aws::S3Adapter;
-using dingofs::aws::S3AdapterOption;
 
 namespace common {
 DECLARE_bool(useFakeS3);
@@ -44,7 +42,7 @@ class S3Client {
  public:
   S3Client() = default;
   virtual ~S3Client() = default;
-  virtual void Init(const S3AdapterOption& option) = 0;
+  virtual void Init(const dingofs::aws::S3AdapterOption& option) = 0;
   virtual void Deinit() = 0;
   virtual int Upload(const std::string& name, const char* buf,
                      uint64_t length) = 0;
@@ -62,13 +60,13 @@ class S3ClientImpl : public S3Client {
       s3Adapter_ = std::make_shared<FakeS3Adapter>();
       LOG(INFO) << "use fake S3";
     } else {
-      s3Adapter_ = std::make_shared<S3Adapter>();
+      s3Adapter_ = std::make_shared<dingofs::aws::S3Adapter>();
       LOG(INFO) << "use S3";
     }
   }
   ~S3ClientImpl() override = default;
 
-  void Init(const S3AdapterOption& option) override;
+  void Init(const dingofs::aws::S3AdapterOption& option) override;
   void Deinit() override;
 
   int Upload(const std::string& name, const char* buf,
@@ -79,10 +77,12 @@ class S3ClientImpl : public S3Client {
                uint64_t length) override;
   void DownloadAsync(std::shared_ptr<GetObjectAsyncContext> context) override;
 
-  void SetAdapter(std::shared_ptr<S3Adapter> adapter) { s3Adapter_ = adapter; }
+  void SetAdapter(std::shared_ptr<dingofs::aws::S3Adapter> adapter) {
+    s3Adapter_ = adapter;
+  }
 
  private:
-  std::shared_ptr<S3Adapter> s3Adapter_;
+  std::shared_ptr<dingofs::aws::S3Adapter> s3Adapter_;
 };
 
 }  // namespace client

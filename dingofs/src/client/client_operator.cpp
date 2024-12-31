@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <list>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/filesystem/error.h"
 #include "dingofs/src/client/filesystem/filesystem.h"
 #include "dingofs/src/utils/uuid.h"
@@ -32,11 +33,19 @@
 namespace dingofs {
 namespace client {
 
-using ::dingofs::client::filesystem::FileSystem;
-using ::dingofs::client::filesystem::ToFSError;
-using ::dingofs::mds::topology::PartitionTxId;
-using ::dingofs::metaserver::DentryFlag;
-using ::dingofs::utils::UUIDGenerator;
+using client::filesystem::FileSystem;
+using client::filesystem::ToFSError;
+using stub::rpcclient::MdsClient;
+using stub::rpcclient::MetaServerClient;
+using utils::UUIDGenerator;
+
+using pb::mds::FSStatusCode;
+using pb::mds::topology::PartitionTxId;
+using pb::metaserver::Dentry;
+using pb::metaserver::DentryFlag;
+using pb::metaserver::FsFileType;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::MetaStatusCode;
 
 #define LOG_ERROR(action, rc)                             \
   LOG(ERROR) << (action) << " failed, retCode = " << (rc) \

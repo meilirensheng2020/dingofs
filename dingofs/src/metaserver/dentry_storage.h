@@ -34,58 +34,66 @@
 #include "dingofs/src/utils/concurrent/concurrent.h"
 
 namespace dingofs {
+
+namespace pb {
 namespace metaserver {
-
-using ::dingofs::utils::RWLock;
-using ::dingofs::metaserver::storage::Converter;
-using ::dingofs::metaserver::storage::Iterator;
-using ::dingofs::metaserver::storage::NameGenerator;
-using KVStorage = ::dingofs::metaserver::storage::KVStorage;
-using BTree = absl::btree_set<Dentry>;
-
 #define EQUAL(a) (lhs.a() == rhs.a())
 #define LESS(a) (lhs.a() < rhs.a())
 #define LESS2(a, b) (EQUAL(a) && LESS(b))
 #define LESS3(a, b, c) (EQUAL(a) && LESS2(b, c))
 #define LESS4(a, b, c, d) (EQUAL(a) && LESS3(b, c, d))
 
-bool operator==(const Dentry& lhs, const Dentry& rhs);
+inline bool operator==(const Dentry& lhs, const Dentry& rhs) {
+  return EQUAL(fsid) && EQUAL(parentinodeid) && EQUAL(name) && EQUAL(txid) &&
+         EQUAL(inodeid) && EQUAL(flag);
+}
 
-bool operator<(const Dentry& lhs, const Dentry& rhs);
+inline bool operator<(const Dentry& lhs, const Dentry& rhs) {
+  return LESS(fsid) || LESS2(fsid, parentinodeid) ||
+         LESS3(fsid, parentinodeid, name) ||
+         LESS4(fsid, parentinodeid, name, txid);
+}
+
+}  // namespace metaserver
+}  // namespace pb
+
+namespace metaserver {
+
+using BTree = absl::btree_set<pb::metaserver::Dentry>;
 
 class DentryVector {
  public:
-  explicit DentryVector(DentryVec* vec);
+  explicit DentryVector(pb::metaserver::DentryVec* vec);
 
-  void Insert(const Dentry& dentry);
+  void Insert(const pb::metaserver::Dentry& dentry);
 
-  void Delete(const Dentry& dentry);
+  void Delete(const pb::metaserver::Dentry& dentry);
 
-  void Merge(const DentryVec& src);
+  void Merge(const pb::metaserver::DentryVec& src);
 
   void Filter(uint64_t maxTxId, BTree* btree);
 
   void Confirm(uint64_t* count);
 
  private:
-  DentryVec* vec_;
+  pb::metaserver::DentryVec* vec_;
   uint64_t nPendingAdd_;
   uint64_t nPendingDel_;
 };
 
 class DentryList {
  public:
-  DentryList(std::vector<Dentry>* list, uint32_t limit,
+  DentryList(std::vector<pb::metaserver::Dentry>* list, uint32_t limit,
              const std::string& exclude, uint64_t maxTxId, bool onlyDir);
 
-  void PushBack(DentryVec* vec);
+  void PushBack(pb::metaserver::DentryVec* vec);
 
   uint32_t Size();
 
   bool IsFull();
 
  private:
-  std::vector<Dentry>* list_;
+  std::vector<pb::metaserver::Dentry>* list_;
   uint32_t size_;
   uint32_t limit_;
   std::string exclude_;
@@ -102,45 +110,52 @@ class DentryStorage {
   };
 
  public:
-  DentryStorage(std::shared_ptr<KVStorage> kvStorage,
-                std::shared_ptr<NameGenerator> nameGenerator, uint64_t nDentry);
+  DentryStorage(std::shared_ptr<storage::KVStorage> kvStorage,
+                std::shared_ptr<storage::NameGenerator> nameGenerator,
+                uint64_t nDentry);
 
-  MetaStatusCode Insert(const Dentry& dentry);
+  pb::metaserver::MetaStatusCode Insert(const pb::metaserver::Dentry& dentry);
 
   // only for loadding from snapshot
-  MetaStatusCode Insert(const DentryVec& vec, bool merge);
+  pb::metaserver::MetaStatusCode Insert(const pb::metaserver::DentryVec& vec,
+                                        bool merge);
 
-  MetaStatusCode Delete(const Dentry& dentry);
+  pb::metaserver::MetaStatusCode Delete(const pb::metaserver::Dentry& dentry);
 
-  MetaStatusCode Get(Dentry* dentry);
+  pb::metaserver::MetaStatusCode Get(pb::metaserver::Dentry* dentry);
 
-  MetaStatusCode List(const Dentry& dentry, std::vector<Dentry>* dentrys,
-                      uint32_t limit, bool onlyDir = false);
+  pb::metaserver::MetaStatusCode List(
+      const pb::metaserver::Dentry& dentry,
+      std::vector<pb::metaserver::Dentry>* dentrys, uint32_t limit,
+      bool onlyDir = false);
 
-  MetaStatusCode HandleTx(TX_OP_TYPE type, const Dentry& dentry);
+  pb::metaserver::MetaStatusCode HandleTx(TX_OP_TYPE type,
+                                          const pb::metaserver::Dentry& dentry);
 
-  std::shared_ptr<Iterator> GetAll();
+  std::shared_ptr<storage::Iterator> GetAll();
 
   size_t Size();
 
   bool Empty();
 
-  MetaStatusCode Clear();
+  pb::metaserver::MetaStatusCode Clear();
 
  private:
-  std::string DentryKey(const Dentry& entry);
+  std::string DentryKey(const pb::metaserver::Dentry& entry);
 
-  bool CompressDentry(DentryVec* vec, BTree* dentrys);
+  bool CompressDentry(pb::metaserver::DentryVec* vec, BTree* dentrys);
 
-  MetaStatusCode Find(const Dentry& in, Dentry* out, DentryVec* vec,
-                      bool compress);
+  pb::metaserver::MetaStatusCode Find(const pb::metaserver::Dentry& in,
+                                      pb::metaserver::Dentry* out,
+                                      pb::metaserver::DentryVec* vec,
+                                      bool compress);
 
  private:
-  RWLock rwLock_;
-  std::shared_ptr<KVStorage> kvStorage_;
+  utils::RWLock rwLock_;
+  std::shared_ptr<storage::KVStorage> kvStorage_;
   std::string table4Dentry_;
   uint64_t nDentry_;
-  Converter conv_;
+  storage::Converter conv_;
 };
 
 }  // namespace metaserver

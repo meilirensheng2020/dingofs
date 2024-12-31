@@ -27,16 +27,13 @@
 #include <unordered_map>
 
 #include "dingofs/proto/mds.pb.h"
-#include "dingofs/src/stub/rpcclient/mds_client.h"
-#include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
+#include "dingofs/src/metaserver/copyset/copyset_node.h"
 #include "dingofs/src/metaserver/partition.h"
 #include "dingofs/src/metaserver/s3/metaserver_s3_adaptor.h"
+#include "dingofs/src/stub/rpcclient/mds_client.h"
 
 namespace dingofs {
 namespace metaserver {
-
-using ::dingofs::stub::rpcclient::MdsClient;
-using ::dingofs::mds::FsInfo;
 
 class PartitionCleaner {
  public:
@@ -59,14 +56,16 @@ class PartitionCleaner {
     copysetNode_ = copysetNode;
   }
 
-  void SetMdsClient(std::shared_ptr<MdsClient> mdsClient) {
+  void SetMdsClient(std::shared_ptr<stub::rpcclient::MdsClient> mdsClient) {
     mdsClient_ = mdsClient;
   }
 
   bool ScanPartition();
-  MetaStatusCode CleanDataAndDeleteInode(const Inode& inode);
-  MetaStatusCode DeleteInode(const Inode& inode);
-  MetaStatusCode DeletePartition();
+  pb::metaserver::MetaStatusCode CleanDataAndDeleteInode(
+      const pb::metaserver::Inode& inode);
+  pb::metaserver::MetaStatusCode DeleteInode(
+      const pb::metaserver::Inode& inode);
+  pb::metaserver::MetaStatusCode DeletePartition();
   uint32_t GetPartitionId() { return partition_->GetPartitionId(); }
 
   void Stop() { isStop_ = true; }
@@ -77,10 +76,10 @@ class PartitionCleaner {
   std::shared_ptr<Partition> partition_;
   copyset::CopysetNode* copysetNode_;
   std::shared_ptr<S3ClientAdaptor> s3Adaptor_;
-  std::shared_ptr<MdsClient> mdsClient_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
   bool isStop_;
   uint32_t inodeDeletePeriodMs_;
-  std::unordered_map<uint32_t, FsInfo> fsInfoMap_;
+  std::unordered_map<uint32_t, pb::mds::FsInfo> fsInfoMap_;
 };
 
 class PartitionCleanerClosure : public google::protobuf::Closure {

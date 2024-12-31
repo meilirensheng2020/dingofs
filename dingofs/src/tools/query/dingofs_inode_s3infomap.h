@@ -41,13 +41,12 @@ namespace dingofs {
 namespace tools {
 namespace query {
 
-using dingofs::metaserver::S3ChunkInfoList;
+using pb::metaserver::S3ChunkInfoList;
 
-using HostAndResponseType =
-    std::vector<std::pair<std::string,
-                          dingofs::metaserver::GetOrModifyS3ChunkInfoResponse>>;
+using HostAndResponseType = std::vector<
+    std::pair<std::string, pb::metaserver::GetOrModifyS3ChunkInfoResponse>>;
 
-using InodeBase = dingofs::metaserver::GetInodeRequest;
+using InodeBase = pb::metaserver::GetInodeRequest;
 
 struct HashInodeBase {
   size_t operator()(const InodeBase& inode) const {
@@ -64,9 +63,9 @@ struct KeyEuqalInodeBase {
 };
 
 class InodeS3InfoMapTool
-    : public CurvefsToolRpc<dingofs::metaserver::GetOrModifyS3ChunkInfoRequest,
-                            dingofs::metaserver::GetOrModifyS3ChunkInfoResponse,
-                            dingofs::metaserver::MetaServerService_Stub> {
+    : public CurvefsToolRpc<pb::metaserver::GetOrModifyS3ChunkInfoRequest,
+                            pb::metaserver::GetOrModifyS3ChunkInfoResponse,
+                            pb::metaserver::MetaServerService_Stub> {
  public:
   explicit InodeS3InfoMapTool(const std::string& cmd = kNoInvokeCmd,
                               bool show = true)

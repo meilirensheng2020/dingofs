@@ -30,7 +30,12 @@
 namespace dingofs {
 namespace client {
 
-using dingofs::mds::topology::PartitionTxId;
+using pb::mds::Mountpoint;
+using pb::mds::topology::PartitionTxId;
+
+using common::LeaseOpt;
+using stub::rpcclient::MdsClient;
+using stub::rpcclient::MetaCache;
 
 LeaseExecutor::~LeaseExecutor() {
   if (task_) {
@@ -78,9 +83,9 @@ bool LeaseExecutor::RefreshLease() {
 
   // refresh from mds
   std::vector<PartitionTxId> latestTxIdList;
-  FSStatusCode ret = mdsCli_->RefreshSession(txIds, &latestTxIdList, fsName_,
-                                             mountpoint_, enableSumInDir_);
-  if (ret != FSStatusCode::OK) {
+  pb::mds::FSStatusCode ret = mdsCli_->RefreshSession(
+      txIds, &latestTxIdList, fsName_, mountpoint_, enableSumInDir_);
+  if (ret != pb::mds::FSStatusCode::OK) {
     LOG(ERROR) << "LeaseExecutor refresh session fail, ret = " << ret
                << ", errorName = " << FSStatusCode_Name(ret);
     return true;

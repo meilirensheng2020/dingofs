@@ -25,13 +25,12 @@
 #include <memory>
 #include <string>
 
-#include "dingofs/src/stub/rpcclient/metaserver_client.h"
-#include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
+#include "dingofs/src/metaserver/copyset/copyset_node.h"
 #include "dingofs/src/metaserver/partition.h"
+#include "dingofs/src/stub/rpcclient/metaserver_client.h"
 
 namespace dingofs {
 namespace metaserver {
-using dingofs::stub::rpcclient::MetaServerClient;
 class RecycleCleaner {
  public:
   explicit RecycleCleaner(const std::shared_ptr<Partition>& partition)
@@ -46,11 +45,12 @@ class RecycleCleaner {
     copysetNode_ = copysetNode;
   }
 
-  void SetMdsClient(std::shared_ptr<MdsClient> mdsClient) {
+  void SetMdsClient(std::shared_ptr<stub::rpcclient::MdsClient> mdsClient) {
     mdsClient_ = mdsClient;
   }
 
-  void SetMetaClient(std::shared_ptr<MetaServerClient> metaClient) {
+  void SetMetaClient(
+      std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient) {
     metaClient_ = metaClient;
   }
 
@@ -65,11 +65,11 @@ class RecycleCleaner {
   }
   bool GetEnableSumInDir() { return fsInfo_.enablesumindir(); }
   // delete dir and all files in dir recursively
-  bool DeleteDirRecursive(const Dentry& dentry);
+  bool DeleteDirRecursive(const pb::metaserver::Dentry& dentry);
   // update fs info every time it's called to get lastest recycle time
   bool UpdateFsInfo();
   // delete one file or one dir directly
-  bool DeleteNode(const Dentry& dentry);
+  bool DeleteNode(const pb::metaserver::Dentry& dentry);
 
   uint32_t GetPartitionId() { return partition_->GetPartitionId(); }
 
@@ -85,9 +85,9 @@ class RecycleCleaner {
   std::shared_ptr<Partition> partition_;
   copyset::CopysetNode* copysetNode_;
   bool isStop_;
-  std::shared_ptr<MdsClient> mdsClient_;
-  std::shared_ptr<MetaServerClient> metaClient_;
-  FsInfo fsInfo_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
+  pb::mds::FsInfo fsInfo_;
   uint64_t limit_ = 1000;
 };
 }  // namespace metaserver

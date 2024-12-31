@@ -29,7 +29,6 @@
 #include <utility>
 
 #include "dingofs/proto/metaserver.pb.h"
-#include "dingofs/src/common/define.h"
 #include "dingofs/src/metaserver/s3compact.h"
 #include "dingofs/src/metaserver/s3compact_manager.h"
 #include "dingofs/src/metaserver/storage/converter.h"
@@ -38,7 +37,19 @@
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::metaserver::storage::NameGenerator;
+using pb::common::PartitionInfo;
+using pb::common::PartitionStatus;
+using pb::metaserver::Dentry;
+using pb::metaserver::DentryVec;
+using pb::metaserver::Inode;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::MetaStatusCode;
+
+using storage::Iterator;
+using storage::KVStorage;
+using storage::NameGenerator;
+
+using S3ChunkInfoMap = google::protobuf::Map<uint64_t, S3ChunkInfoList>;
 
 Partition::Partition(PartitionInfo partition,
                      std::shared_ptr<KVStorage> kvStorage, bool startCompact) {
@@ -179,7 +190,8 @@ MetaStatusCode Partition::HandleRenameTx(const std::vector<Dentry>& dentrys) {
   return dentryManager_->HandleRenameTx(dentrys);
 }
 
-bool Partition::InsertPendingTx(const PrepareRenameTxRequest& pendingTx) {
+bool Partition::InsertPendingTx(
+    const pb::metaserver::PrepareRenameTxRequest& pendingTx) {
   std::vector<Dentry> dentrys{pendingTx.dentrys().begin(),
                               pendingTx.dentrys().end()};
   for (const auto& it : dentrys) {
@@ -196,7 +208,8 @@ bool Partition::InsertPendingTx(const PrepareRenameTxRequest& pendingTx) {
   return txManager_->InsertPendingTx(renameTx);
 }
 
-bool Partition::FindPendingTx(PrepareRenameTxRequest* pendingTx) {
+bool Partition::FindPendingTx(
+    pb::metaserver::PrepareRenameTxRequest* pendingTx) {
   if (GetStatus() == PartitionStatus::DELETING) {
     return false;
   }
@@ -249,9 +262,9 @@ MetaStatusCode Partition::CreateRootInode(const InodeParam& param) {
   return inodeManager_->CreateRootInode(param);
 }
 
-MetaStatusCode Partition::CreateManageInode(const InodeParam& param,
-                                            ManageInodeType manageType,
-                                            Inode* inode) {
+MetaStatusCode Partition::CreateManageInode(
+    const InodeParam& param, pb::metaserver::ManageInodeType manageType,
+    Inode* inode) {
   if (!IsInodeBelongs(param.fsId)) {
     return MetaStatusCode::PARTITION_ID_MISSMATCH;
   }
@@ -282,7 +295,7 @@ MetaStatusCode Partition::GetInodeAttr(uint32_t fsId, uint64_t inodeId,
 }
 
 MetaStatusCode Partition::GetXAttr(uint32_t fsId, uint64_t inodeId,
-                                   XAttr* xattr) {
+                                   pb::metaserver::XAttr* xattr) {
   if (!IsInodeBelongs(fsId, inodeId)) {
     return MetaStatusCode::PARTITION_ID_MISSMATCH;
   }
@@ -297,7 +310,8 @@ MetaStatusCode Partition::DeleteInode(uint32_t fsId, uint64_t inodeId) {
   return inodeManager_->DeleteInode(fsId, inodeId);
 }
 
-MetaStatusCode Partition::UpdateInode(const UpdateInodeRequest& request) {
+MetaStatusCode Partition::UpdateInode(
+    const pb::metaserver::UpdateInodeRequest& request) {
   if (!IsInodeBelongs(request.fsid(), request.inodeid())) {
     return MetaStatusCode::PARTITION_ID_MISSMATCH;
   }
@@ -476,21 +490,23 @@ std::string Partition::GetDentryTablename() {
     }                                                \
   } while (0)
 
-MetaStatusCode Partition::UpdateVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                             const VolumeExtentList& extents) {
+MetaStatusCode Partition::UpdateVolumeExtent(
+    uint32_t fsId, uint64_t inodeId,
+    const pb::metaserver::VolumeExtentList& extents) {
   PRECHECK(fsId, inodeId);
   return inodeManager_->UpdateVolumeExtent(fsId, inodeId, extents);
 }
 
 MetaStatusCode Partition::UpdateVolumeExtentSlice(
-    uint32_t fsId, uint64_t inodeId, const VolumeExtentSlice& slice) {
+    uint32_t fsId, uint64_t inodeId,
+    const pb::metaserver::VolumeExtentSlice& slice) {
   PRECHECK(fsId, inodeId);
   return inodeManager_->UpdateVolumeExtentSlice(fsId, inodeId, slice);
 }
 
-MetaStatusCode Partition::GetVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                          const std::vector<uint64_t>& slices,
-                                          VolumeExtentList* extents) {
+MetaStatusCode Partition::GetVolumeExtent(
+    uint32_t fsId, uint64_t inodeId, const std::vector<uint64_t>& slices,
+    pb::metaserver::VolumeExtentList* extents) {
   PRECHECK(fsId, inodeId);
   return inodeManager_->GetVolumeExtent(fsId, inodeId, slices, extents);
 }

@@ -28,7 +28,10 @@
 
 #include <utility>
 
+#include "dingofs/src/mds/heartbeat/heartbeat_service.h"
 #include "dingofs/src/mds/mds_service.h"
+#include "dingofs/src/mds/topology/topology_service.h"
+#include "dingofs/src/mds/topology/topology_storge_etcd.h"
 #include "dingofs/src/utils/dingo_version.h"
 
 namespace brpc {
@@ -38,8 +41,28 @@ DECLARE_bool(graceful_quit_on_sigterm);
 namespace dingofs {
 namespace mds {
 
-using ::dingofs::election::LeaderElection;
-using ::dingofs::kvstorage::EtcdClientImp;
+using aws::S3Adapter;
+using election::LeaderElection;
+using election::LeaderElectionOptions;
+using kvstorage::EtcdClientImp;
+using mds::dlock::DLock;
+using mds::dlock::DLockOptions;
+using mds::heartbeat::HeartbeatOption;
+using mds::heartbeat::HeartbeatServiceImpl;
+using mds::schedule::Coordinator;
+using mds::schedule::ScheduleMetrics;
+using mds::schedule::ScheduleOption;
+using mds::schedule::TopoAdapterImpl;
+using mds::topology::DefaultIdGenerator;
+using mds::topology::DefaultTokenGenerator;
+using mds::topology::TopologyImpl;
+using mds::topology::TopologyManager;
+using mds::topology::TopologyMetricService;
+using mds::topology::TopologyServiceImpl;
+using mds::topology::TopologyStorageCodec;
+using mds::topology::TopologyStorageEtcd;
+using topology::TopologyOption;
+using utils::Configuration;
 
 MDS::MDS()
     : conf_(),
@@ -58,7 +81,7 @@ MDS::MDS()
 
 MDS::~MDS() = default;
 
-void MDS::InitOptions(std::shared_ptr<Configuration> conf) {
+void MDS::InitOptions(std::shared_ptr<utils::Configuration> conf) {
   conf_ = std::move(conf);
   conf_->GetValueFatalIfFail("mds.listen.addr", &options_.mdsListenAddr);
   conf_->GetValueFatalIfFail("mds.dummy.port", &options_.dummyPort);
@@ -151,7 +174,7 @@ void MDS::InitFsManagerOptions(FsManagerOption* fs_manager_option) {
          "default value: "
       << fs_manager_option->spaceReloadConcurrency;
 
-  ::dingofs::aws::InitS3AdaptorOptionExceptS3InfoOption(
+  aws::InitS3AdaptorOptionExceptS3InfoOption(
       conf_.get(), &fs_manager_option->s3AdapterOption);
 }
 
@@ -400,8 +423,8 @@ void MDS::InitHeartbeatManager() {
   HeartbeatOption heartbeat_option;
   InitHeartbeatOption(&heartbeat_option);
 
-  heartbeat_option.mdsStartTime = steady_clock::now();
-  heartbeatManager_ = std::make_shared<HeartbeatManager>(
+  heartbeat_option.mdsStartTime = heartbeat::steady_clock::now();
+  heartbeatManager_ = std::make_shared<heartbeat::HeartbeatManager>(
       heartbeat_option, topology_, coordinator_);
   heartbeatManager_->Init();
 }

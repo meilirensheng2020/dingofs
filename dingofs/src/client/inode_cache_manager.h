@@ -43,19 +43,6 @@
 namespace dingofs {
 namespace client {
 
-using common::RefreshDataOption;
-using ::dingofs::client::filesystem::DeferSync;
-using ::dingofs::client::filesystem::OpenFiles;
-using ::dingofs::metaserver::InodeAttr;
-using ::dingofs::metaserver::XAttr;
-using dingofs::utils::CountDownEvent;
-
-using dingofs::stub::metric::S3ChunkInfoMetric;
-using dingofs::stub::rpcclient::BatchGetInodeAttrDone;
-using dingofs::stub::rpcclient::InodeParam;
-using dingofs::stub::rpcclient::MetaServerClient;
-using dingofs::stub::rpcclient::MetaServerClientImpl;
-
 class InodeCacheManager {
  public:
   InodeCacheManager() : m_fs_id(0) {}
@@ -63,32 +50,36 @@ class InodeCacheManager {
 
   void SetFsId(uint32_t fs_id) { m_fs_id = fs_id; }
 
-  virtual DINGOFS_ERROR Init(RefreshDataOption option,
-                             std::shared_ptr<OpenFiles> open_files,
-                             std::shared_ptr<DeferSync> defer_sync) = 0;
+  virtual DINGOFS_ERROR Init(
+      common::RefreshDataOption option,
+      std::shared_ptr<filesystem::OpenFiles> open_files,
+      std::shared_ptr<filesystem::DeferSync> defer_sync) = 0;
 
   virtual DINGOFS_ERROR GetInode(
       uint64_t inode_id,
       std::shared_ptr<InodeWrapper>& out) = 0;  // NOLINT
 
-  virtual DINGOFS_ERROR GetInodeAttr(uint64_t inode_id, InodeAttr* out) = 0;
+  virtual DINGOFS_ERROR GetInodeAttr(uint64_t inode_id,
+                                     pb::metaserver::InodeAttr* out) = 0;
 
-  virtual DINGOFS_ERROR BatchGetInodeAttr(std::set<uint64_t>* inode_ids,
-                                          std::list<InodeAttr>* attrs) = 0;
+  virtual DINGOFS_ERROR BatchGetInodeAttr(
+      std::set<uint64_t>* inode_ids,
+      std::list<pb::metaserver::InodeAttr>* attrs) = 0;
 
   virtual DINGOFS_ERROR BatchGetInodeAttrAsync(
       uint64_t parent_id, std::set<uint64_t>* inode_ids,
-      std::map<uint64_t, InodeAttr>* attrs) = 0;
+      std::map<uint64_t, pb::metaserver::InodeAttr>* attrs) = 0;
 
-  virtual DINGOFS_ERROR BatchGetXAttr(std::set<uint64_t>* inode_ids,
-                                      std::list<XAttr>* xattrs) = 0;
+  virtual DINGOFS_ERROR BatchGetXAttr(
+      std::set<uint64_t>* inode_ids,
+      std::list<pb::metaserver::XAttr>* xattrs) = 0;
 
   virtual DINGOFS_ERROR CreateInode(
-      const InodeParam& param,
+      const stub::rpcclient::InodeParam& param,
       std::shared_ptr<InodeWrapper>& out) = 0;  // NOLINT
 
   virtual DINGOFS_ERROR CreateManageInode(
-      const InodeParam& param,
+      const stub::rpcclient::InodeParam& param,
       std::shared_ptr<InodeWrapper>& out) = 0;  // NOLINT
 
   virtual DINGOFS_ERROR DeleteInode(uint64_t inode_id) = 0;
@@ -105,17 +96,19 @@ class InodeCacheManagerImpl
       public std::enable_shared_from_this<InodeCacheManagerImpl> {
  public:
   InodeCacheManagerImpl()
-      : metaClient_(std::make_shared<MetaServerClientImpl>()) {}
+      : metaClient_(std::make_shared<stub::rpcclient::MetaServerClientImpl>()) {
+  }
 
   explicit InodeCacheManagerImpl(
-      const std::shared_ptr<MetaServerClient>& meta_client)
+      const std::shared_ptr<stub::rpcclient::MetaServerClient>& meta_client)
       : metaClient_(meta_client) {}
 
-  DINGOFS_ERROR Init(RefreshDataOption option,
-                     std::shared_ptr<OpenFiles> open_files,
-                     std::shared_ptr<DeferSync> defer_sync) override {
+  DINGOFS_ERROR Init(
+      common::RefreshDataOption option,
+      std::shared_ptr<filesystem::OpenFiles> open_files,
+      std::shared_ptr<filesystem::DeferSync> defer_sync) override {
     option_ = option;
-    s3ChunkInfoMetric_ = std::make_shared<S3ChunkInfoMetric>();
+    s3ChunkInfoMetric_ = std::make_shared<stub::metric::S3ChunkInfoMetric>();
     openFiles_ = open_files;
     deferSync_ = defer_sync;
     return DINGOFS_ERROR::OK;
@@ -124,22 +117,25 @@ class InodeCacheManagerImpl
   DINGOFS_ERROR GetInode(uint64_t inode_id,
                          std::shared_ptr<InodeWrapper>& out) override;
 
-  DINGOFS_ERROR GetInodeAttr(uint64_t inode_id, InodeAttr* out) override;
+  DINGOFS_ERROR GetInodeAttr(uint64_t inode_id,
+                             pb::metaserver::InodeAttr* out) override;
 
-  DINGOFS_ERROR BatchGetInodeAttr(std::set<uint64_t>* inode_ids,
-                                  std::list<InodeAttr>* attrs) override;
+  DINGOFS_ERROR BatchGetInodeAttr(
+      std::set<uint64_t>* inode_ids,
+      std::list<pb::metaserver::InodeAttr>* attrs) override;
 
   DINGOFS_ERROR BatchGetInodeAttrAsync(
       uint64_t parent_id, std::set<uint64_t>* inode_ids,
-      std::map<uint64_t, InodeAttr>* attrs = nullptr) override;
+      std::map<uint64_t, pb::metaserver::InodeAttr>* attrs = nullptr) override;
 
-  DINGOFS_ERROR BatchGetXAttr(std::set<uint64_t>* inode_ids,
-                              std::list<XAttr>* xattrs) override;
+  DINGOFS_ERROR BatchGetXAttr(
+      std::set<uint64_t>* inode_ids,
+      std::list<pb::metaserver::XAttr>* xattrs) override;
 
-  DINGOFS_ERROR CreateInode(const InodeParam& param,
+  DINGOFS_ERROR CreateInode(const stub::rpcclient::InodeParam& param,
                             std::shared_ptr<InodeWrapper>& out) override;
 
-  DINGOFS_ERROR CreateManageInode(const InodeParam& param,
+  DINGOFS_ERROR CreateManageInode(const stub::rpcclient::InodeParam& param,
                                   std::shared_ptr<InodeWrapper>& out) override;
 
   DINGOFS_ERROR DeleteInode(uint64_t inode_id) override;
@@ -156,33 +152,35 @@ class InodeCacheManagerImpl
   static DINGOFS_ERROR RefreshData(std::shared_ptr<InodeWrapper>& inode,
                                    bool streaming = true);
 
-  std::shared_ptr<MetaServerClient> metaClient_;
-  std::shared_ptr<S3ChunkInfoMetric> s3ChunkInfoMetric_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
+  std::shared_ptr<stub::metric::S3ChunkInfoMetric> s3ChunkInfoMetric_;
 
-  std::shared_ptr<OpenFiles> openFiles_;
+  std::shared_ptr<filesystem::OpenFiles> openFiles_;
 
-  std::shared_ptr<DeferSync> deferSync_;
+  std::shared_ptr<filesystem::DeferSync> deferSync_;
 
-  dingofs::utils::GenericNameLock<Mutex> nameLock_;
+  dingofs::utils::GenericNameLock<utils::Mutex> nameLock_;
 
-  dingofs::utils::GenericNameLock<Mutex> asyncNameLock_;
+  dingofs::utils::GenericNameLock<utils::Mutex> asyncNameLock_;
 
-  RefreshDataOption option_;
+  common::RefreshDataOption option_;
 };
 
-class BatchGetInodeAttrAsyncDone : public BatchGetInodeAttrDone {
+class BatchGetInodeAttrAsyncDone
+    : public stub::rpcclient::BatchGetInodeAttrDone {
  public:
-  BatchGetInodeAttrAsyncDone(std::map<uint64_t, InodeAttr>* attrs,
-                             ::dingofs::utils::Mutex* mutex,
-                             std::shared_ptr<CountDownEvent> cond)
+  BatchGetInodeAttrAsyncDone(
+      std::map<uint64_t, pb::metaserver::InodeAttr>* attrs,
+      ::dingofs::utils::Mutex* mutex,
+      std::shared_ptr<utils::CountDownEvent> cond)
       : mutex_(mutex), attrs_(attrs), cond_(cond) {}
 
   ~BatchGetInodeAttrAsyncDone() override = default;
 
   void Run() override {
     std::unique_ptr<BatchGetInodeAttrAsyncDone> self_guard(this);
-    MetaStatusCode ret = GetStatusCode();
-    if (ret != MetaStatusCode::OK) {
+    auto ret = GetStatusCode();
+    if (ret != pb::metaserver::MetaStatusCode::OK) {
       LOG(ERROR) << "BatchGetInodeAttrAsync failed, "
                  << ", MetaStatusCode: " << ret
                  << ", MetaStatusCode_Name: " << MetaStatusCode_Name(ret)
@@ -202,8 +200,8 @@ class BatchGetInodeAttrAsyncDone : public BatchGetInodeAttrDone {
 
  private:
   ::dingofs::utils::Mutex* mutex_;
-  std::map<uint64_t, InodeAttr>* attrs_;
-  std::shared_ptr<CountDownEvent> cond_;
+  std::map<uint64_t, pb::metaserver::InodeAttr>* attrs_;
+  std::shared_ptr<utils::CountDownEvent> cond_;
 };
 
 }  // namespace client

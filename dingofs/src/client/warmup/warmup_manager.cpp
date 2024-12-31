@@ -25,13 +25,13 @@
 #include <glog/logging.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <atomic>
 #include <deque>
 #include <list>
 #include <memory>
 #include <utility>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/base/filepath/filepath.h"
 #include "dingofs/src/client/blockcache/cache_store.h"
 #include "dingofs/src/client/blockcache/s3_client.h"
@@ -39,8 +39,6 @@
 #include "dingofs/src/client/inode_wrapper.h"
 #include "dingofs/src/client/kvclient/kvclient_manager.h"
 #include "dingofs/src/stub/metric/metric.h"
-#include "dingofs/src/client/s3/client_s3_cache_manager.h"
-#include "dingofs/src/common/s3util.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
 #include "dingofs/src/utils/string_util.h"
 
@@ -48,14 +46,22 @@ namespace dingofs {
 namespace client {
 namespace warmup {
 
-using ::dingofs::base::filepath::PathSplit;
-using ::dingofs::client::blockcache::BCACHE_ERROR;
-using ::dingofs::client::blockcache::Block;
-using ::dingofs::client::blockcache::CacheStore;
-using ::dingofs::client::blockcache::S3ClientImpl;
-using ::dingofs::stub::metric::MetricGuard;
-using ::dingofs::stub::metric::S3Metric;
-using dingofs::utils::WriteLockGuard;
+using aws::GetObjectAsyncCallBack;
+using aws::GetObjectAsyncContext;
+using base::filepath::PathSplit;
+using blockcache::BCACHE_ERROR;
+using blockcache::Block;
+using blockcache::BlockKey;
+using blockcache::S3ClientImpl;
+using common::FuseClientOption;
+using common::WarmupStorageType;
+using stub::metric::MetricGuard;
+using stub::metric::S3Metric;
+using utils::ReadLockGuard;
+using utils::WriteLockGuard;
+
+using pb::metaserver::Dentry;
+using pb::metaserver::FsFileType;
 
 #define WARMUP_CHECKINTERVAL_US (1000 * 1000)
 
@@ -129,7 +135,7 @@ void WarmupManagerS3Impl::UnInit() {
 void WarmupManagerS3Impl::Init(const FuseClientOption& option) {
   WarmupManager::Init(option);
   bgFetchStop_.store(false, std::memory_order_release);
-  bgFetchThread_ = Thread(&WarmupManagerS3Impl::BackGroundFetch, this);
+  bgFetchThread_ = utils::Thread(&WarmupManagerS3Impl::BackGroundFetch, this);
   initbgFetchThread_ = true;
 }
 
@@ -366,9 +372,9 @@ void WarmupManagerS3Impl::TravelChunks(
   VLOG(9) << "travel chunks end";
 }
 
-void WarmupManagerS3Impl::TravelChunk(fuse_ino_t ino,
-                                      const S3ChunkInfoList& chunkInfo,
-                                      ObjectListType* prefetchObjs) {
+void WarmupManagerS3Impl::TravelChunk(
+    fuse_ino_t ino, const pb::metaserver::S3ChunkInfoList& chunkInfo,
+    ObjectListType* prefetchObjs) {
   uint64_t blockSize = s3Adaptor_->GetBlockSize();
   uint64_t chunkSize = s3Adaptor_->GetChunkSize();
   uint64_t offset, len, chunkid, compaction;
@@ -459,7 +465,7 @@ void WarmupManagerS3Impl::WarmUpAllObjs(
   uint64_t start = butil::cpuwide_time_us();
   // callback function
   GetObjectAsyncCallBack cb =
-      [&](const S3Adapter* adapter,
+      [&](const aws::S3Adapter* adapter,
           const std::shared_ptr<GetObjectAsyncContext>& context) {
         (void)adapter;
         // metrics for async get data from s3
@@ -714,8 +720,8 @@ void WarmupManagerS3Impl::PutObjectToCache(
   }
 }
 
-void WarmupManager::CollectMetrics(InterfaceMetric* interface, int count,
-                                   uint64_t start) {
+void WarmupManager::CollectMetrics(stub::metric::InterfaceMetric* interface,
+                                   int count, uint64_t start) {
   interface->bps.count << count;
   interface->qps.count << 1;
   interface->latency << (butil::cpuwide_time_us() - start);

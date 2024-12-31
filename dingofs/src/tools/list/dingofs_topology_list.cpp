@@ -55,11 +55,11 @@ int TopologyListTool::Init() {
   dingofs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::topology::TopologyService_Stub::ListTopology,
+      std::bind(&pb::mds::topology::TopologyService_Stub::ListTopology,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
 
-  dingofs::mds::topology::ListTopologyRequest request;
+  pb::mds::topology::ListTopologyRequest request;
   AddRequest(request);
 
   return 0;
@@ -160,10 +160,10 @@ std::ostream& operator<<(std::ostream& os, const PoolPolicy& policy) {
 bool TopologyListTool::GetPoolInfoFromResponse() {
   bool ret = true;
   auto const& pools = response_->pools();
-  if (pools.statuscode() != dingofs::mds::topology::TOPO_OK) {
+  if (pools.statuscode() != pb::mds::topology::TOPO_OK) {
     std::cerr << "the pools of cluster has error, error code is "
               << pools.statuscode() << ", code name is "
-              << dingofs::mds::topology::TopoStatusCode_Name(pools.statuscode())
+              << pb::mds::topology::TopoStatusCode_Name(pools.statuscode())
               << std::endl;
     ret = false;
   } else {
@@ -181,10 +181,10 @@ bool TopologyListTool::GetPoolInfoFromResponse() {
 bool TopologyListTool::GetZoneInfoFromResponse() {
   bool ret = true;
   auto const& zones = response_->zones();
-  if (zones.statuscode() != dingofs::mds::topology::TOPO_OK) {
+  if (zones.statuscode() != pb::mds::topology::TOPO_OK) {
     std::cerr << "the zones of cluster has error, error code is "
               << zones.statuscode() << ", code name is "
-              << dingofs::mds::topology::TopoStatusCode_Name(zones.statuscode())
+              << pb::mds::topology::TopoStatusCode_Name(zones.statuscode())
               << std::endl;
     ret = false;
   } else {
@@ -209,11 +209,10 @@ bool TopologyListTool::GetZoneInfoFromResponse() {
 bool TopologyListTool::GetServerInfoFromResponse() {
   bool ret = true;
   auto const& servers = response_->servers();
-  if (servers.statuscode() != dingofs::mds::topology::TOPO_OK) {
+  if (servers.statuscode() != pb::mds::topology::TOPO_OK) {
     std::cerr << "the servers of cluster has error, error code is "
               << servers.statuscode() << ", code name is "
-              << dingofs::mds::topology::TopoStatusCode_Name(
-                     servers.statuscode())
+              << pb::mds::topology::TopoStatusCode_Name(servers.statuscode())
               << std::endl;
     ret = false;
   } else {
@@ -240,10 +239,10 @@ bool TopologyListTool::GetServerInfoFromResponse() {
 bool TopologyListTool::GetMetaserverInfoFromResponse() {
   bool ret = true;
   auto const& metaservers = response_->metaservers();
-  if (metaservers.statuscode() != dingofs::mds::topology::TOPO_OK) {
+  if (metaservers.statuscode() != pb::mds::topology::TOPO_OK) {
     std::cerr << "the metaservers of cluster has error, error code is "
               << metaservers.statuscode() << ", code name is "
-              << dingofs::mds::topology::TopoStatusCode_Name(
+              << pb::mds::topology::TopoStatusCode_Name(
                      metaservers.statuscode())
               << std::endl;
     ret = false;

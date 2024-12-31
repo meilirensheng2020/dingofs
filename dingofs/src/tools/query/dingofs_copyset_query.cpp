@@ -62,7 +62,7 @@ int CopysetQueryTool::Init() {
     std::cerr << "copysets not match pools." << std::endl;
     return -1;
   }
-  dingofs::mds::topology::GetCopysetsInfoRequest request;
+  pb::mds::topology::GetCopysetsInfoRequest request;
   for (unsigned i = 0; i < poolsId.size(); ++i) {
     uint64_t poolId = std::stoul(poolsId[i]);
     uint64_t copysetId = std::stoul(copysetsId[i]);
@@ -79,7 +79,7 @@ int CopysetQueryTool::Init() {
   AddRequest(request);
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::topology::TopologyService_Stub::GetCopysetsInfo,
+      std::bind(&pb::mds::topology::TopologyService_Stub::GetCopysetsInfo,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
   return 0;
@@ -138,14 +138,14 @@ bool CopysetQueryTool::AfterSendRequestToHost(const std::string& host) {
 bool CopysetQueryTool::GetCopysetStatus() {
   bool ret = true;
   for (auto const& i : response_->copysetvalues()) {
-    using tmpType = dingofs::metaserver::copyset::CopysetStatusRequest;
+    using tmpType = pb::metaserver::copyset::CopysetStatusRequest;
     tmpType tmp;
     tmp.set_copysetid(i.copysetinfo().copysetid());
     tmp.set_poolid(i.copysetinfo().poolid());
     for (auto const& j : i.copysetinfo().peers()) {
       // send request to all peer
       std::string addr;
-      if (!dingofs::mds::topology::SplitPeerId(j.address(), &addr)) {
+      if (!mds::topology::SplitPeerId(j.address(), &addr)) {
         std::cerr << "copyset[" << tmp.copysetid()
                   << "] has error peerid: " << j.address() << std::endl;
         ret = false;
@@ -153,8 +153,7 @@ bool CopysetQueryTool::GetCopysetStatus() {
       }
       auto& queueRequest = addr2Request_[addr];
       if (queueRequest.empty()) {
-        queueRequest.push(
-            dingofs::metaserver::copyset::CopysetsStatusRequest());
+        queueRequest.push(pb::metaserver::copyset::CopysetsStatusRequest());
       }
       *queueRequest.front().add_copysets() = tmp;
     }

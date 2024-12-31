@@ -25,7 +25,6 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "dingofs/proto/common.pb.h"
@@ -36,82 +35,93 @@
 #include "dingofs/src/metaserver/inode_manager.h"
 #include "dingofs/src/metaserver/inode_storage.h"
 #include "dingofs/src/metaserver/storage/iterator.h"
-#include "dingofs/src/metaserver/trash_manager.h"
 
 namespace dingofs {
 namespace metaserver {
-using dingofs::common::PartitionInfo;
-using dingofs::common::PartitionStatus;
-using ::dingofs::metaserver::storage::Iterator;
-using ::dingofs::metaserver::storage::KVStorage;
-using S3ChunkInfoMap = google::protobuf::Map<uint64_t, S3ChunkInfoList>;
 
 // skip ROOTINODEID and RECYCLEINODEID
 constexpr uint64_t kMinPartitionStartId = ROOTINODEID + 2;
 
 class Partition {
  public:
-  Partition(PartitionInfo partition, std::shared_ptr<KVStorage> kvStorage,
+  Partition(pb::common::PartitionInfo partition,
+            std::shared_ptr<storage::KVStorage> kvStorage,
             bool startCompact = true);
 
   // dentry
-  MetaStatusCode CreateDentry(const Dentry& dentry);
+  pb::metaserver::MetaStatusCode CreateDentry(
+      const pb::metaserver::Dentry& dentry);
 
-  MetaStatusCode LoadDentry(const DentryVec& vec, bool merge);
+  pb::metaserver::MetaStatusCode LoadDentry(
+      const pb::metaserver::DentryVec& vec, bool merge);
 
-  MetaStatusCode DeleteDentry(const Dentry& dentry);
+  pb::metaserver::MetaStatusCode DeleteDentry(
+      const pb::metaserver::Dentry& dentry);
 
-  MetaStatusCode GetDentry(Dentry* dentry);
+  pb::metaserver::MetaStatusCode GetDentry(pb::metaserver::Dentry* dentry);
 
-  MetaStatusCode ListDentry(const Dentry& dentry, std::vector<Dentry>* dentrys,
-                            uint32_t limit, bool onlyDir = false);
+  pb::metaserver::MetaStatusCode ListDentry(
+      const pb::metaserver::Dentry& dentry,
+      std::vector<pb::metaserver::Dentry>* dentrys, uint32_t limit,
+      bool onlyDir = false);
 
   void ClearDentry();
 
-  MetaStatusCode HandleRenameTx(const std::vector<Dentry>& dentrys);
+  pb::metaserver::MetaStatusCode HandleRenameTx(
+      const std::vector<pb::metaserver::Dentry>& dentrys);
 
-  bool InsertPendingTx(const PrepareRenameTxRequest& pendingTx);
+  bool InsertPendingTx(const pb::metaserver::PrepareRenameTxRequest& pendingTx);
 
-  bool FindPendingTx(PrepareRenameTxRequest* pendingTx);
+  bool FindPendingTx(pb::metaserver::PrepareRenameTxRequest* pendingTx);
 
   // inode
-  MetaStatusCode CreateInode(const InodeParam& param, Inode* inode);
+  pb::metaserver::MetaStatusCode CreateInode(const InodeParam& param,
+                                             pb::metaserver::Inode* inode);
 
-  MetaStatusCode CreateRootInode(const InodeParam& param);
+  pb::metaserver::MetaStatusCode CreateRootInode(const InodeParam& param);
 
-  MetaStatusCode CreateManageInode(const InodeParam& param,
-                                   ManageInodeType manageType, Inode* inode);
+  pb::metaserver::MetaStatusCode CreateManageInode(
+      const InodeParam& param, pb::metaserver::ManageInodeType manageType,
+      pb::metaserver::Inode* inode);
 
-  MetaStatusCode GetInode(uint32_t fsId, uint64_t inodeId, Inode* inode);
+  pb::metaserver::MetaStatusCode GetInode(uint32_t fsId, uint64_t inodeId,
+                                          pb::metaserver::Inode* inode);
 
-  MetaStatusCode GetInodeAttr(uint32_t fsId, uint64_t inodeId, InodeAttr* attr);
+  pb::metaserver::MetaStatusCode GetInodeAttr(uint32_t fsId, uint64_t inodeId,
+                                              pb::metaserver::InodeAttr* attr);
 
-  MetaStatusCode GetXAttr(uint32_t fsId, uint64_t inodeId, XAttr* xattr);
+  pb::metaserver::MetaStatusCode GetXAttr(uint32_t fsId, uint64_t inodeId,
+                                          pb::metaserver::XAttr* xattr);
 
-  MetaStatusCode DeleteInode(uint32_t fsId, uint64_t inodeId);
+  pb::metaserver::MetaStatusCode DeleteInode(uint32_t fsId, uint64_t inodeId);
 
-  MetaStatusCode UpdateInode(const UpdateInodeRequest& request);
+  pb::metaserver::MetaStatusCode UpdateInode(
+      const pb::metaserver::UpdateInodeRequest& request);
 
-  MetaStatusCode GetOrModifyS3ChunkInfo(uint32_t fsId, uint64_t inodeId,
-                                        const S3ChunkInfoMap& map2add,
-                                        const S3ChunkInfoMap& map2del,
-                                        bool returnS3ChunkInfoMap,
-                                        std::shared_ptr<Iterator>* iterator);
+  pb::metaserver::MetaStatusCode GetOrModifyS3ChunkInfo(
+      uint32_t fsId, uint64_t inodeId, const S3ChunkInfoMap& map2add,
+      const S3ChunkInfoMap& map2del, bool returnS3ChunkInfoMap,
+      std::shared_ptr<storage::Iterator>* iterator);
 
-  MetaStatusCode PaddingInodeS3ChunkInfo(int32_t fsId, uint64_t inodeId,
-                                         S3ChunkInfoMap* m, uint64_t limit = 0);
+  pb::metaserver::MetaStatusCode PaddingInodeS3ChunkInfo(int32_t fsId,
+                                                         uint64_t inodeId,
+                                                         S3ChunkInfoMap* m,
+                                                         uint64_t limit = 0);
 
-  MetaStatusCode UpdateVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                    const VolumeExtentList& extents);
+  pb::metaserver::MetaStatusCode UpdateVolumeExtent(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::VolumeExtentList& extents);
 
-  MetaStatusCode UpdateVolumeExtentSlice(uint32_t fsId, uint64_t inodeId,
-                                         const VolumeExtentSlice& slice);
+  pb::metaserver::MetaStatusCode UpdateVolumeExtentSlice(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::VolumeExtentSlice& slice);
 
-  MetaStatusCode GetVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                 const std::vector<uint64_t>& slices,
-                                 VolumeExtentList* extents);
+  pb::metaserver::MetaStatusCode GetVolumeExtent(
+      uint32_t fsId, uint64_t inodeId, const std::vector<uint64_t>& slices,
+      pb::metaserver::VolumeExtentList* extents);
 
-  MetaStatusCode InsertInode(const Inode& inode);
+  pb::metaserver::MetaStatusCode InsertInode(
+      const pb::metaserver::Inode& inode);
 
   bool GetInodeIdList(std::list<uint64_t>* InodeIdList);
 
@@ -132,7 +142,7 @@ class Partition {
 
   uint32_t GetFsId() { return partitionInfo_.fsid(); }
 
-  PartitionInfo GetPartitionInfo();
+  pb::common::PartitionInfo GetPartitionInfo();
 
   // get new inode id in partition range.
   // if no available inode id in this partiton ,return UINT64_MAX
@@ -144,9 +154,11 @@ class Partition {
 
   bool EmptyInodeStorage();
 
-  void SetStatus(PartitionStatus status) { partitionInfo_.set_status(status); }
+  void SetStatus(pb::common::PartitionStatus status) {
+    partitionInfo_.set_status(status);
+  }
 
-  PartitionStatus GetStatus() { return partitionInfo_.status(); }
+  pb::common::PartitionStatus GetStatus() { return partitionInfo_.status(); }
 
   void StartS3Compact();
 
@@ -156,13 +168,13 @@ class Partition {
 
   std::string GetDentryTablename();
 
-  std::shared_ptr<Iterator> GetAllInode();
+  std::shared_ptr<storage::Iterator> GetAllInode();
 
-  std::shared_ptr<Iterator> GetAllDentry();
+  std::shared_ptr<storage::Iterator> GetAllDentry();
 
-  std::shared_ptr<Iterator> GetAllS3ChunkInfoList();
+  std::shared_ptr<storage::Iterator> GetAllS3ChunkInfoList();
 
-  std::shared_ptr<Iterator> GetAllVolumeExtentList();
+  std::shared_ptr<storage::Iterator> GetAllVolumeExtentList();
 
   bool Clear();
 
@@ -184,7 +196,7 @@ class Partition {
   std::shared_ptr<DentryManager> dentryManager_;
   std::shared_ptr<TxManager> txManager_;
 
-  PartitionInfo partitionInfo_;
+  pb::common::PartitionInfo partitionInfo_;
 };
 }  // namespace metaserver
 }  // namespace dingofs

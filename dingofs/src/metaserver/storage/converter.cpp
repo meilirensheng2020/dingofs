@@ -45,7 +45,7 @@ namespace storage {
 using ::dingofs::utils::SplitString;
 using ::dingofs::utils::StringToUl;
 using ::dingofs::utils::StringToUll;
-using ::dingofs::common::PartitionInfo;
+using pb::common::PartitionInfo;
 
 static const char* const kDelimiter = ":";
 
@@ -108,7 +108,7 @@ Key4Inode::Key4Inode() : fsId(0), inodeId(0) {}
 Key4Inode::Key4Inode(uint32_t fsId, uint64_t inodeId)
     : fsId(fsId), inodeId(inodeId) {}
 
-Key4Inode::Key4Inode(const Inode& inode)
+Key4Inode::Key4Inode(const pb::metaserver::Inode& inode)
     : fsId(inode.fsid()), inodeId(inode.inodeid()) {}
 
 bool Key4Inode::operator==(const Key4Inode& rhs) {

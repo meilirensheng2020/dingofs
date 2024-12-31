@@ -32,9 +32,9 @@ namespace dingofs {
 namespace tools {
 namespace create {
 
-class CreateFsTool : public CurvefsToolRpc<dingofs::mds::CreateFsRequest,
-                                           dingofs::mds::CreateFsResponse,
-                                           dingofs::mds::MdsService_Stub> {
+class CreateFsTool
+    : public CurvefsToolRpc<pb::mds::CreateFsRequest, pb::mds::CreateFsResponse,
+                            pb::mds::MdsService_Stub> {
  public:
   explicit CreateFsTool(const std::string& cmd = kCreateFsCmd, bool show = true)
       : CurvefsToolRpc(cmd) {

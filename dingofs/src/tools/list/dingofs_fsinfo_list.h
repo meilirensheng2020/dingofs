@@ -37,10 +37,9 @@ namespace dingofs {
 namespace tools {
 namespace list {
 
-class FsInfoListTool
-    : public CurvefsToolRpc<dingofs::mds::ListClusterFsInfoRequest,
-                            dingofs::mds::ListClusterFsInfoResponse,
-                            dingofs::mds::MdsService_Stub> {
+class FsInfoListTool : public CurvefsToolRpc<pb::mds::ListClusterFsInfoRequest,
+                                             pb::mds::ListClusterFsInfoResponse,
+                                             pb::mds::MdsService_Stub> {
  public:
   explicit FsInfoListTool(const std::string& cmd = kFsInfoListCmd,
                           bool show = true)

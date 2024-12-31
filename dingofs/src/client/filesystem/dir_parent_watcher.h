@@ -21,14 +21,12 @@
 #include "dingofs/src/client/filesystem/meta.h"
 #include "dingofs/src/client/inode_cache_manager.h"
 #include "dingofs/src/client/inode_wrapper.h"
-#include "glog/logging.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
+#include "glog/logging.h"
 
 namespace dingofs {
 namespace client {
 namespace filesystem {
-
-using ::dingofs::utils::RWLock;
 
 class DirParentWatcher {
  public:
@@ -58,18 +56,18 @@ class DirParentWatcherImpl : public DirParentWatcher {
 
  private:
   std::shared_ptr<InodeCacheManager> inode_cache_manager_;
-  RWLock rwlock_;
+  utils::RWLock rwlock_;
   std::unordered_map<Ino, Ino> dir_parent_;
 };
 
 class DirParentWatcherGuard {
  public:
   DirParentWatcherGuard(std::shared_ptr<DirParentWatcher> wacther,
-                        const InodeAttr& attr)
+                        const pb::metaserver::InodeAttr& attr)
       : watcher_(std::move(wacther)), attr_(attr) {}
 
   ~DirParentWatcherGuard() {
-    if (attr_.type() == FsFileType::TYPE_DIRECTORY) {
+    if (attr_.type() == pb::metaserver::FsFileType::TYPE_DIRECTORY) {
       CHECK_GT(attr_.parent_size(), 0);
       watcher_->Remeber(attr_.inodeid(), attr_.parent(0));
     }
@@ -77,7 +75,7 @@ class DirParentWatcherGuard {
 
  private:
   std::shared_ptr<DirParentWatcher> watcher_;
-  const InodeAttr& attr_;
+  const pb::metaserver::InodeAttr& attr_;
 };
 
 }  // namespace filesystem

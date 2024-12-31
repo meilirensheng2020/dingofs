@@ -69,9 +69,10 @@ namespace dingofs {
 namespace tools {
 namespace create {
 
-using ::dingofs::common::BitmapLocation;
-using ::dingofs::common::BitmapLocation_Parse;
-using ::dingofs::utils::is_aligned;
+using dingofs::utils::is_aligned;
+
+using pb::common::BitmapLocation;
+using pb::common::BitmapLocation_Parse;
 
 void CreateFsTool::PrintHelp() {
   CurvefsToolRpc::PrintHelp();
@@ -159,19 +160,19 @@ int CreateFsTool::Init() {
 
   dingofs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
   service_stub_func_ =
-      std::bind(&mds::MdsService_Stub::CreateFs, service_stub_.get(),
+      std::bind(&pb::mds::MdsService_Stub::CreateFs, service_stub_.get(),
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3, nullptr);
 
-  mds::CreateFsRequest request;
+  pb::mds::CreateFsRequest request;
   request.set_fsname(FLAGS_fsName);
   request.set_blocksize(FLAGS_blockSize);
   request.set_enablesumindir(FLAGS_enableSumInDir);
   request.set_recycletimehour(FLAGS_recycleTimeHour);
 
   auto SetS3Request = [&]() -> int {
-    request.set_fstype(common::FSType::TYPE_S3);
-    auto* s3 = new common::S3Info();
+    request.set_fstype(pb::common::FSType::TYPE_S3);
+    auto* s3 = new pb::common::S3Info();
     s3->set_ak(FLAGS_s3_ak);
     s3->set_sk(FLAGS_s3_sk);
     s3->set_endpoint(FLAGS_s3_endpoint);
@@ -214,8 +215,8 @@ int CreateFsTool::Init() {
     }
 
     // volume
-    request.set_fstype(common::FSType::TYPE_VOLUME);
-    auto* volume = new common::Volume();
+    request.set_fstype(pb::common::FSType::TYPE_VOLUME);
+    auto* volume = new pb::common::Volume();
     volume->set_blocksize(FLAGS_volumeBlockSize);
     volume->set_volumename(FLAGS_volumeName);
     volume->set_user(FLAGS_volumeUser);
@@ -236,7 +237,7 @@ int CreateFsTool::Init() {
     if (SetS3Request() != 0 || SetVolumeRequest() != 0) {
       return -1;
     }
-    request.set_fstype(common::FSType::TYPE_HYBRID);
+    request.set_fstype(pb::common::FSType::TYPE_HYBRID);
     return 0;
   };
 
@@ -280,22 +281,23 @@ bool CreateFsTool::AfterSendRequestToHost(const std::string& host) {
   }
 
   switch (response_->statuscode()) {
-    case mds::FSStatusCode::OK:
+    case pb::mds::FSStatusCode::OK:
       std::cout << "create fs success." << std::endl;
       ret = true;
       break;
-    case mds::FSStatusCode::FS_EXIST:
+    case pb::mds::FSStatusCode::FS_EXIST:
       std::cerr << "create fs error, fs [" << FLAGS_fsName
                 << "] exist. But S3 info is inconsistent!" << std::endl;
       break;
-    case mds::FSStatusCode::S3_INFO_ERROR:
+    case pb::mds::FSStatusCode::S3_INFO_ERROR:
       std::cerr << "create fs error, the s3 info is not available!"
                 << std::endl;
       break;
     default:
       std::cerr << "create fs failed, errorcode= " << response_->statuscode()
                 << ", error name: "
-                << mds::FSStatusCode_Name(response_->statuscode()) << std::endl;
+                << pb::mds::FSStatusCode_Name(response_->statuscode())
+                << std::endl;
   }
   return ret;
 }

@@ -34,7 +34,8 @@ namespace copyset {
 
 void CopysetServiceImpl::CreateCopysetNode(
     google::protobuf::RpcController* /*controller*/,
-    const CreateCopysetRequest* request, CreateCopysetResponse* response,
+    const pb::metaserver::copyset::CreateCopysetRequest* request,
+    pb::metaserver::copyset::CreateCopysetResponse* response,
     google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
 
@@ -43,7 +44,7 @@ void CopysetServiceImpl::CreateCopysetNode(
 
   for (int i = 0; i < request->copysets_size(); ++i) {
     auto status = CreateOneCopyset(request->copysets(i));
-    if (status != COPYSET_OP_STATUS_SUCCESS) {
+    if (status != pb::metaserver::copyset::COPYSET_OP_STATUS_SUCCESS) {
       response->set_status(status);
       LOG(WARNING) << "Create copyset "
                    << ToGroupIdString(request->copysets(i).poolid(),
@@ -53,14 +54,15 @@ void CopysetServiceImpl::CreateCopysetNode(
     }
   }
 
-  response->set_status(COPYSET_OP_STATUS_SUCCESS);
+  response->set_status(pb::metaserver::copyset::COPYSET_OP_STATUS_SUCCESS);
   LOG(INFO) << "CreateCopysetNode request: [ " << request->ShortDebugString()
             << " ] success";
 }
 
 void CopysetServiceImpl::GetCopysetStatus(
     google::protobuf::RpcController* /*controller*/,
-    const CopysetStatusRequest* request, CopysetStatusResponse* response,
+    const pb::metaserver::copyset::CopysetStatusRequest* request,
+    pb::metaserver::copyset::CopysetStatusResponse* response,
     google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   return GetOneCopysetStatus(*request, response);
@@ -68,7 +70,8 @@ void CopysetServiceImpl::GetCopysetStatus(
 
 void CopysetServiceImpl::GetCopysetsStatus(
     google::protobuf::RpcController* /*controller*/,
-    const CopysetsStatusRequest* request, CopysetsStatusResponse* response,
+    const pb::metaserver::copyset::CopysetsStatusRequest* request,
+    pb::metaserver::copyset::CopysetsStatusResponse* response,
     google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
 
@@ -77,19 +80,19 @@ void CopysetServiceImpl::GetCopysetsStatus(
   }
 }
 
-COPYSET_OP_STATUS CopysetServiceImpl::CreateOneCopyset(
-    const CreateCopysetRequest::Copyset& copyset) {
+pb::metaserver::copyset::COPYSET_OP_STATUS CopysetServiceImpl::CreateOneCopyset(
+    const pb::metaserver::copyset::CreateCopysetRequest::Copyset& copyset) {
   int exists = manager_->IsCopysetNodeExist(copyset);
   if (-1 == exists) {
     LOG(ERROR) << "Copyset "
                << ToGroupIdString(copyset.poolid(), copyset.copysetid())
                << " already exists, but peers not exactly the same.";
-    return COPYSET_OP_STATUS_EXIST;
+    return pb::metaserver::copyset::COPYSET_OP_STATUS_EXIST;
   } else if (1 == exists) {
     LOG(WARNING) << "Copyset "
                  << ToGroupIdString(copyset.poolid(), copyset.copysetid())
                  << " already exists.";
-    return COPYSET_OP_STATUS_SUCCESS;
+    return pb::metaserver::copyset::COPYSET_OP_STATUS_SUCCESS;
   }
 
   braft::Configuration conf;
@@ -101,7 +104,7 @@ COPYSET_OP_STATUS CopysetServiceImpl::CreateOneCopyset(
                    << ToGroupIdString(copyset.poolid(), copyset.copysetid())
                    << " failed because parse peer from "
                    << copyset.peers(i).address() << " failed";
-      return COPYSET_OP_STATUS_PARSE_PEER_ERROR;
+      return pb::metaserver::copyset::COPYSET_OP_STATUS_PARSE_PEER_ERROR;
     }
 
     conf.add_peer(braft::PeerId(copyset.peers(i).address()));
@@ -113,24 +116,26 @@ COPYSET_OP_STATUS CopysetServiceImpl::CreateOneCopyset(
     LOG(INFO) << "Create copyset "
               << ToGroupIdString(copyset.poolid(), copyset.copysetid())
               << " success";
-    return COPYSET_OP_STATUS_SUCCESS;
+    return pb::metaserver::copyset::COPYSET_OP_STATUS_SUCCESS;
   } else {
     LOG(WARNING) << "Create copyset "
                  << ToGroupIdString(copyset.poolid(), copyset.copysetid())
                  << " failed";
-    return COPYSET_OP_STATUS_FAILURE_UNKNOWN;
+    return pb::metaserver::copyset::COPYSET_OP_STATUS_FAILURE_UNKNOWN;
   }
 }
 
 void CopysetServiceImpl::GetOneCopysetStatus(
-    const CopysetStatusRequest& request, CopysetStatusResponse* response) {
+    const pb::metaserver::copyset::CopysetStatusRequest& request,
+    pb::metaserver::copyset::CopysetStatusResponse* response) {
   auto* node = manager_->GetCopysetNode(request.poolid(), request.copysetid());
 
   if (!node) {
     LOG(WARNING) << "GetCopysetStauts failed, copyset "
                  << ToGroupIdString(request.poolid(), request.copysetid())
                  << " not exists";
-    response->set_status(COPYSET_OP_STATUS::COPYSET_OP_STATUS_COPYSET_NOTEXIST);
+    response->set_status(pb::metaserver::copyset::COPYSET_OP_STATUS::
+                             COPYSET_OP_STATUS_COPYSET_NOTEXIST);
     return;
   }
 
@@ -141,7 +146,8 @@ void CopysetServiceImpl::GetOneCopysetStatus(
                    << request.peer().ShortDebugString()
                    << " is not identical to current node's peer id "
                    << node->GetPeerId();
-      response->set_status(COPYSET_OP_STATUS::COPYSET_OP_STATUS_PEER_MISMATCH);
+      response->set_status(pb::metaserver::copyset::COPYSET_OP_STATUS::
+                               COPYSET_OP_STATUS_PEER_MISMATCH);
       return;
     }
   }
@@ -171,7 +177,8 @@ void CopysetServiceImpl::GetOneCopysetStatus(
     // TODO(wuhanqing): implement hash
   }
 
-  response->set_status(COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS);
+  response->set_status(
+      pb::metaserver::copyset::COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS);
 }
 
 }  // namespace copyset

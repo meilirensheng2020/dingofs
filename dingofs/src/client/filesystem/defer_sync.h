@@ -31,19 +31,16 @@
 
 #include "dingofs/src/client/common/config.h"
 #include "dingofs/src/client/filesystem/meta.h"
+#include "dingofs/src/client/inode_wrapper.h"
+#include "dingofs/src/stub/rpcclient/task_excutor.h"
 #include "dingofs/src/utils/interruptible_sleeper.h"
 
 namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::client::common::DeferSyncOption;
-
-using ::dingofs::utils::InterruptibleSleeper;
-using ::dingofs::utils::Mutex;
-
 class DeferSync;
-class SyncInodeClosure : public MetaServerClientDone {
+class SyncInodeClosure : public stub::rpcclient::MetaServerClientDone {
  public:
   explicit SyncInodeClosure(uint64_t sync_seq,
                             std::shared_ptr<DeferSync> defer_sync);
@@ -58,7 +55,7 @@ class SyncInodeClosure : public MetaServerClientDone {
 
 class DeferSync : public std::enable_shared_from_this<DeferSync> {
  public:
-  explicit DeferSync(DeferSyncOption option);
+  explicit DeferSync(common::DeferSyncOption option);
 
   void Start();
 
@@ -72,13 +69,13 @@ class DeferSync : public std::enable_shared_from_this<DeferSync> {
   friend class SyncInodeClosure;
 
   void SyncTask();
-  void Synced(uint64_t sync_seq, MetaStatusCode status);
+  void Synced(uint64_t sync_seq, pb::metaserver::MetaStatusCode status);
 
-  DeferSyncOption option_;
-  Mutex mutex_;
+  common::DeferSyncOption option_;
+  utils::Mutex mutex_;
   std::atomic<bool> running_;
   std::thread thread_;
-  InterruptibleSleeper sleeper_;
+  utils::InterruptibleSleeper sleeper_;
 
   uint64_t last_sync_seq_{0};
   std::vector<uint64_t> pending_sync_inodes_seq_;

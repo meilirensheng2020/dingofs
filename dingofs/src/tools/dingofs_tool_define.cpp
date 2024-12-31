@@ -123,143 +123,171 @@ bool CheckFlagInfoDefault(google::CommandLineFlagInfo* info,
 }
 
 /* set flag */
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetMdsAddr = std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                            std::placeholders::_2, "mdsAddr", &FLAGS_mdsAddr);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetRpcTimeoutMs =
         std::bind(&SetFlagInfo<uint32_t>, std::placeholders::_1,
                   std::placeholders::_2, "rpcTimeoutMs", &FLAGS_rpcTimeoutMs);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetRpcRetryTimes =
         std::bind(&SetFlagInfo<uint32_t>, std::placeholders::_1,
                   std::placeholders::_2, "rpcRetryTimes", &FLAGS_rpcRetryTimes);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetMetaserverAddr = std::bind(&SetFlagInfo<fLS::clstring>,
                                   std::placeholders::_1, std::placeholders::_2,
                                   "metaserverAddr", &FLAGS_metaserverAddr);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetEtcdAddr = std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                             std::placeholders::_2, "etcdAddr", &FLAGS_etcdAddr);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetMdsDummyAddr =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "mdsDummyAddr", &FLAGS_mdsDummyAddr);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetBlockSize =
         std::bind(&SetFlagInfo<uint64_t>, std::placeholders::_1,
                   std::placeholders::_2, "blockSize", &FLAGS_blockSize);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetFsType = std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                           std::placeholders::_2, "fsType", &FLAGS_fsType);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeBlockSize = std::bind(&SetFlagInfo<uint64_t>,
                                    std::placeholders::_1, std::placeholders::_2,
                                    "volumeBlockSize", &FLAGS_volumeBlockSize);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeName =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeName", &FLAGS_volumeName);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeUser =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeUser", &FLAGS_volumeUser);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumePassword = std::bind(&SetFlagInfo<fLS::clstring>,
                                   std::placeholders::_1, std::placeholders::_2,
                                   "volumePassword", &FLAGS_volumePassword);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeBlockGroupSize = std::bind(
         &SetFlagInfo<uint64_t>, std::placeholders::_1, std::placeholders::_2,
         "volumeBlockGroupSize", &FLAGS_volumeBlockGroupSize);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeBitmapLocation =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeBitmapLocation",
                   &FLAGS_volumeBitmapLocation);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeAutoExtend =
         std::bind(&SetFlagInfo<bool>, std::placeholders::_1,
                   std::placeholders::_2, "autoExtend", &FLAGS_volumeAutoExtend);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeExtendFactor = std::bind(
         &SetFlagInfo<double>, std::placeholders::_1, std::placeholders::_2,
         "extendFactor", &FLAGS_volumeExtendFactor);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetVolumeCluster =
         std::bind(&SetFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "volumeCluster", &FLAGS_volumeCluster);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetS3_ak = std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                          std::placeholders::_2, "s3_ak", "s3.ak", &FLAGS_s3_ak);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetS3_sk = std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                          std::placeholders::_2, "s3_sk", "s3.sk", &FLAGS_s3_sk);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetS3_endpoint =
         std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "s3_endpoint", "s3.endpoint",
                   &FLAGS_s3_endpoint);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetS3_bucket_name =
         std::bind(&SetDiffFlagInfo<fLS::clstring>, std::placeholders::_1,
                   std::placeholders::_2, "s3_bucket_name", "s3.bucket_name",
                   &FLAGS_s3_bucket_name);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetS3_blocksize =
         std::bind(&SetDiffFlagInfo<uint64_t>, std::placeholders::_1,
                   std::placeholders::_2, "s3_blocksize", "s3.blocksize",
                   &FLAGS_s3_blocksize);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetS3_chunksize =
         std::bind(&SetDiffFlagInfo<uint64_t>, std::placeholders::_1,
                   std::placeholders::_2, "s3_chunksize", "s3.chunksize",
                   &FLAGS_s3_chunksize);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetS3_objectPrefix =
         std::bind(&SetDiffFlagInfo<uint32_t>, std::placeholders::_1,
                   std::placeholders::_2, "s3_objectPrefix", "s3.objectPrefix",
                   &FLAGS_s3_objectPrefix);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetEnableSumInDir = std::bind(&SetFlagInfo<bool>, std::placeholders::_1,
                                   std::placeholders::_2, "enableSumInDir",
                                   &FLAGS_enableSumInDir);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetRpcStreamIdleTimeoutMs = std::bind(
         &SetFlagInfo<uint32_t>, std::placeholders::_1, std::placeholders::_2,
         "rpcStreamIdleTimeoutMs", &FLAGS_rpcStreamIdleTimeoutMs);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetRpcRetryIntervalUs = std::bind(
         &SetFlagInfo<uint32_t>, std::placeholders::_1, std::placeholders::_2,
         "rpcRetryIntervalUs", &FLAGS_rpcRetryIntervalUs);
 
-std::function<void(dingofs::utils::Configuration*, google::CommandLineFlagInfo*)>
+std::function<void(dingofs::utils::Configuration*,
+                   google::CommandLineFlagInfo*)>
     SetRecycleTimeHour = std::bind(&SetFlagInfo<uint32_t>,
                                    std::placeholders::_1, std::placeholders::_2,
                                    "recycleTimeHour", &FLAGS_recycleTimeHour);
@@ -311,7 +339,7 @@ auto StrVec2Str(const std::vector<std::string>& strVec) -> std::string {
 };
 
 std::string HeartbeatCopysetInfo2Str(
-    const mds::heartbeat::CopySetInfo& copySetInfo) {
+    const pb::mds::heartbeat::CopySetInfo& copySetInfo) {
   std::stringstream ret;
   ret << "poolId: " << copySetInfo.poolid()
       << " copysetId: " << copySetInfo.copysetid() << " peers: [ ";
@@ -328,13 +356,14 @@ std::string HeartbeatCopysetInfo2Str(
   return ret.str();
 }
 
-std::string CommomPeer2Str(const common::Peer& peer) {
+std::string CommomPeer2Str(const pb::common::Peer& peer) {
   std::stringstream ret;
   ret << "id: " << peer.id() << " address: " << peer.address();
   return ret.str();
 }
 
-std::string CommomPartitionInfo2Str(const common::PartitionInfo& partition) {
+std::string CommomPartitionInfo2Str(
+    const pb::common::PartitionInfo& partition) {
   std::stringstream ret;
   ret << "fsId: " << partition.fsid() << " poolId: " << partition.poolid()
       << " copysetId: " << partition.copysetid()
@@ -342,9 +371,9 @@ std::string CommomPartitionInfo2Str(const common::PartitionInfo& partition) {
       << " start: " << partition.start() << " end: " << partition.end()
       << " txId: " << partition.txid() << " nextId: " << partition.nextid()
       << " status: ";
-  if (partition.status() == common::PartitionStatus::READWRITE) {
+  if (partition.status() == pb::common::PartitionStatus::READWRITE) {
     ret << "rw ";
-  } else if (partition.status() == common::PartitionStatus::READONLY) {
+  } else if (partition.status() == pb::common::PartitionStatus::READONLY) {
     ret << "r ";
   } else {
     ret << "unknown ";
@@ -355,32 +384,32 @@ std::string CommomPartitionInfo2Str(const common::PartitionInfo& partition) {
 }
 
 std::string CopysetOpStatus2Str(
-    const metaserver::copyset::COPYSET_OP_STATUS& op_status) {
+    const pb::metaserver::copyset::COPYSET_OP_STATUS& op_status) {
   std::stringstream ret;
   switch (op_status) {
-    case metaserver::copyset::COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS:
+    case pb::metaserver::copyset::COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS:
       ret << "success ";
       break;
-    case metaserver::copyset::COPYSET_OP_STATUS::COPYSET_OP_STATUS_EXIST:
+    case pb::metaserver::copyset::COPYSET_OP_STATUS::COPYSET_OP_STATUS_EXIST:
       ret << "exist ";
       break;
-    case metaserver::copyset::COPYSET_OP_STATUS::
+    case pb::metaserver::copyset::COPYSET_OP_STATUS::
         COPYSET_OP_STATUS_COPYSET_NOTEXIST:
       ret << "no exist ";
       break;
-    case metaserver::copyset::COPYSET_OP_STATUS::
+    case pb::metaserver::copyset::COPYSET_OP_STATUS::
         COPYSET_OP_STATUS_COPYSET_IS_HEALTHY:
       ret << "health ";
       break;
-    case metaserver::copyset::COPYSET_OP_STATUS::
+    case pb::metaserver::copyset::COPYSET_OP_STATUS::
         COPYSET_OP_STATUS_PARSE_PEER_ERROR:
       ret << "parse peer error ";
       break;
-    case metaserver::copyset::COPYSET_OP_STATUS::
+    case pb::metaserver::copyset::COPYSET_OP_STATUS::
         COPYSET_OP_STATUS_PEER_MISMATCH:
       ret << "parse mismatch ";
       break;
-    case metaserver::copyset::COPYSET_OP_STATUS::
+    case pb::metaserver::copyset::COPYSET_OP_STATUS::
         COPYSET_OP_STATUS_FAILURE_UNKNOWN:
     default:
       ret << "failure unknown ";
@@ -389,7 +418,7 @@ std::string CopysetOpStatus2Str(
   return ret.str();
 }
 
-std::string PoolInfo2Str(const mds::topology::PoolInfo& poolInfo) {
+std::string PoolInfo2Str(const pb::mds::topology::PoolInfo& poolInfo) {
   std::stringstream ret;
   ret << "poolId:" << poolInfo.poolid() << ", poolName:" << poolInfo.poolname()
       << ", createTime:" << poolInfo.createtime() << ", policy:{ "
@@ -397,14 +426,14 @@ std::string PoolInfo2Str(const mds::topology::PoolInfo& poolInfo) {
   return ret.str();
 }
 
-std::string ZoneInfo2Str(const mds::topology::ZoneInfo& zoneInfo) {
+std::string ZoneInfo2Str(const pb::mds::topology::ZoneInfo& zoneInfo) {
   std::stringstream ret;
   ret << "zoneId:" << zoneInfo.zoneid() << ", zoneName:" << zoneInfo.zonename()
       << ", poolId:" << zoneInfo.poolid() << " ";
   return ret.str();
 }
 
-std::string ServerInfo2Str(const mds::topology::ServerInfo& serverInfo) {
+std::string ServerInfo2Str(const pb::mds::topology::ServerInfo& serverInfo) {
   std::stringstream ret;
   ret << "serverId:" << serverInfo.serverid()
       << ", hostname:" << serverInfo.hostname()
@@ -418,7 +447,7 @@ std::string ServerInfo2Str(const mds::topology::ServerInfo& serverInfo) {
 }
 
 std::string MetaserverInfo2Str(
-    const mds::topology::MetaServerInfo& metaserver) {
+    const pb::mds::topology::MetaServerInfo& metaserver) {
   std::stringstream ret;
   ret << "metaserverId:" << metaserver.metaserverid()
       << ", hostname:" << metaserver.hostname()
@@ -426,7 +455,7 @@ std::string MetaserverInfo2Str(
       << ", internalPort:" << metaserver.internalport()
       << ", externalIp:" << metaserver.externalip()
       << ", externalPort:" << metaserver.externalport() << ", onlineState:"
-      << mds::topology::OnlineState_Name(metaserver.onlinestate())
+      << pb::mds::topology::OnlineState_Name(metaserver.onlinestate())
       << ", serverId:" << metaserver.serverid();
   return ret.str();
 }

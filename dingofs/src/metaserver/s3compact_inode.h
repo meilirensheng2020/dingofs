@@ -23,9 +23,7 @@
 #ifndef DINGOFS_SRC_METASERVER_S3COMPACT_INODE_H_
 #define DINGOFS_SRC_METASERVER_S3COMPACT_INODE_H_
 
-#include <algorithm>
 #include <condition_variable>
-#include <deque>
 #include <list>
 #include <memory>
 #include <mutex>
@@ -35,26 +33,14 @@
 #include <vector>
 
 #include "dingofs/src/metaserver/copyset/copyset_node.h"
-#include "dingofs/src/metaserver/inode_storage.h"
-#include "dingofs/src/metaserver/s3compact_manager.h"
 #include "dingofs/src/metaserver/s3compact_worker.h"
 #include "dingofs/src/metaserver/storage/converter.h"
-#include "dingofs/src/aws/s3_adapter.h"
-
-using dingofs::utils::Configuration;
-using dingofs::aws::InitS3AdaptorOptionExceptS3InfoOption;
-using dingofs::aws::S3Adapter;
-using dingofs::aws::S3AdapterOption;
-using dingofs::utils::TaskThreadPool;
-using dingofs::metaserver::copyset::CopysetNode;
-using dingofs::metaserver::copyset::CopysetNodeManager;
-
 namespace dingofs {
 namespace metaserver {
 
 class CopysetNodeWrapper {
  public:
-  explicit CopysetNodeWrapper(CopysetNode* copysetNode)
+  explicit CopysetNodeWrapper(copyset::CopysetNode* copysetNode)
       : copysetNode_(copysetNode) {}
 
   virtual ~CopysetNodeWrapper() = default;
@@ -62,10 +48,10 @@ class CopysetNodeWrapper {
     return copysetNode_ != nullptr && copysetNode_->IsLeaderTerm();
   }
   virtual bool IsValid() { return copysetNode_ != nullptr; }
-  CopysetNode* Get() { return copysetNode_; }
+  copyset::CopysetNode* Get() { return copysetNode_; }
 
  private:
-  CopysetNode* copysetNode_;
+  copyset::CopysetNode* copysetNode_;
 };
 
 struct S3CompactionWorkerOptions;
@@ -82,20 +68,20 @@ class CompactInodeJob {
   // compact task for one inode
   struct S3CompactTask {
     std::shared_ptr<InodeManager> inodeManager;
-    Key4Inode inodeKey;
-    PartitionInfo pinfo;
+    storage::Key4Inode inodeKey;
+    pb::common::PartitionInfo pinfo;
     std::unique_ptr<CopysetNodeWrapper> copysetNodeWrapper;
   };
 
   struct S3CompactCtx {
     uint64_t inodeId;
     uint64_t fsId;
-    PartitionInfo pinfo;
+    pb::common::PartitionInfo pinfo;
     uint64_t blockSize;
     uint64_t chunkSize;
     uint64_t s3adapterIndex;
     uint32_t objectPrefix;
-    S3Adapter* s3adapter;
+    aws::S3Adapter* s3adapter;
   };
 
   struct S3NewChunkInfo {
@@ -163,12 +149,13 @@ class CompactInodeJob {
   std::vector<uint64_t> GetNeedCompact(
       const ::google::protobuf::Map<uint64_t, S3ChunkInfoList>& s3chunkinfoMap,
       uint64_t inodeLen, uint64_t chunkSize);
-  bool CompactPrecheck(const struct S3CompactTask& task, Inode* inode);
-  S3Adapter* SetupS3Adapter(uint64_t fsid, uint64_t* s3adapterIndex,
-                            uint64_t* blockSize, uint64_t* chunkSize,
-                            uint32_t* objectPrefix);
+  bool CompactPrecheck(const struct S3CompactTask& task,
+                       pb::metaserver::Inode* inode);
+  aws::S3Adapter* SetupS3Adapter(uint64_t fsid, uint64_t* s3adapterIndex,
+                                 uint64_t* blockSize, uint64_t* chunkSize,
+                                 uint32_t* objectPrefix);
   void DeleteObjs(const std::vector<std::string>& objsAdded,
-                  S3Adapter* s3adapter);
+                  aws::S3Adapter* s3adapter);
   std::list<struct Node> BuildValidList(const S3ChunkInfoList& s3chunkinfolist,
                                         uint64_t inodeLen, uint64_t index,
                                         uint64_t chunkSize);
@@ -180,8 +167,9 @@ class CompactInodeJob {
                     const std::list<struct Node>& validList,
                     std::string* fullChunk,
                     struct S3NewChunkInfo* newChunkInfo);
-  virtual MetaStatusCode UpdateInode(
-      CopysetNode* copysetNode, const PartitionInfo& pinfo, uint64_t inodeId,
+  virtual pb::metaserver::MetaStatusCode UpdateInode(
+      copyset::CopysetNode* copysetNode, const pb::common::PartitionInfo& pinfo,
+      uint64_t inodeId,
       ::google::protobuf::Map<uint64_t, S3ChunkInfoList>&& s3ChunkInfoAdd,
       ::google::protobuf::Map<uint64_t, S3ChunkInfoList>&& s3ChunkInfoRemove);
   int WriteFullChunk(const struct S3CompactCtx& ctx,
@@ -189,7 +177,8 @@ class CompactInodeJob {
                      const std::string& fullChunk,
                      std::vector<std::string>* objsAdded);
   void CompactChunk(
-      const struct S3CompactCtx& compactCtx, uint64_t index, const Inode& inode,
+      const struct S3CompactCtx& compactCtx, uint64_t index,
+      const pb::metaserver::Inode& inode,
       std::unordered_map<uint64_t, std::vector<std::string>>* objsAddedMap,
       ::google::protobuf::Map<uint64_t, S3ChunkInfoList>* s3ChunkInfoAdd,
       ::google::protobuf::Map<uint64_t, S3ChunkInfoList>* s3ChunkInfoRemove);

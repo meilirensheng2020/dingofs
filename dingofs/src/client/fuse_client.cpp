@@ -27,7 +27,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <list>
 #include <memory>
 #include <string>
 
@@ -42,24 +41,6 @@
 #include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/src/utils/net_common.h"
 #include "glog/logging.h"
-
-using ::dingofs::mds::FSStatusCode_Name;
-
-using ::dingofs::metaserver::Quota;
-
-using ::dingofs::client::filesystem::DirEntry;
-using ::dingofs::client::filesystem::DirEntryList;
-using ::dingofs::client::filesystem::ExternalMember;
-using ::dingofs::client::filesystem::FileOut;
-using ::dingofs::client::filesystem::Ino;
-
-using ::dingofs::stub::filesystem::IsSpecialXAttr;
-using ::dingofs::stub::filesystem::MAX_XATTR_NAME_LENGTH;
-using ::dingofs::stub::filesystem::MAX_XATTR_VALUE_LENGTH;
-using ::dingofs::stub::filesystem::XATTR_DIR_RENTRIES;
-using ::dingofs::stub::filesystem::XATTR_DIR_RFBYTES;
-using ::dingofs::stub::filesystem::XATTR_DIR_RFILES;
-using ::dingofs::stub::filesystem::XATTR_DIR_RSUBDIRS;
 
 #define RETURN_IF_UNSUCCESS(action) \
   do {                              \
@@ -95,29 +76,59 @@ DECLARE_uint64(fuseClientBurstReadBytesSecs);
 namespace dingofs {
 namespace client {
 
-using ::dingofs::utils::ReadWriteThrottleParams;
-using ::dingofs::utils::ThrottleParams;
+using pb::mds::FSStatusCode;
+using pb::mds::FSStatusCode_Name;
+using pb::mds::Mountpoint;
+using pb::metaserver::Dentry;
+using pb::metaserver::DentryFlag;
+using pb::metaserver::FsFileType;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::ManageInodeType;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::Quota;
 
-using dingofs::stub::rpcclient::ChannelManager;
-using dingofs::stub::rpcclient::Cli2ClientImpl;
-using dingofs::stub::rpcclient::MetaCache;
+using common::FuseClientOption;
+using common::NlinkChange;
+using stub::common::MetaserverID;
+using stub::filesystem::IsSpecialXAttr;
+using stub::filesystem::MAX_XATTR_NAME_LENGTH;
+using stub::filesystem::MAX_XATTR_VALUE_LENGTH;
+using stub::filesystem::XATTR_DIR_RENTRIES;
+using stub::filesystem::XATTR_DIR_RFBYTES;
+using stub::filesystem::XATTR_DIR_RFILES;
+using stub::filesystem::XATTR_DIR_RSUBDIRS;
+using stub::metric::FSMetric;
+using stub::rpcclient::ChannelManager;
+using stub::rpcclient::Cli2ClientImpl;
+using stub::rpcclient::InodeParam;
+using stub::rpcclient::MDSBaseClient;
+using stub::rpcclient::MetaCache;
+using utils::Atomic;
+using utils::ReadWriteThrottleParams;
+using utils::Thread;
+using utils::ThrottleParams;
+
+using filesystem::DirEntry;
+using filesystem::DirEntryList;
+using filesystem::EntryOut;
+using filesystem::ExternalMember;
+using filesystem::FileOut;
+using filesystem::FileSystem;
+using filesystem::Ino;
 
 using common::FLAGS_enableCto;
-using common::FLAGS_fuseClientAvgWriteIops;
-using common::FLAGS_fuseClientBurstWriteIops;
-using common::FLAGS_fuseClientBurstWriteIopsSecs;
-
-using common::FLAGS_fuseClientAvgWriteBytes;
-using common::FLAGS_fuseClientBurstWriteBytes;
-using common::FLAGS_fuseClientBurstWriteBytesSecs;
-
-using common::FLAGS_fuseClientAvgReadIops;
-using common::FLAGS_fuseClientBurstReadIops;
-using common::FLAGS_fuseClientBurstReadIopsSecs;
-
 using common::FLAGS_fuseClientAvgReadBytes;
+using common::FLAGS_fuseClientAvgReadIops;
+using common::FLAGS_fuseClientAvgWriteBytes;
+using common::FLAGS_fuseClientAvgWriteIops;
 using common::FLAGS_fuseClientBurstReadBytes;
 using common::FLAGS_fuseClientBurstReadBytesSecs;
+using common::FLAGS_fuseClientBurstReadIops;
+using common::FLAGS_fuseClientBurstReadIopsSecs;
+using common::FLAGS_fuseClientBurstWriteBytes;
+using common::FLAGS_fuseClientBurstWriteBytesSecs;
+using common::FLAGS_fuseClientBurstWriteIops;
+using common::FLAGS_fuseClientBurstWriteIopsSecs;
 
 static void on_throttle_timer(void* arg) {
   FuseClient* fuseClient = reinterpret_cast<FuseClient*>(arg);
@@ -1029,10 +1040,10 @@ DINGOFS_ERROR FuseClient::FuseOpRename(fuse_req_t req, fuse_ino_t parent,
 
 DINGOFS_ERROR FuseClient::FuseOpGetAttr(fuse_req_t req, fuse_ino_t ino,
                                         struct fuse_file_info* fi,
-                                        AttrOut* attrOut) {
+                                        filesystem::AttrOut* attrOut) {
   if BAIDU_UNLIKELY ((ino == STATSINODEID)) {
     InodeAttr attr = GenerateVirtualInodeAttr(STATSINODEID, fsInfo_->fsid());
-    *attrOut = AttrOut(attr);
+    *attrOut = filesystem::AttrOut(attr);
     return DINGOFS_ERROR::OK;
   }
   DINGOFS_ERROR rc = fs_->GetAttr(req, ino, attrOut);
@@ -1047,12 +1058,12 @@ DINGOFS_ERROR FuseClient::FuseOpGetAttr(fuse_req_t req, fuse_ino_t ino,
 DINGOFS_ERROR FuseClient::FuseOpSetAttr(fuse_req_t req, fuse_ino_t ino,
                                         struct stat* attr, int to_set,
                                         struct fuse_file_info* fi,
-                                        struct AttrOut* attr_out) {
+                                        struct filesystem::AttrOut* attr_out) {
   VLOG(1) << "FuseOpSetAttr to_set: " << to_set << ", inodeId=" << ino
           << ", attr: " << *attr;
   if BAIDU_UNLIKELY ((ino == STATSINODEID)) {
     InodeAttr attr = GenerateVirtualInodeAttr(STATSINODEID, fsInfo_->fsid());
-    *attr_out = AttrOut(attr);
+    *attr_out = filesystem::AttrOut(attr);
     return DINGOFS_ERROR::OK;
   }
   std::shared_ptr<InodeWrapper> inode_wrapper;

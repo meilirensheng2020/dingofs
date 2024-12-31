@@ -26,15 +26,15 @@
 #include <string>
 #include <vector>
 
-#include "json/json.h"
 #include "dingofs/src/utils/string_util.h"
+#include "json/json.h"
 
 namespace dingofs {
 namespace mds {
 namespace topology {
 
 bool ClusterInformation::SerializeToString(std::string* value) const {
-  ClusterInfoData data;
+  pb::mds::topology::ClusterInfoData data;
   data.set_clusterid(clusterId);
   for (const auto& it : partitionIndexs) {
     (*(data.mutable_partitionindexs()))[it.first] = it.second;
@@ -43,7 +43,7 @@ bool ClusterInformation::SerializeToString(std::string* value) const {
 }
 
 bool ClusterInformation::ParseFromString(const std::string& value) {
-  ClusterInfoData data;
+  pb::mds::topology::ClusterInfoData data;
   bool ret = data.ParseFromString(value);
   clusterId = data.clusterid();
   for (const auto& it : data.partitionindexs()) {
@@ -97,7 +97,7 @@ std::string Pool::GetRedundanceAndPlaceMentPolicyJsonStr() const {
 }
 
 bool Pool::SerializeToString(std::string* value) const {
-  PoolData data;
+  pb::mds::topology::PoolData data;
   data.set_poolid(id_);
   data.set_poolname(name_);
   data.set_createtime(createTime_);
@@ -107,7 +107,7 @@ bool Pool::SerializeToString(std::string* value) const {
 }
 
 bool Pool::ParseFromString(const std::string& value) {
-  PoolData data;
+  pb::mds::topology::PoolData data;
   bool ret = data.ParseFromString(value);
   id_ = data.poolid();
   name_ = data.poolname();
@@ -117,7 +117,7 @@ bool Pool::ParseFromString(const std::string& value) {
 }
 
 bool Zone::SerializeToString(std::string* value) const {
-  ZoneData data;
+  pb::mds::topology::ZoneData data;
   data.set_zoneid(id_);
   data.set_zonename(name_);
   data.set_poolid(poolId_);
@@ -125,7 +125,7 @@ bool Zone::SerializeToString(std::string* value) const {
 }
 
 bool Zone::ParseFromString(const std::string& value) {
-  ZoneData data;
+  pb::mds::topology::ZoneData data;
   bool ret = data.ParseFromString(value);
   id_ = data.zoneid();
   name_ = data.zonename();
@@ -134,7 +134,7 @@ bool Zone::ParseFromString(const std::string& value) {
 }
 
 bool Server::SerializeToString(std::string* value) const {
-  ServerData data;
+  pb::mds::topology::ServerData data;
   data.set_serverid(id_);
   data.set_hostname(hostName_);
   data.set_internalip(internalIp_);
@@ -147,7 +147,7 @@ bool Server::SerializeToString(std::string* value) const {
 }
 
 bool Server::ParseFromString(const std::string& value) {
-  ServerData data;
+  pb::mds::topology::ServerData data;
   bool ret = data.ParseFromString(value);
   id_ = data.serverid();
   hostName_ = data.hostname();
@@ -161,7 +161,7 @@ bool Server::ParseFromString(const std::string& value) {
 }
 
 bool MetaServer::SerializeToString(std::string* value) const {
-  MetaServerData data;
+  pb::mds::topology::MetaServerData data;
   data.set_metaserverid(id_);
   data.set_hostname(hostName_);
   data.set_token(token_);
@@ -183,7 +183,7 @@ bool MetaServer::SerializeToString(std::string* value) const {
 }
 
 bool MetaServer::ParseFromString(const std::string& value) {
-  MetaServerData data;
+  pb::mds::topology::MetaServerData data;
   bool ret = data.ParseFromString(value);
   id_ = data.metaserverid();
   hostName_ = data.hostname();
@@ -193,7 +193,7 @@ bool MetaServer::ParseFromString(const std::string& value) {
   internalPort_ = data.internalport();
   externalIp_ = data.externalip();
   externalPort_ = data.externalport();
-  onlineState_ = OnlineState::UNSTABLE;
+  onlineState_ = pb::mds::topology::OnlineState::UNSTABLE;
   space_.SetSpaceStatus(data.spacestatus());
   return ret;
 }
@@ -229,7 +229,7 @@ bool CopySetInfo::SetCopySetMembersByJson(const std::string& jsonStr) {
 }
 
 bool CopySetInfo::SerializeToString(std::string* value) const {
-  CopysetData data;
+  pb::mds::topology::CopysetData data;
   data.set_copysetid(copySetId_);
   data.set_poolid(poolId_);
   data.set_epoch(epoch_);
@@ -241,7 +241,7 @@ bool CopySetInfo::SerializeToString(std::string* value) const {
 }
 
 bool CopySetInfo::ParseFromString(const std::string& value) {
-  CopysetData data;
+  pb::mds::topology::CopysetData data;
   bool ret = data.ParseFromString(value);
   poolId_ = data.poolid();
   copySetId_ = data.copysetid();
@@ -259,7 +259,7 @@ bool CopySetInfo::ParseFromString(const std::string& value) {
 }
 
 bool Partition::SerializeToString(std::string* value) const {
-  dingofs::common::PartitionInfo data;
+  pb::common::PartitionInfo data;
   data.set_fsid(fsId_);
   data.set_poolid(poolId_);
   data.set_copysetid(copySetId_);
@@ -273,7 +273,7 @@ bool Partition::SerializeToString(std::string* value) const {
 }
 
 bool Partition::ParseFromString(const std::string& value) {
-  dingofs::common::PartitionInfo data;
+  pb::common::PartitionInfo data;
   bool ret = data.ParseFromString(value);
   fsId_ = data.fsid();
   poolId_ = data.poolid();
@@ -287,8 +287,8 @@ bool Partition::ParseFromString(const std::string& value) {
   return ret;
 }
 
-common::PartitionInfo Partition::ToPartitionInfo() {
-  common::PartitionInfo info;
+pb::common::PartitionInfo Partition::ToPartitionInfo() {
+  pb::common::PartitionInfo info;
   info.set_fsid(fsId_);
   info.set_poolid(poolId_);
   info.set_copysetid(copySetId_);
@@ -308,14 +308,15 @@ common::PartitionInfo Partition::ToPartitionInfo() {
 }
 
 bool MemcacheCluster::ParseFromString(const std::string& value) {
-  MemcacheClusterInfo data;
+  pb::mds::topology::MemcacheClusterInfo data;
   bool ret = data.ParseFromString(value);
   (*this) = static_cast<MemcacheCluster>(data);
   return ret;
 }
 
 bool MemcacheCluster::SerializeToString(std::string* value) const {
-  return static_cast<MemcacheClusterInfo>(*this).SerializeToString(value);
+  return static_cast<pb::mds::topology::MemcacheClusterInfo>(*this)
+      .SerializeToString(value);
 }
 
 }  // namespace topology

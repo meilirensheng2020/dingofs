@@ -27,11 +27,12 @@
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
-using dingofs::mds::topology::TopoStatusCode;
+
+using mds::topology::TopoStatusCode;
 
 void TopoUpdater::UpdateCopysetTopo(
-    const ::dingofs::mds::topology::CopySetInfo& reportCopySetInfo) {
-  dingofs::mds::topology::CopySetInfo recordCopySetInfo;
+    const mds::topology::CopySetInfo& reportCopySetInfo) {
+  mds::topology::CopySetInfo recordCopySetInfo;
   if (!topo_->GetCopySet(reportCopySetInfo.GetCopySetKey(),
                          &recordCopySetInfo)) {
     LOG(ERROR) << "topoUpdater receive copyset("
@@ -132,7 +133,7 @@ void TopoUpdater::UpdateCopysetTopo(
               << "," << reportCopySetInfo.GetId() << ") need to update";
 
     int updateCode = topo_->UpdateCopySetTopo(reportCopySetInfo);
-    if (::dingofs::mds::topology::TopoStatusCode::TOPO_OK != updateCode) {
+    if (mds::topology::TopoStatusCode::TOPO_OK != updateCode) {
       LOG(ERROR) << "topoUpdater update copyset("
                  << reportCopySetInfo.GetPoolId() << ","
                  << reportCopySetInfo.GetId()
@@ -142,25 +143,26 @@ void TopoUpdater::UpdateCopysetTopo(
   }
 }
 
-bool TopoUpdater::CanPartitionStatusChange(PartitionStatus statusInTopo,
-                                           PartitionStatus statusInHeartbeat) {
+bool TopoUpdater::CanPartitionStatusChange(
+    pb::common::PartitionStatus statusInTopo,
+    pb::common::PartitionStatus statusInHeartbeat) {
   bool statusCanChange = true;
   switch (statusInHeartbeat) {
-    case PartitionStatus::READWRITE:
-      if (statusInTopo != PartitionStatus::READWRITE) {
+    case pb::common::PartitionStatus::READWRITE:
+      if (statusInTopo != pb::common::PartitionStatus::READWRITE) {
         LOG(WARNING) << "partition cann't changes from other "
                         "status to READWRITE.";
         statusCanChange = false;
       }
       break;
-    case PartitionStatus::READONLY:
-      if (statusInTopo == PartitionStatus::DELETING) {
+    case pb::common::PartitionStatus::READONLY:
+      if (statusInTopo == pb::common::PartitionStatus::DELETING) {
         LOG(WARNING) << "partition cann't changes from DELETING "
                         "status to READONLY.";
         statusCanChange = false;
       }
       break;
-    case PartitionStatus::DELETING:
+    case pb::common::PartitionStatus::DELETING:
     default:
       break;
   }
@@ -169,8 +171,8 @@ bool TopoUpdater::CanPartitionStatusChange(PartitionStatus statusInTopo,
 
 void TopoUpdater::UpdatePartitionTopo(
     CopySetIdType copySetId,
-    const std::list<::dingofs::mds::topology::Partition>& partitionList) {
-  std::list<::dingofs::mds::topology::Partition> topoPartitionList =
+    const std::list<mds::topology::Partition>& partitionList) {
+  std::list<mds::topology::Partition> topoPartitionList =
       topo_->GetPartitionInfosInCopyset(copySetId);
   // partition in topology, not in heartbeat
   for (auto itTopo = topoPartitionList.begin();
@@ -185,7 +187,8 @@ void TopoUpdater::UpdatePartitionTopo(
     // if partition in topology and not in heartbeat,
     // and partition is deleting status,
     // delete this partition in topo
-    if (!isFound && itTopo->GetStatus() == PartitionStatus::DELETING) {
+    if (!isFound &&
+        itTopo->GetStatus() == pb::common::PartitionStatus::DELETING) {
       LOG(INFO) << "partition in topology and not in heartbeat, and"
                 << " partition status is DELETING, delete this partiton "
                 << "in topology, copysetId = " << copySetId
@@ -206,7 +209,7 @@ void TopoUpdater::UpdatePartitionTopo(
 
   for (const auto& it : partitionList) {
     // partition in heartbeat, not in topology, abnormal
-    ::dingofs::mds::topology::Partition partitionInTopo;
+    mds::topology::Partition partitionInTopo;
     bool isFound = topo_->GetPartition(it.GetPartitionId(), &partitionInTopo);
     if (!isFound) {
       LOG(WARNING) << "hearbeat report partition which is not in topo"
@@ -225,7 +228,7 @@ void TopoUpdater::UpdatePartitionTopo(
         partitionInTopo.GetDentryNum() != it.GetDentryNum() ||
         partitionInTopo.GetIdNext() != it.GetIdNext();
     if (statusCanChange && statisticChange) {
-      ::dingofs::mds::topology::PartitionStatistic statistic;
+      mds::topology::PartitionStatistic statistic;
       statistic.status = it.GetStatus();
       statistic.inodeNum = it.GetInodeNum();
       statistic.dentryNum = it.GetDentryNum();

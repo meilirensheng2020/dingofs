@@ -26,26 +26,36 @@
 #include <google/protobuf/util/message_differencer.h>
 
 #include <ctime>
-#include <list>
-#include <unordered_set>
-#include <utility>
 
 #include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/common/define.h"
+#include "dingofs/src/metaserver/storage/iterator.h"
 #include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/src/utils/concurrent/name_lock.h"
 #include "dingofs/src/utils/timeutility.h"
 
-using ::dingofs::stub::filesystem::XATTR_DIR_ENTRIES;
-using ::dingofs::stub::filesystem::XATTR_DIR_FBYTES;
-using ::dingofs::stub::filesystem::XATTR_DIR_FILES;
-using ::dingofs::stub::filesystem::XATTR_DIR_SUBDIRS;
-
-using ::dingofs::utils::NameLockGuard;
-using ::dingofs::utils::TimeUtility;
-
 namespace dingofs {
 namespace metaserver {
+
+using stub::filesystem::XATTR_DIR_ENTRIES;
+using stub::filesystem::XATTR_DIR_FBYTES;
+using stub::filesystem::XATTR_DIR_FILES;
+using stub::filesystem::XATTR_DIR_SUBDIRS;
+
+using storage::Iterator;
+using storage::Key4Inode;
+using utils::NameLockGuard;
+using utils::TimeUtility;
+
+using pb::metaserver::FsFileType;
+using pb::metaserver::Inode;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::ManageInodeType;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::VolumeExtentList;
+using pb::metaserver::VolumeExtentSlice;
+using pb::metaserver::XAttr;
+
 MetaStatusCode InodeManager::CreateInode(uint64_t inodeId,
                                          const InodeParam& param,
                                          Inode* newInode) {
@@ -277,7 +287,8 @@ MetaStatusCode InodeManager::DeleteInode(uint32_t fsId, uint64_t inodeId) {
   return MetaStatusCode::OK;
 }
 
-MetaStatusCode InodeManager::UpdateInode(const UpdateInodeRequest& request) {
+MetaStatusCode InodeManager::UpdateInode(
+    const pb::metaserver::UpdateInodeRequest& request) {
   VLOG(9) << "update inode, fsid: " << request.fsid()
           << ", inodeid: " << request.inodeid();
   NameLockGuard lg(inodeLock_,

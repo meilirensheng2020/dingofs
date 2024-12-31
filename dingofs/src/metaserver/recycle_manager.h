@@ -29,8 +29,8 @@
 namespace dingofs {
 namespace metaserver {
 struct RecycleManagerOption {
-  std::shared_ptr<MdsClient> mdsClient;
-  std::shared_ptr<MetaServerClient> metaClient;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient;
   uint32_t scanPeriodSec;
   uint32_t scanLimit;
 };
@@ -62,13 +62,13 @@ class RecycleManager {
 
  private:
   std::list<std::shared_ptr<RecycleCleaner>> recycleCleanerList_;
-  std::shared_ptr<MdsClient> mdsClient_;
-  std::shared_ptr<MetaServerClient> metaClient_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
   dingofs::utils::RWLock rwLock_;
   std::shared_ptr<RecycleCleaner> inProcessingCleaner_;
-  Atomic<bool> isStop_;
-  Thread thread_;
-  InterruptibleSleeper sleeper_;
+  utils::Atomic<bool> isStop_;
+  utils::Thread thread_;
+  utils::InterruptibleSleeper sleeper_;
   uint32_t scanPeriodSec_;
   uint32_t scanLimit_;
 };

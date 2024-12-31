@@ -55,8 +55,12 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-using ::dingofs::utils::TimeUtility;
-using ::dingofs::utils::UriParser;
+using ::braft::PeerId;
+using metaserver::MetaStore;
+using pb::common::Peer;
+using pb::mds::heartbeat::ConfigChangeType;
+using utils::TimeUtility;
+using utils::UriParser;
 
 namespace {
 const char* const kConfEpochFilename = "conf.epoch";
@@ -303,12 +307,13 @@ class OnSnapshotSaveDoneClosureImpl : public OnSnapshotSaveDoneClosure {
     LOG(INFO) << "Copyset " << node_->Name() << " save snapshot success";
   }
 
-  void SetError(MetaStatusCode code) override {
+  void SetError(pb::metaserver::MetaStatusCode code) override {
     ctx_->success = false;
-    snapDone_->status().set_error(code, "Save metadata failed, err: %s",
-                                  MetaStatusCode_Name(code).c_str());
-    LOG(ERROR) << "Copyset " << node_->Name()
-               << " save snapshot failed, err: " << MetaStatusCode_Name(code);
+    snapDone_->status().set_error(
+        code, "Save metadata failed, err: %s",
+        pb::metaserver::MetaStatusCode_Name(code).c_str());
+    LOG(ERROR) << "Copyset " << node_->Name() << " save snapshot failed, err: "
+               << pb::metaserver::MetaStatusCode_Name(code);
   }
 
   braft::SnapshotWriter* GetSnapshotWriter() const override { return writer_; }
@@ -498,14 +503,14 @@ bool CopysetNode::FetchLeaderStatus(const braft::PeerId& leaderId,
     return false;
   }
 
-  CopysetStatusRequest request;
-  CopysetStatusResponse response;
+  pb::metaserver::copyset::CopysetStatusRequest request;
+  pb::metaserver::copyset::CopysetStatusResponse response;
 
   request.set_poolid(poolId_);
   request.set_copysetid(copysetId_);
   request.mutable_peer()->set_address(leaderId.to_string());
 
-  CopysetService_Stub stub(&channel);
+  pb::metaserver::copyset::CopysetService_Stub stub(&channel);
   stub.GetCopysetStatus(&cntl, &request, &response, nullptr);
 
   if (cntl.Failed()) {
@@ -515,7 +520,8 @@ bool CopysetNode::FetchLeaderStatus(const braft::PeerId& leaderId,
     return false;
   }
 
-  if (response.status() != COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS) {
+  if (response.status() !=
+      pb::metaserver::copyset::COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS) {
     LOG(WARNING) << "Get leader status failed, leader address: "
                  << leaderId.addr << ", response status: "
                  << COPYSET_OP_STATUS_Name(response.status())
@@ -570,7 +576,7 @@ void CopysetNode::ListPeers(std::vector<Peer>* peers) const {
 // if copyset is not loading, and metastore returns true, return true and get
 // partition info list success.
 bool CopysetNode::GetPartitionInfoList(
-    std::list<PartitionInfo>* partitionInfoList) {
+    std::list<pb::common::PartitionInfo>* partitionInfoList) {
   uint32_t retryCount = 0;
   while (true) {
     if (IsLoading()) {

@@ -27,6 +27,7 @@
 
 namespace dingofs {
 namespace metaserver {
+
 using MetaServerID = uint32_t;
 using PoolId = uint32_t;
 using CopysetId = uint32_t;

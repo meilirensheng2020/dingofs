@@ -29,15 +29,15 @@ namespace mds {
 
 namespace topology {
 
-typedef uint32_t FsIdType;
-typedef uint32_t PoolIdType;
-typedef uint32_t ZoneIdType;
-typedef uint32_t ServerIdType;
-typedef uint32_t MetaServerIdType;
-typedef uint32_t PartitionIdType;
-typedef uint32_t CopySetIdType;
-typedef uint64_t EpochType;
-typedef uint32_t UserIdType;
+using FsIdType = uint32_t;
+using PoolIdType = uint32_t;
+using ZoneIdType = uint32_t;
+using ServerIdType = uint32_t;
+using MetaServerIdType = uint32_t;
+using PartitionIdType = uint32_t;
+using CopySetIdType = uint32_t;
+using EpochType = uint64_t;
+using UserIdType = uint32_t;
 using MemcacheClusterIdType = uint32_t;
 
 const uint32_t UNINITIALIZE_ID = 0u;

@@ -37,14 +37,21 @@
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::common::PartitionInfo;
-using ::dingofs::metaserver::Dentry;
-using ::dingofs::metaserver::Inode;
-using ::dingofs::metaserver::storage::ContainerIterator;
-using ::dingofs::metaserver::storage::ENTRY_TYPE;
-using ::dingofs::metaserver::storage::IteratorWrapper;
-using ::dingofs::metaserver::storage::LoadFromFile;
-using ::dingofs::metaserver::storage::SaveToFile;
+using pb::common::PartitionInfo;
+using pb::metaserver::Dentry;
+using pb::metaserver::DentryVec;
+using pb::metaserver::Inode;
+using pb::metaserver::MetaStatusCode;
+
+using storage::ContainerIterator;
+using storage::DumpFileClosure;
+using storage::ENTRY_TYPE;
+using storage::Iterator;
+using storage::IteratorWrapper;
+using storage::KVStorage;
+using storage::LoadFromFile;
+using storage::MergeIterator;
+using storage::SaveToFile;
 
 using ContainerType = std::unordered_map<std::string, std::string>;
 using STORAGE_TYPE = ::dingofs::metaserver::storage::KVStorage::STORAGE_TYPE;
@@ -60,7 +67,7 @@ MetaStoreFStream::MetaStoreFStream(PartitionMap* partitionMap,
                                    PoolId poolId, CopysetId copysetId)
     : partitionMap_(partitionMap),
       kvStorage_(std::move(kvStorage)),
-      conv_(std::make_shared<Converter>()),
+      conv_(std::make_shared<storage::Converter>()),
       poolId_(poolId),
       copysetId_(copysetId) {}
 
@@ -163,7 +170,7 @@ bool MetaStoreFStream::LoadPendingTx(uint32_t partitionId,
     return false;
   }
 
-  PrepareRenameTxRequest pendingTx;
+  pb::metaserver::PrepareRenameTxRequest pendingTx;
   if (!conv_->ParseFromString(value, &pendingTx)) {
     LOG(ERROR) << "Decode pending tx failed";
     return false;
@@ -197,8 +204,8 @@ bool MetaStoreFStream::LoadInodeS3ChunkInfoList(uint32_t partitionId,
 
   S3ChunkInfoMap map2add;
   S3ChunkInfoMap map2del;
-  std::shared_ptr<Iterator> iterator;
   map2add.insert({key4list.chunkIndex, list});
+  std::shared_ptr<Iterator> iterator;
   MetaStatusCode rc = partition->GetOrModifyS3ChunkInfo(
       key4list.fsId, key4list.inodeId, map2add, map2del, false, &iterator);
   if (rc != MetaStatusCode::OK) {
@@ -219,7 +226,7 @@ bool MetaStoreFStream::LoadVolumeExtentList(uint32_t partitionId,
   }
 
   Key4VolumeExtentSlice sliceKey;
-  VolumeExtentSlice slice;
+  pb::metaserver::VolumeExtentSlice slice;
 
   if (!sliceKey.ParseFromString(key)) {
     LOG(ERROR) << "Fail to decode Key4VolumeExtentSlice, key: `" << key << "`";
@@ -285,7 +292,7 @@ std::shared_ptr<Iterator> MetaStoreFStream::NewDentryIterator(
 std::shared_ptr<Iterator> MetaStoreFStream::NewPendingTxIterator(
     std::shared_ptr<Partition> partition) {
   std::string value;
-  PrepareRenameTxRequest pendingTx;
+  pb::metaserver::PrepareRenameTxRequest pendingTx;
   auto container = std::make_shared<ContainerType>();
   if (partition->FindPendingTx(&pendingTx)) {
     if (!conv_->SerializeToString(pendingTx, &value)) {

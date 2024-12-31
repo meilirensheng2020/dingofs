@@ -36,23 +36,22 @@ namespace copyset {
 class CopysetNode;
 }  // namespace copyset
 
-using dingofs::common::PartitionInfo;
-
-// one S3Compact per partition
 struct S3Compact {
   S3Compact() = default;
 
-  S3Compact(std::shared_ptr<InodeManager> manager, PartitionInfo pinfo);
+  S3Compact(std::shared_ptr<InodeManager> manager,
+            pb::common::PartitionInfo pinfo);
 
   S3Compact(std::shared_ptr<InodeManager> manager,
-            std::shared_ptr<copyset::CopysetNode> copyset, PartitionInfo pinfo)
+            std::shared_ptr<copyset::CopysetNode> copyset,
+            pb::common::PartitionInfo pinfo)
       : inodeManager(std::move(manager)),
         copysetNode(std::move(copyset)),
         partitionInfo(std::move(pinfo)) {}
 
   std::shared_ptr<InodeManager> inodeManager;
   std::shared_ptr<copyset::CopysetNode> copysetNode;
-  PartitionInfo partitionInfo;
+  pb::common::PartitionInfo partitionInfo;
   bool canceled{false};
 };
 

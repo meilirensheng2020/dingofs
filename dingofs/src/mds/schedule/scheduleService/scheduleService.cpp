@@ -48,10 +48,10 @@ void ScheduleServiceImpl::QueryMetaServerRecoverStatus(
   }
 
   std::map<MetaServerIdType, bool> statusMap;
-  ScheduleStatusCode errCode =
+  pb::mds::schedule::ScheduleStatusCode errCode =
       coordinator_->QueryMetaServerRecoverStatus(ids, &statusMap);
   response->set_statuscode(errCode);
-  if (errCode == ScheduleStatusCode::Success) {
+  if (errCode == pb::mds::schedule::ScheduleStatusCode::Success) {
     LOG(INFO) << "Send response[log_id=" << cntl->log_id() << "] from "
               << cntl->local_side() << " to " << cntl->remote_side()
               << ". [QueryMetaServerRecoverStatusResponse] "

@@ -40,13 +40,13 @@ void DeleteFsTool::PrintHelp() {
 int DeleteFsTool::Init() {
   int ret = CurvefsToolRpc::Init();
 
-  dingofs::mds::DeleteFsRequest request;
+  dingofs::pb::mds::DeleteFsRequest request;
   request.set_fsname(FLAGS_fsName);
   AddRequest(request);
   service_stub_func_ =
-      std::bind(&dingofs::mds::MdsService_Stub::DeleteFs, service_stub_.get(),
-                std::placeholders::_1, std::placeholders::_2,
-                std::placeholders::_3, nullptr);
+      std::bind(&dingofs::pb::mds::MdsService_Stub::DeleteFs,
+                service_stub_.get(), std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3, nullptr);
   return ret;
 }
 
@@ -81,16 +81,18 @@ bool DeleteFsTool::AfterSendRequestToHost(const std::string& host) {
     errorOutput_ << "send delete fs request to mds: " << host
                  << " failed. errorcode= " << controller_->ErrorCode()
                  << ", error text " << controller_->ErrorText() << "\n";
-  } else if (response_->statuscode() == dingofs::mds::FSStatusCode::NOT_FOUND) {
+  } else if (response_->statuscode() ==
+             dingofs::pb::mds::FSStatusCode::NOT_FOUND) {
     std::cerr << "delete fs failed, fs not found!" << std::endl;
-  } else if (response_->statuscode() == dingofs::mds::FSStatusCode::OK) {
+  } else if (response_->statuscode() == dingofs::pb::mds::FSStatusCode::OK) {
     std::cout << "delete fs (" << FLAGS_fsName << ") success." << std::endl;
     ret = true;
   } else {
     std::cerr << "delete fs from mds: " << host
               << " failed. errorcode= " << response_->statuscode()
               << ", errorname: "
-              << mds::FSStatusCode_Name(response_->statuscode()) << std::endl;
+              << pb::mds::FSStatusCode_Name(response_->statuscode())
+              << std::endl;
   }
   return ret;
 }

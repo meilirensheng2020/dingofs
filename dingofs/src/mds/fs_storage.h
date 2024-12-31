@@ -23,7 +23,6 @@
 #ifndef DINGOFS_SRC_MDS_FS_STORAGE_H_
 #define DINGOFS_SRC_MDS_FS_STORAGE_H_
 
-#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -31,12 +30,10 @@
 #include <vector>
 
 #include "dingofs/proto/mds.pb.h"
-#include "dingofs/src/mds/idgenerator/etcd_id_generator.h"
-#include "dingofs/src/mds/kvstorageclient/etcd_client.h"
 #include "dingofs/src/mds/common/types.h"
 #include "dingofs/src/mds/fs_info_wrapper.h"
 #include "dingofs/src/mds/idgenerator/fs_id_generator.h"
-#include "dingofs/src/utils/concurrent/rw_lock.h"
+#include "dingofs/src/mds/kvstorageclient/etcd_client.h"
 
 namespace dingofs {
 namespace mds {
@@ -54,16 +51,16 @@ class FsStorage {
   virtual bool Init() = 0;
   virtual void Uninit() = 0;
 
-  virtual FSStatusCode Get(uint64_t fsId, FsInfoWrapper* fsInfo) = 0;
-  virtual FSStatusCode Get(const std::string& fsName,
-                           FsInfoWrapper* fsInfo) = 0;
+  virtual pb::mds::FSStatusCode Get(uint64_t fsId, FsInfoWrapper* fsInfo) = 0;
+  virtual pb::mds::FSStatusCode Get(const std::string& fsName,
+                                    FsInfoWrapper* fsInfo) = 0;
 
-  virtual FSStatusCode Insert(const FsInfoWrapper& fs) = 0;
-  virtual FSStatusCode Update(const FsInfoWrapper& fs) = 0;
-  virtual FSStatusCode Delete(const std::string& fsName) = 0;
+  virtual pb::mds::FSStatusCode Insert(const FsInfoWrapper& fs) = 0;
+  virtual pb::mds::FSStatusCode Update(const FsInfoWrapper& fs) = 0;
+  virtual pb::mds::FSStatusCode Delete(const std::string& fsName) = 0;
 
-  virtual FSStatusCode Rename(const FsInfoWrapper& oldFs,
-                              const FsInfoWrapper& newFs) = 0;
+  virtual pb::mds::FSStatusCode Rename(const FsInfoWrapper& oldFs,
+                                       const FsInfoWrapper& newFs) = 0;
 
   virtual bool Exist(uint64_t fsId) = 0;
   virtual bool Exist(const std::string& fsName) = 0;
@@ -84,7 +81,7 @@ class MemoryFsStorage : public FsStorage {
    *
    * @return If fs exist, return FS_EXIST; else insert the fs
    */
-  FSStatusCode Insert(const FsInfoWrapper& fs) override;
+  pb::mds::FSStatusCode Insert(const FsInfoWrapper& fs) override;
 
   /**
    * @brief get fs from storage
@@ -95,7 +92,7 @@ class MemoryFsStorage : public FsStorage {
    * @return If success get , return OK; if no record got, return NOT_EXIST;
    *         else return error code
    */
-  FSStatusCode Get(uint64_t fsId, FsInfoWrapper* fs) override;
+  pb::mds::FSStatusCode Get(uint64_t fsId, FsInfoWrapper* fs) override;
 
   /**
    * @brief get fs from storage
@@ -106,7 +103,8 @@ class MemoryFsStorage : public FsStorage {
    * @return If success get , return OK; if no record got, return NOT_EXIST;
    *         else return error code
    */
-  FSStatusCode Get(const std::string& fsName, FsInfoWrapper* fs) override;
+  pb::mds::FSStatusCode Get(const std::string& fsName,
+                            FsInfoWrapper* fs) override;
 
   /**
    * @brief delete fs from storage
@@ -116,7 +114,7 @@ class MemoryFsStorage : public FsStorage {
    * @return If fs exist, delete fs and return OK;
    *         if fs not exist, return NOT_FOUND
    */
-  FSStatusCode Delete(const std::string& fsName) override;
+  pb::mds::FSStatusCode Delete(const std::string& fsName) override;
 
   /**
    * @brief update fs from storage
@@ -126,7 +124,7 @@ class MemoryFsStorage : public FsStorage {
    * @return If fs exist, update fs and return OK;
    *         if fs not exist, return NOT_FOUND
    */
-  FSStatusCode Update(const FsInfoWrapper& fs) override;
+  pb::mds::FSStatusCode Update(const FsInfoWrapper& fs) override;
 
   /**
    * @brief rename fs from storage
@@ -137,8 +135,8 @@ class MemoryFsStorage : public FsStorage {
    * @return If sucess, return OK;
    *         If old fs not exist, return NOT_FOUND;
    */
-  FSStatusCode Rename(const FsInfoWrapper& oldFs,
-                      const FsInfoWrapper& newFs) override;
+  pb::mds::FSStatusCode Rename(const FsInfoWrapper& oldFs,
+                               const FsInfoWrapper& newFs) override;
 
   /**
    * @brief check if fs is exist
@@ -186,15 +184,16 @@ class PersisKVStorage : public FsStorage {
   bool Init() override;
   void Uninit() override;
 
-  FSStatusCode Get(uint64_t fsId, FsInfoWrapper* fsInfo) override;
-  FSStatusCode Get(const std::string& fsName, FsInfoWrapper* fsInfo) override;
+  pb::mds::FSStatusCode Get(uint64_t fsId, FsInfoWrapper* fsInfo) override;
+  pb::mds::FSStatusCode Get(const std::string& fsName,
+                            FsInfoWrapper* fsInfo) override;
 
-  FSStatusCode Insert(const FsInfoWrapper& fs) override;
-  FSStatusCode Update(const FsInfoWrapper& fs) override;
-  FSStatusCode Delete(const std::string& fsName) override;
+  pb::mds::FSStatusCode Insert(const FsInfoWrapper& fs) override;
+  pb::mds::FSStatusCode Update(const FsInfoWrapper& fs) override;
+  pb::mds::FSStatusCode Delete(const std::string& fsName) override;
 
-  FSStatusCode Rename(const FsInfoWrapper& oldFs,
-                      const FsInfoWrapper& newFs) override;
+  pb::mds::FSStatusCode Rename(const FsInfoWrapper& oldFs,
+                               const FsInfoWrapper& newFs) override;
 
   bool Exist(uint64_t fsId) override;
   bool Exist(const std::string& fsName) override;

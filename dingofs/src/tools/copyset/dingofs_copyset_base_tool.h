@@ -40,26 +40,24 @@ namespace copyset {
 uint64_t GetCopysetKey(uint64_t copysetId, uint64_t poolId);
 
 bool CopysetInfo2CopysetStatus(
-    const dingofs::mds::topology::GetCopysetsInfoResponse& response,
+    const pb::mds::topology::GetCopysetsInfoResponse& response,
     std::map<uint64_t,
-             std::vector<dingofs::metaserver::copyset::CopysetStatusResponse>>*
+             std::vector<pb::metaserver::copyset::CopysetStatusResponse>>*
         key2Status);
 
 bool CopysetInfo2CopysetStatus(
-    const dingofs::mds::topology::ListCopysetInfoResponse& response,
+    const pb::mds::topology::ListCopysetInfoResponse& response,
     std::map<uint64_t,
-             std::vector<dingofs::metaserver::copyset::CopysetStatusResponse>>*
+             std::vector<pb::metaserver::copyset::CopysetStatusResponse>>*
         key2Status);
 
 bool Response2CopysetInfo(
-    const dingofs::mds::topology::GetCopysetsInfoResponse& response,
-    std::map<uint64_t, std::vector<dingofs::mds::topology::CopysetValue>>*
-        key2Info);
+    const pb::mds::topology::GetCopysetsInfoResponse& response,
+    std::map<uint64_t, std::vector<pb::mds::topology::CopysetValue>>* key2Info);
 
 bool Response2CopysetInfo(
-    const dingofs::mds::topology::ListCopysetInfoResponse& response,
-    std::map<uint64_t, std::vector<dingofs::mds::topology::CopysetValue>>*
-        key2Info);
+    const pb::mds::topology::ListCopysetInfoResponse& response,
+    std::map<uint64_t, std::vector<pb::mds::topology::CopysetValue>>* key2Info);
 
 enum class CheckResult {
   kHealthy = 0,
@@ -76,8 +74,8 @@ enum class CheckResult {
 };
 
 CheckResult checkCopysetHelthy(
-    const std::vector<dingofs::mds::topology::CopysetValue>& copysetInfoVec,
-    const std::vector<dingofs::metaserver::copyset::CopysetStatusResponse>&
+    const std::vector<pb::mds::topology::CopysetValue>& copysetInfoVec,
+    const std::vector<pb::metaserver::copyset::CopysetStatusResponse>&
         copysetStatusVec);
 
 }  // namespace copyset

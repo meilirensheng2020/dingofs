@@ -38,9 +38,9 @@ namespace dingofs {
 namespace tools {
 namespace delete_ {
 
-class DeleteFsTool : public CurvefsToolRpc<dingofs::mds::DeleteFsRequest,
-                                           dingofs::mds::DeleteFsResponse,
-                                           dingofs::mds::MdsService_Stub> {
+class DeleteFsTool : public CurvefsToolRpc<dingofs::pb::mds::DeleteFsRequest,
+                                           dingofs::pb::mds::DeleteFsResponse,
+                                           dingofs::pb::mds::MdsService_Stub> {
  public:
   explicit DeleteFsTool(const std::string& cmd = kDeleteFsCmd)
       : CurvefsToolRpc(cmd) {}

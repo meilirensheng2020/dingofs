@@ -25,12 +25,8 @@
 
 #include <list>
 #include <memory>
-#include <vector>
 
 #include "dingofs/src/utils/concurrent/concurrent.h"
-
-using ::dingofs::utils::ConditionVariable;
-using ::dingofs::utils::Mutex;
 
 namespace dingofs {
 namespace utils {
@@ -79,8 +75,8 @@ class TaskTracker : public std::enable_shared_from_this<TaskTracker> {
 
  private:
   // ConditionVariable use to wait task to be done
-  ConditionVariable cv_;
-  Mutex cv_m;
+  utils::ConditionVariable cv_;
+  utils::Mutex cv_m;
   // current inflight task num
   std::atomic<uint32_t> concurrent_;
   // error code

@@ -33,12 +33,15 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
+using client::common::RPCOption;
+using pb::metaserver::Dentry;
+
 RPCClient::RPCClient(RPCOption option, ExternalMember member)
     : option_(option),
       inodeManager_(member.inodeManager),
       dentryManager_(member.dentryManager) {}
 
-DINGOFS_ERROR RPCClient::GetAttr(Ino ino, InodeAttr* attr) {
+DINGOFS_ERROR RPCClient::GetAttr(Ino ino, pb::metaserver::InodeAttr* attr) {
   DINGOFS_ERROR rc = inodeManager_->GetInodeAttr(ino, attr);
   if (rc != DINGOFS_ERROR::OK) {
     LOG(ERROR) << "rpc(getattr::GetInodeAttr) failed, retCode = " << rc
@@ -85,7 +88,7 @@ DINGOFS_ERROR RPCClient::ReadDir(Ino ino,
   }
 
   std::set<uint64_t> inos;
-  std::map<uint64_t, InodeAttr> attrs;
+  std::map<uint64_t, pb::metaserver::InodeAttr> attrs;
   std::for_each(dentries.begin(), dentries.end(),
                 [&](Dentry& dentry) { inos.emplace(dentry.inodeid()); });
   rc = inodeManager_->BatchGetInodeAttrAsync(ino, &inos, &attrs);
@@ -118,8 +121,8 @@ DINGOFS_ERROR RPCClient::ReadDir(Ino ino,
 DINGOFS_ERROR RPCClient::Open(Ino ino, std::shared_ptr<InodeWrapper>* inode) {
   DINGOFS_ERROR rc = inodeManager_->GetInode(ino, *inode);
   if (rc != DINGOFS_ERROR::OK) {
-    LOG(ERROR) << "rpc(open/GetInode) failed"
-               << ", retCode = " << rc << ", ino = " << ino;
+    LOG(ERROR) << "rpc(open/GetInode) failed" << ", retCode = " << rc
+               << ", ino = " << ino;
   }
   return rc;
 }

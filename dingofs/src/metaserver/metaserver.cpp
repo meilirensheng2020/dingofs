@@ -34,8 +34,8 @@
 
 #include "absl/memory/memory.h"
 #include "dingofs/src/aws/s3_adapter.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/common/dynamic_config.h"
+#include "dingofs/src/metaserver/common/types.h"
 #include "dingofs/src/metaserver/copyset/copyset_service.h"
 #include "dingofs/src/metaserver/metaserver_service.h"
 #include "dingofs/src/metaserver/register.h"
@@ -43,7 +43,6 @@
 #include "dingofs/src/metaserver/s3compact_manager.h"
 #include "dingofs/src/metaserver/storage/rocksdb_options.h"
 #include "dingofs/src/metaserver/storage/rocksdb_perf.h"
-#include "dingofs/src/metaserver/storage/storage.h"
 #include "dingofs/src/metaserver/trash_manager.h"
 #include "dingofs/src/utils/crc32.h"
 #include "dingofs/src/utils/dingo_version.h"
@@ -67,15 +66,24 @@ DECLARE_bool(graceful_quit_on_sigterm);
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::fs::FileSystemType;
-using ::dingofs::fs::LocalFileSystemOption;
-using ::dingofs::fs::LocalFsFactory;
+using copyset::CopysetNodeManager;
+using copyset::CopysetServiceImpl;
+using copyset::RaftCliService2;
+using fs::FileSystemType;
+using fs::LocalFileSystemOption;
+using fs::LocalFsFactory;
+using storage::StorageOptions;
+using utils::Configuration;
 
-using ::dingofs::metaserver::copyset::ApplyQueueOption;
-using ::dingofs::stub::rpcclient::ChannelManager;
-using ::dingofs::stub::rpcclient::Cli2ClientImpl;
-using ::dingofs::stub::rpcclient::MetaCache;
-using ::dingofs::stub::rpcclient::MetaServerClientImpl;
+using stub::rpcclient::ChannelManager;
+using stub::rpcclient::Cli2ClientImpl;
+using stub::rpcclient::MDSBaseClient;
+using stub::rpcclient::MdsClient;
+using stub::rpcclient::MdsClientImpl;
+using stub::rpcclient::MetaCache;
+using stub::rpcclient::MetaServerClientImpl;
+
+using dingofs::metaserver::MetaServerID;
 
 USING_FLAG(superpartition_access_logging);
 
@@ -166,7 +174,7 @@ void Metaserver::InitRecycleManagerOption(
 }
 
 void InitExcutorOption(const std::shared_ptr<Configuration>& conf,
-                       ExcutorOpt* opts, bool internal) {
+                       stub::common::ExcutorOpt* opts, bool internal) {
   if (internal) {
     conf->GetValueFatalIfFail("excutorOpt.maxInternalRetry", &opts->maxRetry);
   } else {
@@ -193,7 +201,7 @@ void InitExcutorOption(const std::shared_ptr<Configuration>& conf,
 }
 
 void InitMetaCacheOption(const std::shared_ptr<Configuration>& conf,
-                         MetaCacheOpt* opts) {
+                         stub::common::MetaCacheOpt* opts) {
   conf->GetValueFatalIfFail("metaCacheOpt.metacacheGetLeaderRetry",
                             &opts->metacacheGetLeaderRetry);
   conf->GetValueFatalIfFail("metaCacheOpt.metacacheRPCRetryIntervalUS",
@@ -205,7 +213,7 @@ void InitMetaCacheOption(const std::shared_ptr<Configuration>& conf,
 namespace {
 
 std::shared_ptr<S3ClientAdaptorImpl> CreateS3Adaptor(
-    const S3AdapterOption& o1, const S3ClientAdaptorOption& o2) {
+    const aws::S3AdapterOption& o1, const S3ClientAdaptorOption& o2) {
   // s3_client
   auto* s3_client = new S3ClientImpl;
   s3_client->SetAdaptor(std::make_shared<dingofs::aws::S3Adapter>());
@@ -234,9 +242,8 @@ void Metaserver::Init() {
 
   S3ClientAdaptorOption s3_client_adaptor_option;
   InitS3Option(conf_, &s3_client_adaptor_option);
-  dingofs::aws::S3AdapterOption s3_adapter_option;
-  ::dingofs::aws::InitS3AdaptorOptionExceptS3InfoOption(conf_.get(),
-                                                        &s3_adapter_option);
+  aws::S3AdapterOption s3_adapter_option;
+  aws::InitS3AdaptorOptionExceptS3InfoOption(conf_.get(), &s3_adapter_option);
 
   trashOption.s3Adaptor =
       CreateS3Adaptor(s3_adapter_option, s3_client_adaptor_option);
@@ -275,12 +282,12 @@ void Metaserver::InitMetaClient() {
   metaClient_ = std::make_shared<MetaServerClientImpl>();
   auto cli2Client = std::make_shared<Cli2ClientImpl>();
   auto metaCache = std::make_shared<MetaCache>();
-  MetaCacheOpt metaCacheOpt;
+  stub::common::MetaCacheOpt metaCacheOpt;
   InitMetaCacheOption(conf_, &metaCacheOpt);
   metaCache->Init(metaCacheOpt, cli2Client, mdsClient_);
-  auto channelManager = std::make_shared<ChannelManager<MetaserverID>>();
-  ExcutorOpt excutorOpt;
-  ExcutorOpt internalOpt;
+  auto channelManager = std::make_shared<ChannelManager<MetaServerID>>();
+  stub::common::ExcutorOpt excutorOpt;
+  stub::common::ExcutorOpt internalOpt;
   InitExcutorOption(conf_, &excutorOpt, false);
   InitExcutorOption(conf_, &internalOpt, true);
   metaClient_->Init(excutorOpt, internalOpt, metaCache, channelManager);
@@ -307,8 +314,8 @@ void Metaserver::GetMetaserverDataByLoadOrRegister() {
   }
 }
 
-int Metaserver::PersistMetaserverMeta(std::string path,
-                                      MetaServerMetadata* metadata) {
+int Metaserver::PersistMetaserverMeta(
+    std::string path, pb::metaserver::MetaServerMetadata* metadata) {
   std::string tempData;
   metadata->set_checksum(0);
   bool ret = metadata->SerializeToString(&tempData);
@@ -330,8 +337,9 @@ int Metaserver::PersistMetaserverMeta(std::string path,
   return PersistDataToLocalFile(localFileSystem_, path, data);
 }
 
-int Metaserver::LoadMetaserverMeta(const std::string& metaFilePath,
-                                   MetaServerMetadata* metadata) {
+int Metaserver::LoadMetaserverMeta(
+    const std::string& metaFilePath,
+    pb::metaserver::MetaServerMetadata* metadata) {
   std::string data;
   int ret = LoadDataFromLocalFile(localFileSystem_, metaFilePath, &data);
   if (ret != 0) {
@@ -367,7 +375,7 @@ int Metaserver::LoadMetaserverMeta(const std::string& metaFilePath,
   return 0;
 }
 
-int Metaserver::LoadDataFromLocalFile(std::shared_ptr<LocalFileSystem> fs,
+int Metaserver::LoadDataFromLocalFile(std::shared_ptr<fs::LocalFileSystem> fs,
                                       const std::string& localPath,
                                       std::string* data) {
   if (!fs->FileExists(localPath)) {
@@ -399,7 +407,7 @@ int Metaserver::LoadDataFromLocalFile(std::shared_ptr<LocalFileSystem> fs,
   return 0;
 }
 
-int Metaserver::PersistDataToLocalFile(std::shared_ptr<LocalFileSystem> fs,
+int Metaserver::PersistDataToLocalFile(std::shared_ptr<fs::LocalFileSystem> fs,
                                        const std::string& localPath,
                                        const std::string& data) {
   LOG(INFO) << "persist data to file, path  = " << localPath

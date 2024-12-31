@@ -23,7 +23,6 @@
 #ifndef DINGOFS_SRC_METASERVER_REGISTER_H_
 #define DINGOFS_SRC_METASERVER_REGISTER_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -48,7 +47,7 @@ class Register {
   explicit Register(const RegisterOptions& ops);
   ~Register() {}
 
-  int RegisterToMDS(MetaServerMetadata* metadata);
+  int RegisterToMDS(pb::metaserver::MetaServerMetadata* metadata);
 
  private:
   RegisterOptions ops_;

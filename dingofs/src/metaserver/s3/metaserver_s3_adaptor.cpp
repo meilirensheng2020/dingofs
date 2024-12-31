@@ -51,7 +51,7 @@ void S3ClientAdaptorImpl::Reinit(const S3ClientAdaptorOption& option,
   client_->Reinit(ak, sk, endpoint, bucketName);
 }
 
-int S3ClientAdaptorImpl::Delete(const Inode& inode) {
+int S3ClientAdaptorImpl::Delete(const pb::metaserver::Inode& inode) {
   if (enableDeleteObjects_) {
     return DeleteInodeByDeleteBatchChunk(inode);
   } else {
@@ -59,7 +59,8 @@ int S3ClientAdaptorImpl::Delete(const Inode& inode) {
   }
 }
 
-int S3ClientAdaptorImpl::DeleteInodeByDeleteSingleChunk(const Inode& inode) {
+int S3ClientAdaptorImpl::DeleteInodeByDeleteSingleChunk(
+    const pb::metaserver::Inode& inode) {
   // const S3ChunkInfoList& s3ChunkInfolist = inode.s3chunkinfolist();
   auto s3ChunkInfoMap = inode.s3chunkinfomap();
   LOG(INFO) << "delete data, inode id: " << inode.inodeid()
@@ -124,7 +125,8 @@ int S3ClientAdaptorImpl::DeleteChunk(uint64_t fsId, uint64_t inodeId,
   return ret;
 }
 
-int S3ClientAdaptorImpl::DeleteInodeByDeleteBatchChunk(const Inode& inode) {
+int S3ClientAdaptorImpl::DeleteInodeByDeleteBatchChunk(
+    const pb::metaserver::Inode& inode) {
   auto s3ChunkInfoMap = inode.s3chunkinfomap();
   LOG(INFO) << "delete data, inode id: " << inode.inodeid()
             << ", len:" << inode.length();

@@ -41,11 +41,11 @@ void DeletePartitionTool::PrintHelp() {
 int DeletePartitionTool::Init() {
   int ret = CurvefsToolRpc::Init();
 
-  dingofs::mds::topology::DeletePartitionRequest request;
+  pb::mds::topology::DeletePartitionRequest request;
   request.set_partitionid(std::stoul(FLAGS_partitionId));
   AddRequest(request);
   service_stub_func_ =
-      std::bind(&dingofs::mds::topology::TopologyService_Stub::DeletePartition,
+      std::bind(&pb::mds::topology::TopologyService_Stub::DeletePartition,
                 service_stub_.get(), std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3, nullptr);
   return ret;
@@ -83,7 +83,7 @@ bool DeletePartitionTool::AfterSendRequestToHost(const std::string& host) {
                  << " failed. errorcode= " << controller_->ErrorCode()
                  << ", error text " << controller_->ErrorText() << "\n";
   } else if (response_->statuscode() ==
-             dingofs::mds::topology::TopoStatusCode::TOPO_OK) {
+             pb::mds::topology::TopoStatusCode::TOPO_OK) {
     std::cout << "delete partition (" << FLAGS_partitionId << ") success."
               << std::endl;
     ret = true;
@@ -91,7 +91,7 @@ bool DeletePartitionTool::AfterSendRequestToHost(const std::string& host) {
     std::cerr << "delete partition from mds: " << host
               << " failed. errorcode= " << response_->statuscode()
               << ", errorname: "
-              << mds::topology::TopoStatusCode_Name(response_->statuscode())
+              << pb::mds::topology::TopoStatusCode_Name(response_->statuscode())
               << std::endl;
   }
   return ret;

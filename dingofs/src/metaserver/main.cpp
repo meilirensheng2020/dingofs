@@ -25,11 +25,11 @@
 #include <glog/logging.h>
 
 #include "dingofs/src/common/dynamic_vlog.h"
+#include "dingofs/src/common/process.h"
+#include "dingofs/src/common/threading.h"
 #include "dingofs/src/metaserver/metaserver.h"
 #include "dingofs/src/metaserver/superpartition/access_log.h"
 #include "dingofs/src/utils/configuration.h"
-#include "dingofs/src/common/process.h"
-#include "dingofs/src/common/threading.h"
 
 DEFINE_string(confPath, "dingofs/conf/metaserver.conf", "metaserver confPath");
 DEFINE_string(ip, "127.0.0.1", "metasetver listen ip");
@@ -45,9 +45,9 @@ DEFINE_string(raftSnapshotUri, "local://mnt/data/copysets",
               "local://mnt/data/copysets");
 DECLARE_int32(v);
 
-using ::dingofs::utils::Configuration;
 using ::dingofs::common::FLAGS_vlog_level;
 using ::dingofs::metaserver::superpartition::InitAccessLog;
+using ::dingofs::utils::Configuration;
 
 namespace bthread {
 extern void (*g_worker_startfn)();

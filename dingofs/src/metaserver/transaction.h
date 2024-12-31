@@ -31,14 +31,11 @@
 
 namespace dingofs {
 namespace metaserver {
-
-using ::dingofs::utils::RWLock;
-
 class RenameTx {
  public:
   RenameTx() = default;
 
-  RenameTx(const std::vector<Dentry>& dentrys,
+  RenameTx(const std::vector<pb::metaserver::Dentry>& dentrys,
            std::shared_ptr<DentryStorage> storage);
 
   bool Prepare();
@@ -51,7 +48,7 @@ class RenameTx {
 
   uint64_t GetTxSequence();
 
-  std::vector<Dentry>* GetDentrys();
+  std::vector<pb::metaserver::Dentry>* GetDentrys();
 
   bool operator==(const RenameTx& rhs);
 
@@ -63,7 +60,7 @@ class RenameTx {
   // for prevent the stale transaction
   uint64_t txSequence_;
 
-  std::vector<Dentry> dentrys_;
+  std::vector<pb::metaserver::Dentry> dentrys_;
 
   std::shared_ptr<DentryStorage> storage_;
 };
@@ -72,9 +69,11 @@ class TxManager {
  public:
   explicit TxManager(std::shared_ptr<DentryStorage> storage);
 
-  MetaStatusCode HandleRenameTx(const std::vector<Dentry>& dentrys);
+  pb::metaserver::MetaStatusCode HandleRenameTx(
+      const std::vector<pb::metaserver::Dentry>& dentrys);
 
-  MetaStatusCode PreCheck(const std::vector<Dentry>& dentrys);
+  pb::metaserver::MetaStatusCode PreCheck(
+      const std::vector<pb::metaserver::Dentry>& dentrys);
 
   bool InsertPendingTx(const RenameTx& tx);
 
@@ -85,7 +84,7 @@ class TxManager {
   bool HandlePendingTx(uint64_t txId, RenameTx* pendingTx);
 
  private:
-  RWLock rwLock_;
+  utils::RWLock rwLock_;
 
   std::shared_ptr<DentryStorage> storage_;
 

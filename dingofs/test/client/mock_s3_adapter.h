@@ -39,7 +39,7 @@ using dingofs::aws::PutObjectAsyncContext;
 namespace dingofs {
 namespace client {
 
-class MockS3Adapter : public dingofs::aws::S3Adapter {
+class MockS3Adapter : publicS3Adapter {
  public:
   MockS3Adapter() = default;
   ~MockS3Adapter() override = default;

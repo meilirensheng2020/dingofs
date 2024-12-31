@@ -36,36 +36,43 @@ namespace superpartition {
 
 class SuperPartition {
  public:
-  explicit SuperPartition(std::shared_ptr<KVStorage> kv);
+  explicit SuperPartition(std::shared_ptr<storage::KVStorage> kv);
 
-  MetaStatusCode SetFsQuota(uint32_t fs_id, const Quota& quota);
+  pb::metaserver::MetaStatusCode SetFsQuota(uint32_t fs_id,
+                                            const pb::metaserver::Quota& quota);
 
-  MetaStatusCode GetFsQuota(uint32_t fs_id, Quota* quota);
+  pb::metaserver::MetaStatusCode GetFsQuota(uint32_t fs_id,
+                                            pb::metaserver::Quota* quota);
 
-  MetaStatusCode DeleteFsQuota(uint32_t fs_id);
+  pb::metaserver::MetaStatusCode DeleteFsQuota(uint32_t fs_id);
 
-  MetaStatusCode FlushFsUsage(uint32_t fs_id, const Usage& usage, Quota* quota);
+  pb::metaserver::MetaStatusCode FlushFsUsage(
+      uint32_t fs_id, const pb::metaserver::Usage& usage,
+      pb::metaserver::Quota* quota);
 
-  MetaStatusCode SetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                             const Quota& quota);
+  pb::metaserver::MetaStatusCode SetDirQuota(
+      uint32_t fs_id, uint64_t dir_inode_id,
+      const pb::metaserver::Quota& quota);
 
-  MetaStatusCode GetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                             Quota* quota);
+  pb::metaserver::MetaStatusCode GetDirQuota(uint32_t fs_id,
+                                             uint64_t dir_inode_id,
+                                             pb::metaserver::Quota* quota);
 
-  MetaStatusCode DeleteDirQuota(uint32_t fs_id, uint64_t dir_inode_id);
+  pb::metaserver::MetaStatusCode DeleteDirQuota(uint32_t fs_id,
+                                                uint64_t dir_inode_id);
 
-  MetaStatusCode LoadDirQuotas(uint32_t fs_id, Quotas* quotas);
+  pb::metaserver::MetaStatusCode LoadDirQuotas(uint32_t fs_id, Quotas* quotas);
 
-  MetaStatusCode FlushDirUsages(uint32_t fs_id, const Usages& usages);
+  pb::metaserver::MetaStatusCode FlushDirUsages(uint32_t fs_id,
+                                                const Usages& usages);
 
  private:
-  std::string StrErr(MetaStatusCode code);
+  std::string StrErr(pb::metaserver::MetaStatusCode code);
 
-  std::string StrQuota(const Quota& quota);
+  std::string StrQuota(const pb::metaserver::Quota& quota);
 
-  std::string StrUsage(const Usage& usage);
+  std::string StrUsage(const pb::metaserver::Usage& usage);
 
- private:
   std::unique_ptr<SuperPartitionStorageImpl> store_;
 };
 

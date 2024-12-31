@@ -34,6 +34,32 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
+using pb::metaserver::BatchGetInodeAttrRequest;
+using pb::metaserver::CreateDentryRequest;
+using pb::metaserver::CreateInodeRequest;
+using pb::metaserver::CreateManageInodeRequest;
+using pb::metaserver::CreatePartitionRequest;
+using pb::metaserver::CreateRootInodeRequest;
+using pb::metaserver::DeleteDentryRequest;
+using pb::metaserver::DeleteDirQuotaRequest;
+using pb::metaserver::DeleteInodeRequest;
+using pb::metaserver::DeletePartitionRequest;
+using pb::metaserver::FlushDirUsagesRequest;
+using pb::metaserver::FlushFsUsageRequest;
+using pb::metaserver::GetDentryRequest;
+using pb::metaserver::GetDirQuotaRequest;
+using pb::metaserver::GetFsQuotaRequest;
+using pb::metaserver::GetInodeRequest;
+using pb::metaserver::GetOrModifyS3ChunkInfoRequest;
+using pb::metaserver::GetVolumeExtentRequest;
+using pb::metaserver::ListDentryRequest;
+using pb::metaserver::LoadDirQuotasRequest;
+using pb::metaserver::PrepareRenameTxRequest;
+using pb::metaserver::SetDirQuotaRequest;
+using pb::metaserver::SetFsQuotaRequest;
+using pb::metaserver::UpdateInodeRequest;
+using pb::metaserver::UpdateVolumeExtentRequest;
+
 namespace {
 
 template <typename MetaOperatorT, typename RequestT>

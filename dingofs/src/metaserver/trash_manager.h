@@ -29,6 +29,7 @@
 
 #include "dingofs/src/metaserver/trash.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
+#include "dingofs/src/utils/interruptible_sleeper.h"
 
 namespace dingofs {
 namespace metaserver {
@@ -65,14 +66,13 @@ class TrashManager {
  private:
   void ScanLoop();
 
- private:
   TrashOption options_;
 
-  Thread recycleThread_;
+  utils::Thread recycleThread_;
 
-  Atomic<bool> isStop_;
+  utils::Atomic<bool> isStop_;
 
-  InterruptibleSleeper sleeper_;
+  utils::InterruptibleSleeper sleeper_;
 
   std::map<uint32_t, std::shared_ptr<Trash>> trashs_;
   dingofs::utils::RWLock rwLock_;

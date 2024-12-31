@@ -41,29 +41,18 @@
 #include "dingofs/src/stub/rpcclient/mds_client.h"
 #include "dingofs/src/utils/concurrent/concurrent.h"
 
-using Mutex = ::bthread::Mutex;
-
-using ::dingofs::common::PartitionInfo;
-using ::dingofs::common::PartitionStatus;
-using ::dingofs::utils::RWLock;
-
-using ::dingofs::stub::common::CopysetID;
-using ::dingofs::stub::common::CopysetInfo;
-using ::dingofs::stub::common::LogicPoolID;
-using ::dingofs::stub::common::MetaCacheOpt;
-using ::dingofs::stub::common::MetaServerOpType;
-using ::dingofs::stub::common::PartitionID;
-
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
+// using Mutex = ::bthread::Mutex;
 
 struct CopysetGroupID {
-  LogicPoolID poolID = 0;
-  CopysetID copysetID = 0;
+  common::LogicPoolID poolID = 0;
+  common::CopysetID copysetID = 0;
 
   CopysetGroupID() = default;
-  CopysetGroupID(const LogicPoolID& poolid, const CopysetID& copysetid)
+  CopysetGroupID(const common::LogicPoolID& poolid,
+                 const common::CopysetID& copysetid)
       : poolID(poolid), copysetID(copysetid) {}
 
   std::string ToString() const {
@@ -75,11 +64,11 @@ struct CopysetTarget {
   // copyset id
   CopysetGroupID groupID;
   // partition id
-  PartitionID partitionID = 0;
+  common::PartitionID partitionID = 0;
   uint64_t txId = 0;
 
   // leader info
-  MetaserverID metaServerID = 0;
+  common::MetaserverID metaServerID = 0;
   butil::EndPoint endPoint;
 
   bool IsValid() const {
@@ -111,7 +100,7 @@ inline std::ostream& operator<<(std::ostream& os, const CopysetTarget& t) {
 
 class MetaCache {
  public:
-  void Init(MetaCacheOpt opt, std::shared_ptr<Cli2Client> cli2Client,
+  void Init(common::MetaCacheOpt opt, std::shared_ptr<Cli2Client> cli2Client,
             std::shared_ptr<MdsClient> mdsClient) {
     metacacheopt_ = std::move(opt);
     cli2Client_ = std::move(cli2Client);
@@ -120,16 +109,18 @@ class MetaCache {
   }
 
   using PoolIDCopysetID = uint64_t;
-  using PartitionInfoList = std::vector<PartitionInfo>;
+  using PartitionInfoList = std::vector<pb::common::PartitionInfo>;
   using CopysetInfoMap =
-      std::unordered_map<PoolIDCopysetID, CopysetInfo<MetaserverID>>;
+      std::unordered_map<PoolIDCopysetID,
+                         common::CopysetInfo<common::MetaserverID>>;
 
   virtual void SetTxId(uint32_t partitionId, uint64_t txId);
 
   virtual bool GetTxId(uint32_t fsId, uint64_t inodeId, uint32_t* partitionId,
                        uint64_t* txId);
 
-  virtual void GetAllTxIds(std::vector<PartitionTxId>* txIds);
+  virtual void GetAllTxIds(
+      std::vector<pb::mds::topology::PartitionTxId>* txIds);
 
   virtual bool GetTarget(uint32_t fsID, uint64_t inodeID, CopysetTarget* target,
                          uint64_t* applyIndex, bool refresh = false);
@@ -144,16 +135,17 @@ class MetaCache {
 
   virtual bool IsLeaderMayChange(const CopysetGroupID& groupID);
 
-  virtual bool MarkPartitionUnavailable(PartitionID pid);
+  virtual bool MarkPartitionUnavailable(common::PartitionID pid);
 
-  virtual void UpdateCopysetInfo(const CopysetGroupID& groupID,
-                                 const CopysetInfo<MetaserverID>& csinfo);
+  virtual void UpdateCopysetInfo(
+      const CopysetGroupID& groupID,
+      const common::CopysetInfo<common::MetaserverID>& csinfo);
 
   virtual bool GetTargetLeader(CopysetTarget* target, uint64_t* applyindex,
                                bool refresh = false);
 
   virtual bool GetPartitionIdByInodeId(uint32_t fsID, uint64_t inodeID,
-                                       PartitionID* pid);
+                                       common::PartitionID* pid);
 
   bool RefreshTxId();
 
@@ -165,20 +157,24 @@ class MetaCache {
   bool CreatePartitions(int currentNum, PartitionInfoList* newPartitions);
   bool DoListOrCreatePartitions(
       bool list, PartitionInfoList* partitionInfos,
-      std::map<PoolIDCopysetID, CopysetInfo<MetaserverID>>* copysetMap);
+      std::map<PoolIDCopysetID, common::CopysetInfo<common::MetaserverID>>*
+          copysetMap);
   void DoAddOrResetPartitionAndCopyset(
       PartitionInfoList partitionInfos,
-      std::map<PoolIDCopysetID, CopysetInfo<MetaserverID>> copysetMap,
+      std::map<PoolIDCopysetID, common::CopysetInfo<common::MetaserverID>>
+          copysetMap,
       bool reset);
 
   // retry policy
   // TODO(@lixiaocui): rpc service may be split to ServiceHelper
-  bool UpdateCopysetInfoFromMDS(const CopysetGroupID& groupID,
-                                CopysetInfo<MetaserverID>* targetInfo);
-  bool UpdateLeaderInternal(const CopysetGroupID& groupID,
-                            CopysetInfo<MetaserverID>* toupdateCopyset);
-  void UpdateCopysetInfoIfMatchCurrentLeader(const CopysetGroupID& groupID,
-                                             const PeerAddr& leaderAddr);
+  bool UpdateCopysetInfoFromMDS(
+      const CopysetGroupID& groupID,
+      common::CopysetInfo<common::MetaserverID>* targetInfo);
+  bool UpdateLeaderInternal(
+      const CopysetGroupID& groupID,
+      common::CopysetInfo<common::MetaserverID>* toupdateCopyset);
+  void UpdateCopysetInfoIfMatchCurrentLeader(
+      const CopysetGroupID& groupID, const common::PeerAddr& leaderAddr);
 
   // select a dest parition for inode create
   // TODO(@lixiaocui): select parititon may be need SelectPolicy to support
@@ -187,10 +183,11 @@ class MetaCache {
 
   // get info from partitionMap or copysetMap
   bool GetCopysetIDwithInodeID(uint64_t inodeID, CopysetGroupID* groupID,
-                               PartitionID* patitionID, uint64_t* txId);
+                               common::PartitionID* patitionID, uint64_t* txId);
 
-  bool GetCopysetInfowithCopySetID(const CopysetGroupID& groupID,
-                                   CopysetInfo<MetaserverID>* targetInfo);
+  bool GetCopysetInfowithCopySetID(
+      const CopysetGroupID& groupID,
+      common::CopysetInfo<common::MetaserverID>* targetInfo);
 
   // key tansform
   static PoolIDCopysetID CalcLogicPoolCopysetID(const CopysetGroupID& groupID) {
@@ -198,18 +195,17 @@ class MetaCache {
            static_cast<uint64_t>(groupID.copysetID);
   }
 
- private:
-  RWLock txIdLock_;
+  utils::RWLock txIdLock_;
   std::unordered_map<uint32_t, uint64_t> partitionTxId_;
 
-  RWLock rwlock4Partitions_;
+  utils::RWLock rwlock4Partitions_;
   PartitionInfoList partitionInfos_;
-  RWLock rwlock4copysetInfoMap_;
+  utils::RWLock rwlock4copysetInfoMap_;
   CopysetInfoMap copysetInfoMap_;
 
-  Mutex createMutex_;
+  ::bthread::Mutex createMutex_;
 
-  MetaCacheOpt metacacheopt_;
+  common::MetaCacheOpt metacacheopt_;
   std::shared_ptr<Cli2Client> cli2Client_;
   std::shared_ptr<MdsClient> mdsClient_;
 

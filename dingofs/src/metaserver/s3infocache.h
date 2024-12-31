@@ -34,12 +34,9 @@
 #include <vector>
 
 #include "dingofs/proto/common.pb.h"
-#include "dingofs/src/metaserver/inode_storage.h"
 
 namespace dingofs {
 namespace metaserver {
-
-using dingofs::common::S3Info;
 
 class S3InfoCache {
  private:
@@ -49,13 +46,13 @@ class S3InfoCache {
   uint64_t mdsIndex_;
   butil::EndPoint metaserverAddr_;
   // lru cache
-  std::unordered_map<uint64_t, S3Info> cache_;
+  std::unordered_map<uint64_t, pb::common::S3Info> cache_;
   std::list<uint64_t> recent_;
   std::unordered_map<uint64_t, std::list<uint64_t>::iterator> pos_;
 
   void UpdateRecent(uint64_t fsid);
-  S3Info Get(uint64_t fsid);
-  void Put(uint64_t fsid, const S3Info& s3info);
+  pb::common::S3Info Get(uint64_t fsid);
+  void Put(uint64_t fsid, const pb::common::S3Info& s3info);
 
  public:
   enum class RequestStatusCode { SUCCESS, NOS3INFO, RPCFAILURE };
@@ -67,8 +64,9 @@ class S3InfoCache {
         mdsIndex_(0),
         metaserverAddr_(metaserverAddr) {}
   virtual ~S3InfoCache() {}
-  virtual RequestStatusCode RequestS3Info(uint64_t fsid, S3Info* s3info);
-  virtual int GetS3Info(uint64_t fsid, S3Info* s3info);
+  virtual RequestStatusCode RequestS3Info(uint64_t fsid,
+                                          pb::common::S3Info* s3info);
+  virtual int GetS3Info(uint64_t fsid, pb::common::S3Info* s3info);
   virtual void InvalidateS3Info(uint64_t fsid);
 };
 

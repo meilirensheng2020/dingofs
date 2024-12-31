@@ -39,23 +39,25 @@
 namespace dingofs {
 namespace mds {
 namespace schedule {
-using ::dingofs::mds::heartbeat::ConfigChangeInfo;
-using ::dingofs::mds::heartbeat::ConfigChangeType;
-using ::dingofs::mds::topology::CopySetIdType;
-using ::dingofs::mds::topology::CopySetKey;
-using ::dingofs::mds::topology::EpochType;
-using ::dingofs::mds::topology::MetaServer;
-using ::dingofs::mds::topology::MetaServerIdType;
-using ::dingofs::mds::topology::MetaServerSpace;
-using ::dingofs::mds::topology::OnlineState;
-using ::dingofs::mds::topology::Pool;
-using ::dingofs::mds::topology::PoolIdType;
-using ::dingofs::mds::topology::Server;
-using ::dingofs::mds::topology::ServerIdType;
-using ::dingofs::mds::topology::Topology;
-using ::dingofs::mds::topology::TopologyManager;
-using ::dingofs::mds::topology::UNINITIALIZE_ID;
-using ::dingofs::mds::topology::ZoneIdType;
+
+using mds::topology::CopySetIdType;
+using mds::topology::CopySetKey;
+using mds::topology::EpochType;
+using mds::topology::MetaServer;
+using mds::topology::MetaServerIdType;
+using mds::topology::MetaServerSpace;
+using mds::topology::Pool;
+using mds::topology::PoolIdType;
+using mds::topology::Server;
+using mds::topology::ServerIdType;
+using mds::topology::Topology;
+using mds::topology::TopologyManager;
+using mds::topology::UNINITIALIZE_ID;
+using mds::topology::ZoneIdType;
+
+using pb::mds::heartbeat::ConfigChangeInfo;
+using pb::mds::heartbeat::ConfigChangeType;
+using pb::mds::topology::OnlineState;
 
 struct PeerInfo {
  public:
@@ -72,18 +74,17 @@ struct PeerInfo {
 struct CopySetConf {
  public:
   CopySetConf() = default;
-  CopySetConf(
-      const CopySetKey& key, EpochType epoch,
-      const std::vector<PeerInfo>& peers, ConfigChangeType type,
-      MetaServerIdType item,
-      MetaServerIdType oldOne = ::dingofs::mds::topology::UNINITIALIZE_ID);
+  CopySetConf(const CopySetKey& key, EpochType epoch,
+              const std::vector<PeerInfo>& peers, ConfigChangeType type,
+              MetaServerIdType item,
+              MetaServerIdType oldOne = mds::topology::UNINITIALIZE_ID);
 
   CopySetKey id;
   EpochType epoch;
   std::vector<PeerInfo> peers;
   ConfigChangeType type;
   MetaServerIdType configChangeItem;
-  MetaServerIdType oldOne = ::dingofs::mds::topology::UNINITIALIZE_ID;
+  MetaServerIdType oldOne = mds::topology::UNINITIALIZE_ID;
 };
 
 struct CopySetInfo {
@@ -258,8 +259,8 @@ class TopoAdapter {
    * @return false if failed, true if succeeded
    */
   virtual bool CopySetFromTopoToSchedule(
-      const ::dingofs::mds::topology::CopySetInfo& origin,
-      ::dingofs::mds::schedule::CopySetInfo* out) = 0;
+      const mds::topology::CopySetInfo& origin,
+      mds::schedule::CopySetInfo* out) = 0;
 
   /**
    * @brief MetaServerFromTopoToSchedule Transfer metaserver info format from
@@ -272,8 +273,8 @@ class TopoAdapter {
    * @return false if failed, true if succeeded
    */
   virtual bool MetaServerFromTopoToSchedule(
-      const ::dingofs::mds::topology::MetaServer& origin,
-      ::dingofs::mds::schedule::MetaServerInfo* out) = 0;
+      const mds::topology::MetaServer& origin,
+      mds::schedule::MetaServerInfo* out) = 0;
 
   virtual bool ChooseNewMetaServerForCopyset(
       PoolIdType poolId, const std::set<ZoneIdType>& excludeZones,
@@ -315,13 +316,12 @@ class TopoAdapterImpl : public TopoAdapter {
 
   bool CreateCopySetAtMetaServer(CopySetKey id, MetaServerIdType msID) override;
 
-  bool CopySetFromTopoToSchedule(
-      const ::dingofs::mds::topology::CopySetInfo& origin,
-      ::dingofs::mds::schedule::CopySetInfo* out) override;
+  bool CopySetFromTopoToSchedule(const mds::topology::CopySetInfo& origin,
+                                 mds::schedule::CopySetInfo* out) override;
 
   bool MetaServerFromTopoToSchedule(
-      const ::dingofs::mds::topology::MetaServer& origin,
-      ::dingofs::mds::schedule::MetaServerInfo* out) override;
+      const mds::topology::MetaServer& origin,
+      mds::schedule::MetaServerInfo* out) override;
 
   bool ChooseNewMetaServerForCopyset(
       PoolIdType poolId, const std::set<ZoneIdType>& excludeZones,

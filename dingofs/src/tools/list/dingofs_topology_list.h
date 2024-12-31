@@ -38,22 +38,24 @@
 
 namespace dingofs {
 namespace tools {
-
+using mds::topology::MetaServerIdType;
+using mds::topology::PoolIdType;
+using mds::topology::ServerIdType;
+using mds::topology::ZoneIdType;
 namespace topology {
 class TopologyTreeJson;
 }
 
 namespace list {
 
-using ClusterInfo =
-    std::pair<std::string, std::vector<mds::topology::PoolIdType>>;
+using ClusterInfo = std::pair<std::string, std::vector<PoolIdType>>;
 using PoolInfoType =
-    std::pair<mds::topology::PoolInfo, std::vector<mds::topology::ZoneIdType>>;
-using ZoneInfoType = std::pair<mds::topology::ZoneInfo,
-                               std::vector<mds::topology::ServerIdType>>;
-using ServerInfoType = std::pair<mds::topology::ServerInfo,
-                                 std::vector<mds::topology::MetaServerIdType>>;
-using MetaserverInfoType = mds::topology::MetaServerInfo;
+    std::pair<pb::mds::topology::PoolInfo, std::vector<ZoneIdType>>;
+using ZoneInfoType =
+    std::pair<pb::mds::topology::ZoneInfo, std::vector<ServerIdType>>;
+using ServerInfoType =
+    std::pair<pb::mds::topology::ServerInfo, std::vector<MetaServerIdType>>;
+using MetaserverInfoType = pb::mds::topology::MetaServerInfo;
 
 /**
  * @brief
@@ -73,9 +75,9 @@ struct PoolPolicy {
 };
 
 class TopologyListTool
-    : public CurvefsToolRpc<dingofs::mds::topology::ListTopologyRequest,
-                            dingofs::mds::topology::ListTopologyResponse,
-                            dingofs::mds::topology::TopologyService_Stub> {
+    : public CurvefsToolRpc<pb::mds::topology::ListTopologyRequest,
+                            pb::mds::topology::ListTopologyResponse,
+                            pb::mds::topology::TopologyService_Stub> {
  public:
   explicit TopologyListTool(const std::string& cmd = kTopologyListCmd,
                             bool show = true)

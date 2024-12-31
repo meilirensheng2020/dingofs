@@ -35,11 +35,6 @@
 #include "dingofs/src/stub/rpcclient/mds_client.h"
 #include "dingofs/src/stub/rpcclient/metacache.h"
 
-using dingofs::client::common::LeaseOpt;
-using dingofs::mds::Mountpoint;
-using dingofs::stub::rpcclient::MdsClient;
-using dingofs::stub::rpcclient::MetaCache;
-
 namespace dingofs {
 namespace client {
 class LeaseExecutorBase {
@@ -139,15 +134,16 @@ class RefreshSessionTask : public brpc::PeriodicTask {
 
 class LeaseExecutor : public LeaseExecutorBase {
  public:
-  LeaseExecutor(const LeaseOpt& opt, std::shared_ptr<MetaCache> metaCache,
-                std::shared_ptr<MdsClient> mdsCli,
+  LeaseExecutor(const common::LeaseOpt& opt,
+                std::shared_ptr<stub::rpcclient::MetaCache> metaCache,
+                std::shared_ptr<stub::rpcclient::MdsClient> mdsCli,
                 std::atomic<bool>* enableSumInDir)
       : opt_(opt),
         metaCache_(metaCache),
         mdsCli_(mdsCli),
         enableSumInDir_(enableSumInDir) {}
 
-  ~LeaseExecutor();
+  ~LeaseExecutor() override;
 
   bool Start();
 
@@ -160,15 +156,15 @@ class LeaseExecutor : public LeaseExecutorBase {
 
   void SetFsName(const std::string& fsName) { fsName_ = fsName; }
 
-  void SetMountPoint(const Mountpoint& mp) { mountpoint_ = mp; }
+  void SetMountPoint(const pb::mds::Mountpoint& mp) { mountpoint_ = mp; }
 
  private:
-  LeaseOpt opt_;
-  std::shared_ptr<MetaCache> metaCache_;
-  std::shared_ptr<MdsClient> mdsCli_;
+  common::LeaseOpt opt_;
+  std::shared_ptr<stub::rpcclient::MetaCache> metaCache_;
+  std::shared_ptr<stub::rpcclient::MdsClient> mdsCli_;
   std::unique_ptr<RefreshSessionTask> task_;
   std::string fsName_;
-  Mountpoint mountpoint_;
+  pb::mds::Mountpoint mountpoint_;
   std::atomic<bool>* enableSumInDir_;
 };
 

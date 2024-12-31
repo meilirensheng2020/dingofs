@@ -42,6 +42,7 @@
 namespace dingofs {
 namespace aws {
 
+using dingofs::utils::Configuration;
 using dingofs::utils::kMB;
 
 std::once_flag s3_init_flag;
@@ -229,7 +230,9 @@ void S3Adapter::Deinit() {
     delete throttle_;
     throttle_ = nullptr;
   }
-  if (inflightBytesThrottle_ != nullptr) inflightBytesThrottle_.release();
+  if (inflightBytesThrottle_ != nullptr) {
+    auto* ret = inflightBytesThrottle_.release();
+  };
 }
 
 void S3Adapter::Shutdown() {

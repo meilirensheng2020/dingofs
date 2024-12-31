@@ -35,101 +35,116 @@ namespace dingofs {
 namespace metaserver {
 namespace superpartition {
 
-using ::dingofs::metaserver::Quota;
-using ::dingofs::metaserver::Usage;
-using ::dingofs::metaserver::storage::KVStorage;
-using ::dingofs::metaserver::storage::StorageTransaction;
-using Quotas = ::google::protobuf::Map<uint64_t, Quota>;
-using Usages = ::google::protobuf::Map<uint64_t, Usage>;
-using StorageStatus = ::dingofs::metaserver::storage::Status;
-using Transaction = std::shared_ptr<StorageTransaction>;
+using Quotas = ::google::protobuf::Map<uint64_t, pb::metaserver::Quota>;
+using Usages = ::google::protobuf::Map<uint64_t, pb::metaserver::Usage>;
+using StorageStatus = metaserver::storage::Status;
+using Transaction = std::shared_ptr<storage::StorageTransaction>;
 
 class SuperPartitionStorage {
  public:
   virtual ~SuperPartitionStorage() = default;
 
   // fs quota
-  virtual MetaStatusCode SetFsQuota(uint32_t fs_id, const Quota& quota) = 0;
+  virtual pb::metaserver::MetaStatusCode SetFsQuota(
+      uint32_t fs_id, const pb::metaserver::Quota& quota) = 0;
 
-  virtual MetaStatusCode GetFsQuota(uint32_t fs_id, Quota* quota) = 0;
+  virtual pb::metaserver::MetaStatusCode GetFsQuota(
+      uint32_t fs_id, pb::metaserver::Quota* quota) = 0;
 
-  virtual MetaStatusCode DeleteFsQuota(uint32_t fs_id) = 0;
+  virtual pb::metaserver::MetaStatusCode DeleteFsQuota(uint32_t fs_id) = 0;
 
-  virtual MetaStatusCode FlushFsUsage(uint32_t fs_id, const Usage& usage,
-                                      Quota* quota) = 0;
+  virtual pb::metaserver::MetaStatusCode FlushFsUsage(
+      uint32_t fs_id, const pb::metaserver::Usage& usage,
+      pb::metaserver::Quota* quota) = 0;
 
   // dir quota
-  virtual MetaStatusCode SetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                                     const Quota& quota) = 0;
+  virtual pb::metaserver::MetaStatusCode SetDirQuota(
+      uint32_t fs_id, uint64_t dir_inode_id,
+      const pb::metaserver::Quota& quota) = 0;
 
-  virtual MetaStatusCode GetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                                     Quota* quota) = 0;
+  virtual pb::metaserver::MetaStatusCode GetDirQuota(
+      uint32_t fs_id, uint64_t dir_inode_id, pb::metaserver::Quota* quota) = 0;
 
-  virtual MetaStatusCode DeleteDirQuota(uint32_t fs_id,
-                                        uint64_t dir_inode_id) = 0;
+  virtual pb::metaserver::MetaStatusCode DeleteDirQuota(
+      uint32_t fs_id, uint64_t dir_inode_id) = 0;
 
-  virtual MetaStatusCode LoadDirQuotas(uint32_t fs_id, Quotas* quotas) = 0;
+  virtual pb::metaserver::MetaStatusCode LoadDirQuotas(uint32_t fs_id,
+                                                       Quotas* quotas) = 0;
 
-  virtual MetaStatusCode FlushDirUsages(uint32_t fs_id,
-                                        const Usages& usages) = 0;
+  virtual pb::metaserver::MetaStatusCode FlushDirUsages(
+      uint32_t fs_id, const Usages& usages) = 0;
 };
 
 class SuperPartitionStorageImpl : public SuperPartitionStorage {
  public:
-  explicit SuperPartitionStorageImpl(std::shared_ptr<KVStorage> kv);
+  explicit SuperPartitionStorageImpl(std::shared_ptr<storage::KVStorage> kv);
 
-  MetaStatusCode SetFsQuota(uint32_t fs_id, const Quota& quota) override;
+  pb::metaserver::MetaStatusCode SetFsQuota(
+      uint32_t fs_id, const pb::metaserver::Quota& quota) override;
 
-  MetaStatusCode GetFsQuota(uint32_t fs_id, Quota* quota) override;
+  pb::metaserver::MetaStatusCode GetFsQuota(
+      uint32_t fs_id, pb::metaserver::Quota* quota) override;
 
-  MetaStatusCode DeleteFsQuota(uint32_t fs_id) override;
+  pb::metaserver::MetaStatusCode DeleteFsQuota(uint32_t fs_id) override;
 
-  MetaStatusCode FlushFsUsage(uint32_t fs_id, const Usage& usage,
-                              Quota* quota) override;
+  pb::metaserver::MetaStatusCode FlushFsUsage(
+      uint32_t fs_id, const pb::metaserver::Usage& usage,
+      pb::metaserver::Quota* quota) override;
 
-  MetaStatusCode SetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                             const Quota& quota) override;
+  pb::metaserver::MetaStatusCode SetDirQuota(
+      uint32_t fs_id, uint64_t dir_inode_id,
+      const pb::metaserver::Quota& quota) override;
 
-  MetaStatusCode GetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                             Quota* quota) override;
+  pb::metaserver::MetaStatusCode GetDirQuota(
+      uint32_t fs_id, uint64_t dir_inode_id,
+      pb::metaserver::Quota* quota) override;
 
-  MetaStatusCode DeleteDirQuota(uint32_t fs_id, uint64_t dir_inode_id) override;
+  pb::metaserver::MetaStatusCode DeleteDirQuota(uint32_t fs_id,
+                                                uint64_t dir_inode_id) override;
 
-  MetaStatusCode LoadDirQuotas(uint32_t fs_id, Quotas* quotas) override;
+  pb::metaserver::MetaStatusCode LoadDirQuotas(uint32_t fs_id,
+                                               Quotas* quotas) override;
 
-  MetaStatusCode FlushDirUsages(uint32_t fs_id, const Usages& usages) override;
+  pb::metaserver::MetaStatusCode FlushDirUsages(uint32_t fs_id,
+                                                const Usages& usages) override;
 
  private:
-  MetaStatusCode QuotaError(StorageStatus status);
+  pb::metaserver::MetaStatusCode QuotaError(StorageStatus status);
 
-  void UpdateQuota(Quota* old, const Quota& quota);
+  void UpdateQuota(pb::metaserver::Quota* old,
+                   const pb::metaserver::Quota& quota);
 
   inline std::string GetFsQuotaKey(uint32_t fs_id) const;
 
   inline std::string GetDirQuotaKey(uint32_t fs_id,
                                     uint64_t dir_inode_id) const;
 
-  MetaStatusCode DoSetFsQuota(uint32_t fs_id, const Quota& quota);
+  pb::metaserver::MetaStatusCode DoSetFsQuota(
+      uint32_t fs_id, const pb::metaserver::Quota& quota);
 
-  MetaStatusCode DoGetFsQuota(uint32_t fs_id, Quota* quota);
+  pb::metaserver::MetaStatusCode DoGetFsQuota(uint32_t fs_id,
+                                              pb::metaserver::Quota* quota);
 
-  MetaStatusCode DoDeleteFsQuota(uint32_t fs_id);
+  pb::metaserver::MetaStatusCode DoDeleteFsQuota(uint32_t fs_id);
 
-  MetaStatusCode DoSetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                               const Quota& quota);
+  pb::metaserver::MetaStatusCode DoSetDirQuota(
+      uint32_t fs_id, uint64_t dir_inode_id,
+      const pb::metaserver::Quota& quota);
 
-  MetaStatusCode DoGetDirQuota(uint32_t fs_id, uint64_t dir_inode_id,
-                               Quota* quota);
+  pb::metaserver::MetaStatusCode DoGetDirQuota(uint32_t fs_id,
+                                               uint64_t dir_inode_id,
+                                               pb::metaserver::Quota* quota);
 
-  MetaStatusCode DoDeleteDirQuota(uint32_t fs_id, uint64_t dir_inode_id);
+  pb::metaserver::MetaStatusCode DoDeleteDirQuota(uint32_t fs_id,
+                                                  uint64_t dir_inode_id);
 
-  MetaStatusCode DoFlushDirUsage(Transaction txn, uint32_t fs_id,
-                                 uint64_t dir_inode_id, const Usage& usage);
+  pb::metaserver::MetaStatusCode DoFlushDirUsage(
+      Transaction txn, uint32_t fs_id, uint64_t dir_inode_id,
+      const pb::metaserver::Usage& usage);
 
- private:
   std::string fs_quota_table_;
   std::string dir_quota_table_;
-  std::shared_ptr<KVStorage> kv_;
+  std::shared_ptr<storage::KVStorage> kv_;
 };
 
 }  // namespace superpartition

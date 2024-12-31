@@ -26,8 +26,6 @@
 #include <brpc/closure_guard.h>
 #include <brpc/controller.h>
 
-#include <memory>
-
 #include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/src/metaserver/inflight_throttle.h"
@@ -35,17 +33,15 @@
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::metaserver::copyset::CopysetNodeManager;
-
-#define DECLARE_RPC_METHOD(method)                                   \
-  void method(::google::protobuf::RpcController* controller,         \
-              const ::dingofs::metaserver::method##Request* request, \
-              ::dingofs::metaserver::method##Response* response,     \
+#define DECLARE_RPC_METHOD(method)                            \
+  void method(::google::protobuf::RpcController* controller,  \
+              const pb::metaserver::method##Request* request, \
+              pb::metaserver::method##Response* response,     \
               ::google::protobuf::Closure* done) override
 
-class MetaServerServiceImpl : public MetaServerService {
+class MetaServerServiceImpl : public pb::metaserver::MetaServerService {
  public:
-  MetaServerServiceImpl(CopysetNodeManager* copysetNodeManager,
+  MetaServerServiceImpl(copyset::CopysetNodeManager* copysetNodeManager,
                         InflightThrottle* inflightThrottle)
       : copysetNodeManager_(copysetNodeManager),
         inflightThrottle_(inflightThrottle) {}
@@ -60,89 +56,89 @@ class MetaServerServiceImpl : public MetaServerService {
   DECLARE_RPC_METHOD(FlushDirUsages);
 
   void GetDentry(::google::protobuf::RpcController* controller,
-                 const ::dingofs::metaserver::GetDentryRequest* request,
-                 ::dingofs::metaserver::GetDentryResponse* response,
+                 const pb::metaserver::GetDentryRequest* request,
+                 pb::metaserver::GetDentryResponse* response,
                  ::google::protobuf::Closure* done) override;
   void ListDentry(::google::protobuf::RpcController* controller,
-                  const ::dingofs::metaserver::ListDentryRequest* request,
-                  ::dingofs::metaserver::ListDentryResponse* response,
+                  const pb::metaserver::ListDentryRequest* request,
+                  pb::metaserver::ListDentryResponse* response,
                   ::google::protobuf::Closure* done) override;
   void CreateDentry(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::CreateDentryRequest* request,
-                    ::dingofs::metaserver::CreateDentryResponse* response,
+                    const pb::metaserver::CreateDentryRequest* request,
+                    pb::metaserver::CreateDentryResponse* response,
                     ::google::protobuf::Closure* done) override;
   void DeleteDentry(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::DeleteDentryRequest* request,
-                    ::dingofs::metaserver::DeleteDentryResponse* response,
+                    const pb::metaserver::DeleteDentryRequest* request,
+                    pb::metaserver::DeleteDentryResponse* response,
                     ::google::protobuf::Closure* done) override;
   void GetInode(::google::protobuf::RpcController* controller,
-                const ::dingofs::metaserver::GetInodeRequest* request,
-                ::dingofs::metaserver::GetInodeResponse* response,
+                const pb::metaserver::GetInodeRequest* request,
+                pb::metaserver::GetInodeResponse* response,
                 ::google::protobuf::Closure* done) override;
   void BatchGetInodeAttr(
       ::google::protobuf::RpcController* controller,
-      const ::dingofs::metaserver::BatchGetInodeAttrRequest* request,
-      ::dingofs::metaserver::BatchGetInodeAttrResponse* response,
+      const pb::metaserver::BatchGetInodeAttrRequest* request,
+      pb::metaserver::BatchGetInodeAttrResponse* response,
       ::google::protobuf::Closure* done) override;
   void BatchGetXAttr(::google::protobuf::RpcController* controller,
-                     const ::dingofs::metaserver::BatchGetXAttrRequest* request,
-                     ::dingofs::metaserver::BatchGetXAttrResponse* response,
+                     const pb::metaserver::BatchGetXAttrRequest* request,
+                     pb::metaserver::BatchGetXAttrResponse* response,
                      ::google::protobuf::Closure* done) override;
   void CreateInode(::google::protobuf::RpcController* controller,
-                   const ::dingofs::metaserver::CreateInodeRequest* request,
-                   ::dingofs::metaserver::CreateInodeResponse* response,
+                   const pb::metaserver::CreateInodeRequest* request,
+                   pb::metaserver::CreateInodeResponse* response,
                    ::google::protobuf::Closure* done) override;
-  void CreateRootInode(
-      ::google::protobuf::RpcController* controller,
-      const ::dingofs::metaserver::CreateRootInodeRequest* request,
-      ::dingofs::metaserver::CreateRootInodeResponse* response,
-      ::google::protobuf::Closure* done) override;
+  void CreateRootInode(::google::protobuf::RpcController* controller,
+                       const pb::metaserver::CreateRootInodeRequest* request,
+                       pb::metaserver::CreateRootInodeResponse* response,
+                       ::google::protobuf::Closure* done) override;
   void CreateManageInode(
       ::google::protobuf::RpcController* controller,
-      const ::dingofs::metaserver::CreateManageInodeRequest* request,
-      ::dingofs::metaserver::CreateManageInodeResponse* response,
+      const pb::metaserver::CreateManageInodeRequest* request,
+      pb::metaserver::CreateManageInodeResponse* response,
       ::google::protobuf::Closure* done) override;
   void UpdateInode(::google::protobuf::RpcController* controller,
-                   const ::dingofs::metaserver::UpdateInodeRequest* request,
-                   ::dingofs::metaserver::UpdateInodeResponse* response,
+                   const pb::metaserver::UpdateInodeRequest* request,
+                   pb::metaserver::UpdateInodeResponse* response,
                    ::google::protobuf::Closure* done) override;
   void GetOrModifyS3ChunkInfo(
       ::google::protobuf::RpcController* controller,
-      const ::dingofs::metaserver::GetOrModifyS3ChunkInfoRequest* request,
-      ::dingofs::metaserver::GetOrModifyS3ChunkInfoResponse* response,
+      const pb::metaserver::GetOrModifyS3ChunkInfoRequest* request,
+      pb::metaserver::GetOrModifyS3ChunkInfoResponse* response,
       ::google::protobuf::Closure* done) override;
   void DeleteInode(::google::protobuf::RpcController* controller,
-                   const ::dingofs::metaserver::DeleteInodeRequest* request,
-                   ::dingofs::metaserver::DeleteInodeResponse* response,
+                   const pb::metaserver::DeleteInodeRequest* request,
+                   pb::metaserver::DeleteInodeResponse* response,
                    ::google::protobuf::Closure* done) override;
 
   void CreatePartition(google::protobuf::RpcController* controller,
-                       const CreatePartitionRequest* request,
-                       CreatePartitionResponse* response,
+                       const pb::metaserver::CreatePartitionRequest* request,
+                       pb::metaserver::CreatePartitionResponse* response,
                        google::protobuf::Closure* done) override;
 
   void DeletePartition(google::protobuf::RpcController* controller,
-                       const DeletePartitionRequest* request,
-                       DeletePartitionResponse* response,
+                       const pb::metaserver::DeletePartitionRequest* request,
+                       pb::metaserver::DeletePartitionResponse* response,
                        google::protobuf::Closure* done) override;
 
   void PrepareRenameTx(google::protobuf::RpcController* controller,
-                       const PrepareRenameTxRequest* request,
-                       PrepareRenameTxResponse* response,
+                       const pb::metaserver::PrepareRenameTxRequest* request,
+                       pb::metaserver::PrepareRenameTxResponse* response,
                        google::protobuf::Closure* done) override;
 
   void GetVolumeExtent(::google::protobuf::RpcController* controller,
-                       const GetVolumeExtentRequest* request,
-                       GetVolumeExtentResponse* response,
+                       const pb::metaserver::GetVolumeExtentRequest* request,
+                       pb::metaserver::GetVolumeExtentResponse* response,
                        ::google::protobuf::Closure* done) override;
 
-  void UpdateVolumeExtent(::google::protobuf::RpcController* controller,
-                          const UpdateVolumeExtentRequest* request,
-                          UpdateVolumeExtentResponse* response,
-                          ::google::protobuf::Closure* done) override;
+  void UpdateVolumeExtent(
+      ::google::protobuf::RpcController* controller,
+      const pb::metaserver::UpdateVolumeExtentRequest* request,
+      pb::metaserver::UpdateVolumeExtentResponse* response,
+      ::google::protobuf::Closure* done) override;
 
  private:
-  CopysetNodeManager* copysetNodeManager_;
+  copyset::CopysetNodeManager* copysetNodeManager_;
   InflightThrottle* inflightThrottle_;
 };
 }  // namespace metaserver

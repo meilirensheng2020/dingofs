@@ -32,7 +32,7 @@ namespace dingofs {
 namespace tools {
 namespace umount {
 
-using mds::Mountpoint;
+using pb::mds::Mountpoint;
 
 void UmountFsTool::PrintHelp() {
   CurvefsToolRpc::PrintHelp();
@@ -74,14 +74,13 @@ int UmountFsTool::Init() {
   int ret = CurvefsToolRpc::Init();
 
   // adjust the unique element of the queue
-  dingofs::mds::UmountFsRequest request;
+  pb::mds::UmountFsRequest request;
   request.set_fsname(FLAGS_fsName);
   // set mountpoint
   std::vector<std::string> mountpoint;
-  dingofs::utils::SplitString(FLAGS_mountpoint, ":", &mountpoint);
+  utils::SplitString(FLAGS_mountpoint, ":", &mountpoint);
   uint32_t port = 0;
-  if (mountpoint.size() < 3 ||
-      !dingofs::utils::StringToUl(mountpoint[1], &port)) {
+  if (mountpoint.size() < 3 || !utils::StringToUl(mountpoint[1], &port)) {
     std::cerr << "mountpoint " << FLAGS_mountpoint << " is invalid.\n"
               << std::endl;
     return -1;
@@ -94,19 +93,17 @@ int UmountFsTool::Init() {
   AddRequest(request);
 
   service_stub_func_ =
-      std::bind(&dingofs::mds::MdsService_Stub::UmountFs, service_stub_.get(),
+      std::bind(&pb::mds::MdsService_Stub::UmountFs, service_stub_.get(),
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3, nullptr);
   return ret;
 }
 
 void UmountFsTool::InitHostsAddr() {
-  dingofs::utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
+  utils::SplitString(FLAGS_mdsAddr, ",", &hostsAddr_);
 }
 
-void UmountFsTool::AddUpdateFlags() {
-  AddUpdateFlagsFunc(dingofs::tools::SetMdsAddr);
-}
+void UmountFsTool::AddUpdateFlags() { AddUpdateFlagsFunc(tools::SetMdsAddr); }
 
 bool UmountFsTool::AfterSendRequestToHost(const std::string& host) {
   bool ret = false;
@@ -117,26 +114,26 @@ bool UmountFsTool::AfterSendRequestToHost(const std::string& host) {
                  << ", error text " << controller_->ErrorText() << std::endl;
   } else {
     switch (response_->statuscode()) {
-      case dingofs::mds::FSStatusCode::OK:
+      case pb::mds::FSStatusCode::OK:
         std::cout << "umount fs from cluster success." << std::endl;
         ret = true;
         break;
-      case dingofs::mds::FSStatusCode::MOUNT_POINT_NOT_EXIST:
+      case pb::mds::FSStatusCode::MOUNT_POINT_NOT_EXIST:
         std::cerr << "there is no mountpoint [" << FLAGS_mountpoint
                   << "] in cluster." << std::endl;
         break;
-      case dingofs::mds::FSStatusCode::NOT_FOUND:
+      case pb::mds::FSStatusCode::NOT_FOUND:
         std::cerr << "there is no fsName [" << FLAGS_fsName << "] in cluster."
                   << std::endl;
         break;
-      case dingofs::mds::FSStatusCode::FS_BUSY:
+      case pb::mds::FSStatusCode::FS_BUSY:
         std::cerr << "the fs [" << FLAGS_fsName
                   << "] is in use, please check or try again." << std::endl;
         break;
       default:
         std::cerr << "umount fs from mds: " << host << " fail, error code is "
                   << response_->statuscode() << " code name is :"
-                  << dingofs::mds::FSStatusCode_Name(response_->statuscode())
+                  << pb::mds::FSStatusCode_Name(response_->statuscode())
                   << std::endl;
         break;
     }

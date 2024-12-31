@@ -34,25 +34,18 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::utils::LRUCache;
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::RWLock;
-using ::dingofs::utils::WriteLockGuard;
-using ::dingofs::client::common::LookupCacheOption;
-
 // memory cache for lookup result, now we only support cache negative result,
 // and other positive entry will be cached in kernel.
 class LookupCache {
  public:
   struct CacheEntry {
     uint32_t uses;
-    TimeSpec expireTime;
+    base::time::TimeSpec expireTime;
   };
 
-  using LRUType = LRUCache<std::string, CacheEntry>;
+  using LRUType = utils::LRUCache<std::string, CacheEntry>;
 
- public:
-  explicit LookupCache(LookupCacheOption option);
+  explicit LookupCache(common::LookupCacheOption option);
 
   bool Get(Ino parent, const std::string& name);
 
@@ -63,10 +56,9 @@ class LookupCache {
  private:
   std::string CacheKey(Ino parent, const std::string& name);
 
- private:
   bool enable_;
-  RWLock rwlock_;
-  LookupCacheOption option_;
+  utils::RWLock rwlock_;
+  common::LookupCacheOption option_;
   std::shared_ptr<LRUType> lru_;
 };
 

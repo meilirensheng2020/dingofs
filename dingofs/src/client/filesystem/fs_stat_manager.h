@@ -20,24 +20,17 @@
 
 #include "dingofs/src/base/timer/timer.h"
 #include "dingofs/src/client/filesystem/meta.h"
+#include "dingofs/src/client/inode_wrapper.h"
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
 
 namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using dingofs::metaserver::Quota;
-using dingofs::metaserver::Usage;
-
-using dingofs::stub::rpcclient::MetaServerClient;
-
-using base::timer::Timer;
-using dingofs::utils::RWLock;
-using filesystem::Ino;
-
 class FsQuota {
  public:
-  FsQuota(Ino ino, Quota quota) : ino_(ino), quota_(std::move(quota)) {}
+  FsQuota(Ino ino, pb::metaserver::Quota quota)
+      : ino_(ino), quota_(std::move(quota)) {}
 
   Ino GetIno() const { return ino_; }
 
@@ -45,11 +38,11 @@ class FsQuota {
 
   bool CheckQuota(int64_t new_space, int64_t new_inodes);
 
-  void Refresh(Quota quota);
+  void Refresh(pb::metaserver::Quota quota);
 
-  Usage GetUsage();
+  pb::metaserver::Usage GetUsage();
 
-  Quota GetQuota();
+  pb::metaserver::Quota GetQuota();
 
   std::string ToString();
 
@@ -58,14 +51,15 @@ class FsQuota {
   std::atomic<int64_t> new_space_{0};
   std::atomic<int64_t> new_inodes_{0};
 
-  RWLock rwlock_;
-  Quota quota_;
+  utils::RWLock rwlock_;
+  pb::metaserver::Quota quota_;
 };
 
 class FsStatManager {
  public:
-  FsStatManager(uint32_t fs_id, std::shared_ptr<MetaServerClient> meta_client,
-                std::shared_ptr<Timer> timer)
+  FsStatManager(uint32_t fs_id,
+                std::shared_ptr<stub::rpcclient::MetaServerClient> meta_client,
+                std::shared_ptr<base::timer::Timer> timer)
       : fs_id_(fs_id), meta_client_(meta_client), timer_(std::move(timer)) {}
 
   virtual ~FsStatManager() = default;
@@ -80,7 +74,7 @@ class FsStatManager {
 
   bool CheckFsQuota(int64_t new_space, int64_t new_inodes);
 
-  Quota GetFsQuota();
+  pb::metaserver::Quota GetFsQuota();
 
  private:
   void InitQuota();
@@ -90,8 +84,8 @@ class FsStatManager {
   void DoFlushFsUsage();
 
   const uint32_t fs_id_{0};
-  std::shared_ptr<MetaServerClient> meta_client_;
-  std::shared_ptr<Timer> timer_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> meta_client_;
+  std::shared_ptr<base::timer::Timer> timer_;
 
   std::atomic<bool> running_{false};
 

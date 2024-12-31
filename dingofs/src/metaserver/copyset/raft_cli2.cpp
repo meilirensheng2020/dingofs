@@ -64,9 +64,9 @@ butil::Status GetLeader(PoolId poolId, CopysetId copysetId,
                            peer.to_string().c_str());
     }
 
-    CliService2_Stub stub(&channel);
-    GetLeaderRequest2 request;
-    GetLeaderResponse2 response;
+    pb::metaserver::copyset::CliService2_Stub stub(&channel);
+    pb::metaserver::copyset::GetLeaderRequest2 request;
+    pb::metaserver::copyset::GetLeaderResponse2 response;
     brpc::Controller cntl;
     request.set_poolid(poolId);
     request.set_copysetid(copysetId);

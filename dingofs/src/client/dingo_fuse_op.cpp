@@ -44,30 +44,32 @@
 #include "dingofs/src/utils/configuration.h"
 #include "dingofs/src/utils/gflags_helper.h"
 
-using ::dingofs::client::DINGOFS_ERROR;
-using ::dingofs::client::FuseClient;
-using ::dingofs::client::FuseS3Client;
-using ::dingofs::client::blockcache::InitBlockCacheLog;
-using ::dingofs::client::common::FuseClientOption;
-using ::dingofs::client::filesystem::AccessLogGuard;
-using ::dingofs::client::filesystem::AttrOut;
-using ::dingofs::client::filesystem::EntryOut;
-using ::dingofs::client::filesystem::FileOut;
-using ::dingofs::client::filesystem::InitAccessLog;
-using ::dingofs::client::filesystem::StrAttr;
-using ::dingofs::client::filesystem::StrEntry;
-using ::dingofs::client::filesystem::StrFormat;
-using ::dingofs::client::filesystem::StrMode;
-using ::dingofs::common::FSType;
-using ::dingofs::utils::Configuration;
+using dingofs::client::DINGOFS_ERROR;
+using dingofs::client::FuseClient;
+using dingofs::client::FuseS3Client;
+using dingofs::client::blockcache::InitBlockCacheLog;
+using dingofs::client::common::FuseClientOption;
+using dingofs::client::filesystem::AccessLogGuard;
+using dingofs::client::filesystem::AttrOut;
+using dingofs::client::filesystem::EntryOut;
+using dingofs::client::filesystem::FileOut;
+using dingofs::client::filesystem::InitAccessLog;
+using dingofs::client::filesystem::StrAttr;
+using dingofs::client::filesystem::StrEntry;
+using dingofs::client::filesystem::StrFormat;
+using dingofs::client::filesystem::StrMode;
+using dingofs::stub::filesystem::IsWarmupXAttr;
+using dingofs::stub::metric::ClientOpMetric;
+using dingofs::stub::metric::OpMetric;
+using dingofs::stub::rpcclient::MDSBaseClient;
+using dingofs::stub::rpcclient::MdsClientImpl;
+using dingofs::utils::Configuration;
 
-using ::dingofs::stub::filesystem::IsWarmupXAttr;
-using ::dingofs::stub::metric::ClientOpMetric;
-using ::dingofs::stub::metric::OpMetric;
-using ::dingofs::stub::rpcclient::MDSBaseClient;
-using ::dingofs::stub::rpcclient::MdsClientImpl;
-
-using ::dingofs::common::FLAGS_vlog_level;
+using dingofs::common::FLAGS_vlog_level;
+using dingofs::pb::common::FSType;
+using dingofs::pb::mds::FsInfo;
+using dingofs::pb::mds::FSStatusCode;
+using dingofs::pb::mds::FSStatusCode_Name;
 
 static FuseClient* g_client_instance = nullptr;
 static FuseClientOption* g_fuse_client_option = nullptr;

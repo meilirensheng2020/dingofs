@@ -37,10 +37,6 @@ namespace dingofs {
 namespace metaserver {
 namespace storage {
 
-using ::dingofs::common::PartitionInfo;
-using ::dingofs::utils::SplitString;
-using ::dingofs::utils::StringToUl;
-
 enum class ENTRY_TYPE {
   INODE,
   DENTRY,
@@ -88,7 +84,7 @@ static std::string InternalKey(ENTRY_TYPE t, uint32_t partitionId,
 static std::pair<std::string, std::string> UserKey(const std::string& ikey) {
   std::string prefix, ukey;
   std::vector<std::string> items;
-  SplitString(ikey, ":", &items);
+  utils::SplitString(ikey, ":", &items);
   if (items.size() >= 2) {
     prefix = items[0];
     ukey = ikey.substr(prefix.size() + 1);
@@ -110,7 +106,7 @@ static std::pair<ENTRY_TYPE, uint32_t> Extract(const std::string& prefix) {
 
   ENTRY_TYPE entryType = Str2Type(items[0]);
   uint32_t partitionId = 0;
-  if (!StringToUl(items[1], &partitionId)) {
+  if (!utils::StringToUl(items[1], &partitionId)) {
     partitionId = 0;
   }
   return std::make_pair(entryType, partitionId);

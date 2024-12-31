@@ -36,256 +36,273 @@
 #include "dingofs/src/stub/rpcclient/base_client.h"
 #include "dingofs/src/stub/rpcclient/task_excutor.h"
 
-using ::dingofs::common::StreamClient;
-using ::dingofs::common::StreamStatus;
-using ::dingofs::metaserver::Dentry;
-using ::dingofs::metaserver::FsFileType;
-using ::dingofs::metaserver::Inode;
-using ::dingofs::metaserver::InodeAttr;
-using ::dingofs::metaserver::MetaStatusCode;
-using ::dingofs::metaserver::S3ChunkInfoList;
-using ::dingofs::metaserver::XAttr;
-using ::dingofs::stub::metric::MetaServerClientMetric;
-using S3ChunkInfoMap = google::protobuf::Map<uint64_t, S3ChunkInfoList>;
-using ::dingofs::metaserver::Time;
-
-using ::dingofs::metaserver::Quota;
-using ::dingofs::metaserver::Usage;
-
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
-using S3ChunkInfoMap = google::protobuf::Map<uint64_t, S3ChunkInfoList>;
-using ::dingofs::metaserver::VolumeExtentList;
+using S3ChunkInfoMap =
+    google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>;
 
 struct DataIndices {
   absl::optional<S3ChunkInfoMap> s3ChunkInfoMap;
-  absl::optional<VolumeExtentList> volumeExtents;
+  absl::optional<pb::metaserver::VolumeExtentList> volumeExtents;
 };
 
 class MetaServerClient {
  public:
   virtual ~MetaServerClient() = default;
 
-  virtual MetaStatusCode Init(
-      const ExcutorOpt& excutorOpt, const ExcutorOpt& excutorInternalOpt,
+  virtual pb::metaserver::MetaStatusCode Init(
+      const common::ExcutorOpt& excutorOpt,
+      const common::ExcutorOpt& excutorInternalOpt,
       std::shared_ptr<MetaCache> metaCache,
-      std::shared_ptr<ChannelManager<MetaserverID>> channelManager) = 0;
+      std::shared_ptr<ChannelManager<common::MetaserverID>> channelManager) = 0;
 
-  virtual MetaStatusCode GetTxId(uint32_t fsId, uint64_t inodeId,
-                                 uint32_t* partitionId, uint64_t* txId) = 0;
+  virtual pb::metaserver::MetaStatusCode GetTxId(uint32_t fsId,
+                                                 uint64_t inodeId,
+                                                 uint32_t* partitionId,
+                                                 uint64_t* txId) = 0;
 
   virtual void SetTxId(uint32_t partitionId, uint64_t txId) = 0;
 
-  virtual MetaStatusCode GetDentry(uint32_t fsId, uint64_t inodeid,
-                                   const std::string& name, Dentry* out) = 0;
+  virtual pb::metaserver::MetaStatusCode GetDentry(
+      uint32_t fsId, uint64_t inodeid, const std::string& name,
+      pb::metaserver::Dentry* out) = 0;
 
-  virtual MetaStatusCode ListDentry(uint32_t fsId, uint64_t inodeid,
-                                    const std::string& last, uint32_t count,
-                                    bool onlyDir,
-                                    std::list<Dentry>* dentryList) = 0;
+  virtual pb::metaserver::MetaStatusCode ListDentry(
+      uint32_t fsId, uint64_t inodeid, const std::string& last, uint32_t count,
+      bool onlyDir, std::list<pb::metaserver::Dentry>* dentryList) = 0;
 
-  virtual MetaStatusCode CreateDentry(const Dentry& dentry) = 0;
+  virtual pb::metaserver::MetaStatusCode CreateDentry(
+      const pb::metaserver::Dentry& dentry) = 0;
 
-  virtual MetaStatusCode DeleteDentry(uint32_t fsId, uint64_t inodeid,
-                                      const std::string& name,
-                                      FsFileType type) = 0;
+  virtual pb::metaserver::MetaStatusCode DeleteDentry(
+      uint32_t fsId, uint64_t inodeid, const std::string& name,
+      pb::metaserver::FsFileType type) = 0;
 
-  virtual MetaStatusCode PrepareRenameTx(
-      const std::vector<Dentry>& dentrys) = 0;
+  virtual pb::metaserver::MetaStatusCode PrepareRenameTx(
+      const std::vector<pb::metaserver::Dentry>& dentrys) = 0;
 
-  virtual MetaStatusCode GetInode(uint32_t fsId, uint64_t inodeid, Inode* out,
-                                  bool* streaming) = 0;
+  virtual pb::metaserver::MetaStatusCode GetInode(uint32_t fsId,
+                                                  uint64_t inodeid,
+                                                  pb::metaserver::Inode* out,
+                                                  bool* streaming) = 0;
 
-  virtual MetaStatusCode GetInodeAttr(uint32_t fsId, uint64_t inodeid,
-                                      InodeAttr* attr) = 0;
+  virtual pb::metaserver::MetaStatusCode GetInodeAttr(
+      uint32_t fsId, uint64_t inodeid, pb::metaserver::InodeAttr* attr) = 0;
 
-  virtual MetaStatusCode BatchGetInodeAttr(uint32_t fsId,
-                                           const std::set<uint64_t>& inodeIds,
-                                           std::list<InodeAttr>* attr) = 0;
+  virtual pb::metaserver::MetaStatusCode BatchGetInodeAttr(
+      uint32_t fsId, const std::set<uint64_t>& inodeIds,
+      std::list<pb::metaserver::InodeAttr>* attr) = 0;
 
-  virtual MetaStatusCode BatchGetInodeAttrAsync(
+  virtual pb::metaserver::MetaStatusCode BatchGetInodeAttrAsync(
       uint32_t fsId, const std::vector<uint64_t>& inodeIds,
       MetaServerClientDone* done) = 0;
 
-  virtual MetaStatusCode BatchGetXAttr(uint32_t fsId,
-                                       const std::set<uint64_t>& inodeIds,
-                                       std::list<XAttr>* xattr) = 0;
+  virtual pb::metaserver::MetaStatusCode BatchGetXAttr(
+      uint32_t fsId, const std::set<uint64_t>& inodeIds,
+      std::list<pb::metaserver::XAttr>* xattr) = 0;
 
-  virtual MetaStatusCode UpdateInodeAttr(uint32_t fsId, uint64_t inodeId,
-                                         const InodeAttr& attr) = 0;
+  virtual pb::metaserver::MetaStatusCode UpdateInodeAttr(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::InodeAttr& attr) = 0;
 
-  virtual MetaStatusCode UpdateInodeAttrWithOutNlink(
-      uint32_t fsId, uint64_t inodeId, const InodeAttr& attr,
+  virtual pb::metaserver::MetaStatusCode UpdateInodeAttrWithOutNlink(
+      uint32_t fsId, uint64_t inodeId, const pb::metaserver::InodeAttr& attr,
       S3ChunkInfoMap* s3ChunkInfoAdd = nullptr, bool internal = false) = 0;
 
-  virtual void UpdateInodeWithOutNlinkAsync(uint32_t fsId, uint64_t inodeId,
-                                            const InodeAttr& attr,
-                                            MetaServerClientDone* done,
-                                            DataIndices&& indices = {}) = 0;
+  virtual void UpdateInodeWithOutNlinkAsync(
+      uint32_t fsId, uint64_t inodeId, const pb::metaserver::InodeAttr& attr,
+      MetaServerClientDone* done, DataIndices&& indices = {}) = 0;
 
-  virtual MetaStatusCode GetOrModifyS3ChunkInfo(
+  virtual pb::metaserver::MetaStatusCode GetOrModifyS3ChunkInfo(
       uint32_t fsId, uint64_t inodeId,
-      const google::protobuf::Map<uint64_t, S3ChunkInfoList>& s3ChunkInfos,
+      const google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>&
+          s3ChunkInfos,
       bool returnS3ChunkInfoMap = false,
-      google::protobuf::Map<uint64_t, S3ChunkInfoList>* out = nullptr,
+      google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>* out =
+          nullptr,
       bool internal = false) = 0;
 
   virtual void GetOrModifyS3ChunkInfoAsync(
       uint32_t fsId, uint64_t inodeId,
-      const google::protobuf::Map<uint64_t, S3ChunkInfoList>& s3ChunkInfos,
+      const google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>&
+          s3ChunkInfos,
       MetaServerClientDone* done) = 0;
 
-  virtual MetaStatusCode CreateInode(const InodeParam& param, Inode* out) = 0;
+  virtual pb::metaserver::MetaStatusCode CreateInode(
+      const InodeParam& param, pb::metaserver::Inode* out) = 0;
 
-  virtual MetaStatusCode CreateManageInode(const InodeParam& param,
-                                           Inode* out) = 0;
+  virtual pb::metaserver::MetaStatusCode CreateManageInode(
+      const InodeParam& param, pb::metaserver::Inode* out) = 0;
 
-  virtual MetaStatusCode DeleteInode(uint32_t fsId, uint64_t inodeid) = 0;
+  virtual pb::metaserver::MetaStatusCode DeleteInode(uint32_t fsId,
+                                                     uint64_t inodeid) = 0;
 
   virtual bool SplitRequestInodes(
       uint32_t fsId, const std::set<uint64_t>& inodeIds,
       std::vector<std::vector<uint64_t>>* inodeGroups) = 0;
 
-  virtual void AsyncUpdateVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                       const VolumeExtentList& extents,
-                                       MetaServerClientDone* done) = 0;
+  virtual void AsyncUpdateVolumeExtent(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::VolumeExtentList& extents,
+      MetaServerClientDone* done) = 0;
 
-  virtual MetaStatusCode GetVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                         bool streaming,
-                                         VolumeExtentList* extents) = 0;
+  virtual pb::metaserver::MetaStatusCode GetVolumeExtent(
+      uint32_t fsId, uint64_t inodeId, bool streaming,
+      pb::metaserver::VolumeExtentList* extents) = 0;
 
-  virtual MetaStatusCode GetFsQuota(uint32_t fs_id, Quota& quota) = 0;
-  virtual MetaStatusCode FlushFsUsage(uint32_t fs_id, const Usage& usage,
-                                      Quota& new_quota) = 0;
+  virtual pb::metaserver::MetaStatusCode GetFsQuota(
+      uint32_t fs_id, pb::metaserver::Quota& quota) = 0;
+  virtual pb::metaserver::MetaStatusCode FlushFsUsage(
+      uint32_t fs_id, const pb::metaserver::Usage& usage,
+      pb::metaserver::Quota& new_quota) = 0;
 
-  virtual MetaStatusCode LoadDirQuotas(
-      uint32_t fs_id, std::unordered_map<uint64_t, Quota>& dir_quotas) = 0;
-  virtual MetaStatusCode FlushDirUsages(
-      uint32_t fs_id, std::unordered_map<uint64_t, Usage>& dir_usages) = 0;
+  virtual pb::metaserver::MetaStatusCode LoadDirQuotas(
+      uint32_t fs_id,
+      std::unordered_map<uint64_t, pb::metaserver::Quota>& dir_quotas) = 0;
+  virtual pb::metaserver::MetaStatusCode FlushDirUsages(
+      uint32_t fs_id,
+      std::unordered_map<uint64_t, pb::metaserver::Usage>& dir_usages) = 0;
 };
 
 class MetaServerClientImpl : public MetaServerClient {
  public:
   MetaServerClientImpl() = default;
 
-  MetaStatusCode Init(
-      const ExcutorOpt& excutorOpt, const ExcutorOpt& excutorInternalOpt,
+  pb::metaserver::MetaStatusCode Init(
+      const common::ExcutorOpt& excutorOpt,
+      const common::ExcutorOpt& excutorInternalOpt,
       std::shared_ptr<MetaCache> metaCache,
-      std::shared_ptr<ChannelManager<MetaserverID>> channelManager) override;
+      std::shared_ptr<ChannelManager<common::MetaserverID>> channelManager)
+      override;
 
-  MetaStatusCode GetTxId(uint32_t fsId, uint64_t inodeId, uint32_t* partitionId,
-                         uint64_t* txId) override;
+  pb::metaserver::MetaStatusCode GetTxId(uint32_t fsId, uint64_t inodeId,
+                                         uint32_t* partitionId,
+                                         uint64_t* txId) override;
 
   void SetTxId(uint32_t partitionId, uint64_t txId) override;
 
-  MetaStatusCode GetDentry(uint32_t fsId, uint64_t inodeid,
-                           const std::string& name, Dentry* out) override;
+  pb::metaserver::MetaStatusCode GetDentry(
+      uint32_t fsId, uint64_t inodeid, const std::string& name,
+      pb::metaserver::Dentry* out) override;
 
-  MetaStatusCode ListDentry(uint32_t fsId, uint64_t inodeid,
-                            const std::string& last, uint32_t count,
-                            bool onlyDir,
-                            std::list<Dentry>* dentryList) override;
+  pb::metaserver::MetaStatusCode ListDentry(
+      uint32_t fsId, uint64_t inodeid, const std::string& last, uint32_t count,
+      bool onlyDir, std::list<pb::metaserver::Dentry>* dentryList) override;
 
-  MetaStatusCode CreateDentry(const Dentry& dentry) override;
+  pb::metaserver::MetaStatusCode CreateDentry(
+      const pb::metaserver::Dentry& dentry) override;
 
-  MetaStatusCode DeleteDentry(uint32_t fsId, uint64_t inodeid,
-                              const std::string& name,
-                              FsFileType type) override;
+  pb::metaserver::MetaStatusCode DeleteDentry(
+      uint32_t fsId, uint64_t inodeid, const std::string& name,
+      pb::metaserver::FsFileType type) override;
 
-  MetaStatusCode PrepareRenameTx(const std::vector<Dentry>& dentrys) override;
+  pb::metaserver::MetaStatusCode PrepareRenameTx(
+      const std::vector<pb::metaserver::Dentry>& dentrys) override;
 
-  MetaStatusCode GetInode(uint32_t fsId, uint64_t inodeid, Inode* out,
-                          bool* streaming) override;
+  pb::metaserver::MetaStatusCode GetInode(uint32_t fsId, uint64_t inodeid,
+                                          pb::metaserver::Inode* out,
+                                          bool* streaming) override;
 
-  MetaStatusCode GetInodeAttr(uint32_t fsId, uint64_t inodeid,
-                              InodeAttr* attr) override;
+  pb::metaserver::MetaStatusCode GetInodeAttr(
+      uint32_t fsId, uint64_t inodeid,
+      pb::metaserver::InodeAttr* attr) override;
 
-  MetaStatusCode BatchGetInodeAttr(uint32_t fsId,
-                                   const std::set<uint64_t>& inodeIds,
-                                   std::list<InodeAttr>* attr) override;
+  pb::metaserver::MetaStatusCode BatchGetInodeAttr(
+      uint32_t fsId, const std::set<uint64_t>& inodeIds,
+      std::list<pb::metaserver::InodeAttr>* attr) override;
 
-  MetaStatusCode BatchGetInodeAttrAsync(uint32_t fsId,
-                                        const std::vector<uint64_t>& inodeIds,
-                                        MetaServerClientDone* done) override;
+  pb::metaserver::MetaStatusCode BatchGetInodeAttrAsync(
+      uint32_t fsId, const std::vector<uint64_t>& inodeIds,
+      MetaServerClientDone* done) override;
 
-  MetaStatusCode BatchGetXAttr(uint32_t fsId,
-                               const std::set<uint64_t>& inodeIds,
-                               std::list<XAttr>* xattr) override;
+  pb::metaserver::MetaStatusCode BatchGetXAttr(
+      uint32_t fsId, const std::set<uint64_t>& inodeIds,
+      std::list<pb::metaserver::XAttr>* xattr) override;
 
-  MetaStatusCode UpdateInodeAttr(uint32_t fsId, uint64_t inodeId,
-                                 const InodeAttr& attr) override;
+  pb::metaserver::MetaStatusCode UpdateInodeAttr(
+      uint32_t fsId, uint64_t inodeId,
+      const pb::metaserver::InodeAttr& attr) override;
 
-  MetaStatusCode UpdateInodeAttrWithOutNlink(
-      uint32_t fsId, uint64_t inodeId, const InodeAttr& attr,
+  pb::metaserver::MetaStatusCode UpdateInodeAttrWithOutNlink(
+      uint32_t fsId, uint64_t inodeId, const pb::metaserver::InodeAttr& attr,
       S3ChunkInfoMap* s3ChunkInfoAdd = nullptr, bool internal = false) override;
 
   void UpdateInodeWithOutNlinkAsync(uint32_t fsId, uint64_t inodeId,
-                                    const InodeAttr& attr,
+                                    const pb::metaserver::InodeAttr& attr,
                                     MetaServerClientDone* done,
                                     DataIndices&& indices = {}) override;
 
-  MetaStatusCode GetOrModifyS3ChunkInfo(
+  pb::metaserver::MetaStatusCode GetOrModifyS3ChunkInfo(
       uint32_t fsId, uint64_t inodeId,
-      const google::protobuf::Map<uint64_t, S3ChunkInfoList>& s3ChunkInfos,
+      const google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>&
+          s3ChunkInfos,
       bool returnS3ChunkInfoMap = false,
-      google::protobuf::Map<uint64_t, S3ChunkInfoList>* out = nullptr,
+      google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>* out =
+          nullptr,
       bool internal = false) override;
 
   void GetOrModifyS3ChunkInfoAsync(
       uint32_t fsId, uint64_t inodeId,
-      const google::protobuf::Map<uint64_t, S3ChunkInfoList>& s3ChunkInfos,
+      const google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>&
+          s3ChunkInfos,
       MetaServerClientDone* done) override;
 
-  MetaStatusCode CreateInode(const InodeParam& param, Inode* out) override;
+  pb::metaserver::MetaStatusCode CreateInode(
+      const InodeParam& param, pb::metaserver::Inode* out) override;
 
-  MetaStatusCode CreateManageInode(const InodeParam& param,
-                                   Inode* out) override;
+  pb::metaserver::MetaStatusCode CreateManageInode(
+      const InodeParam& param, pb::metaserver::Inode* out) override;
 
-  MetaStatusCode DeleteInode(uint32_t fsId, uint64_t inodeid) override;
+  pb::metaserver::MetaStatusCode DeleteInode(uint32_t fsId,
+                                             uint64_t inodeid) override;
 
   bool SplitRequestInodes(
       uint32_t fsId, const std::set<uint64_t>& inodeIds,
       std::vector<std::vector<uint64_t>>* inodeGroups) override;
 
   void AsyncUpdateVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                               const VolumeExtentList& extents,
+                               const pb::metaserver::VolumeExtentList& extents,
                                MetaServerClientDone* done) override;
 
-  MetaStatusCode GetVolumeExtent(uint32_t fsId, uint64_t inodeId,
-                                 bool streaming,
-                                 VolumeExtentList* extents) override;
+  pb::metaserver::MetaStatusCode GetVolumeExtent(
+      uint32_t fsId, uint64_t inodeId, bool streaming,
+      pb::metaserver::VolumeExtentList* extents) override;
 
-  MetaStatusCode GetFsQuota(uint32_t fs_id, Quota& quota) override;
-  MetaStatusCode FlushFsUsage(uint32_t fs_id, const Usage& usage,
-                              Quota& new_quota) override;
+  pb::metaserver::MetaStatusCode GetFsQuota(
+      uint32_t fs_id, pb::metaserver::Quota& quota) override;
+  pb::metaserver::MetaStatusCode FlushFsUsage(
+      uint32_t fs_id, const pb::metaserver::Usage& usage,
+      pb::metaserver::Quota& new_quota) override;
 
-  MetaStatusCode LoadDirQuotas(
-      uint32_t fs_id, std::unordered_map<uint64_t, Quota>& dir_quotas) override;
-  MetaStatusCode FlushDirUsages(
-      uint32_t fs_id, std::unordered_map<uint64_t, Usage>& dir_usages) override;
+  pb::metaserver::MetaStatusCode LoadDirQuotas(
+      uint32_t fs_id,
+      std::unordered_map<uint64_t, pb::metaserver::Quota>& dir_quotas) override;
+  pb::metaserver::MetaStatusCode FlushDirUsages(
+      uint32_t fs_id,
+      std::unordered_map<uint64_t, pb::metaserver::Usage>& dir_usages) override;
 
  private:
-  MetaStatusCode UpdateInode(const UpdateInodeRequest& request,
-                             bool internal = false);
+  pb::metaserver::MetaStatusCode UpdateInode(
+      const pb::metaserver::UpdateInodeRequest& request, bool internal = false);
 
-  void UpdateInodeAsync(const UpdateInodeRequest& request,
+  void UpdateInodeAsync(const pb::metaserver::UpdateInodeRequest& request,
                         MetaServerClientDone* done);
 
   bool ParseS3MetaStreamBuffer(butil::IOBuf* buffer, uint64_t* chunkIndex,
-                               S3ChunkInfoList* list);
+                               pb::metaserver::S3ChunkInfoList* list);
 
   bool HandleS3MetaStreamBuffer(butil::IOBuf* buffer, S3ChunkInfoMap* out);
 
-  ExcutorOpt opt_;
-  ExcutorOpt optInternal_;
+  common::ExcutorOpt opt_;
+  common::ExcutorOpt optInternal_;
 
   std::shared_ptr<MetaCache> metaCache_;
-  std::shared_ptr<ChannelManager<MetaserverID>> channelManager_;
+  std::shared_ptr<ChannelManager<common::MetaserverID>> channelManager_;
 
-  StreamClient streamClient_;
-  MetaServerClientMetric metric_;
+  dingofs::common::StreamClient streamClient_;
+  metric::MetaServerClientMetric metric_;
 };
 }  // namespace rpcclient
 }  // namespace stub

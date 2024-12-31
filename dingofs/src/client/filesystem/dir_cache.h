@@ -23,8 +23,6 @@
 #ifndef DINGOFS_SRC_CLIENT_FILESYSTEM_DIR_CACHE_H_
 #define DINGOFS_SRC_CLIENT_FILESYSTEM_DIR_CACHE_H_
 
-#include <list>
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -41,19 +39,10 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::utils::LRUCache;
-using ::dingofs::utils::ReadLockGuard;
-using ::dingofs::utils::RWLock;
-using ::dingofs::utils::WriteLockGuard;
-using ::dingofs::base::queue::MessageQueue;
-using ::dingofs::base::time::TimeSpec;
-using ::dingofs::client::common::DirCacheOption;
-
 class DirEntryList {
  public:
   using IterateHandler = std::function<void(DirEntry* dirEntry)>;
 
- public:
   DirEntryList();
 
   size_t Size();
@@ -64,31 +53,30 @@ class DirEntryList {
 
   bool Get(Ino ino, DirEntry* dirEntry);
 
-  bool UpdateAttr(Ino ino, const InodeAttr& attr);
+  bool UpdateAttr(Ino ino, const pb::metaserver::InodeAttr& attr);
 
-  bool UpdateLength(Ino ino, const InodeAttr& open);
+  bool UpdateLength(Ino ino, const pb::metaserver::InodeAttr& open);
 
   void Clear();
 
-  void SetMtime(TimeSpec mtime);
+  void SetMtime(base::time::TimeSpec mtime);
 
-  TimeSpec GetMtime();
+  base::time::TimeSpec GetMtime();
 
  private:
-  RWLock rwlock_;
-  TimeSpec mtime_;
+  utils::RWLock rwlock_;
+  base::time::TimeSpec mtime_;
   std::vector<DirEntry> entries_;
   absl::btree_map<Ino, uint32_t> index_;
 };
 
 class DirCache {
  public:
-  using LRUType = LRUCache<Ino, std::shared_ptr<DirEntryList>>;
+  using LRUType = utils::LRUCache<Ino, std::shared_ptr<DirEntryList>>;
   using MessageType = std::shared_ptr<DirEntryList>;
-  using MessageQueueType = MessageQueue<MessageType>;
+  using MessageQueueType = base::queue::MessageQueue<MessageType>;
 
- public:
-  explicit DirCache(DirCacheOption option);
+  explicit DirCache(common::DirCacheOption option);
 
   void Start();
 
@@ -105,10 +93,9 @@ class DirCache {
 
   void Evit(size_t size);
 
- private:
-  RWLock rwlock_;
+  utils::RWLock rwlock_;
   size_t nentries_;
-  DirCacheOption option_;
+  common::DirCacheOption option_;
   std::shared_ptr<LRUType> lru_;
   std::shared_ptr<MessageQueueType> mq_;
   std::shared_ptr<DirCacheMetric> metric_;

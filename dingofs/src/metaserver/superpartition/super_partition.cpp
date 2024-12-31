@@ -32,14 +32,18 @@ namespace dingofs {
 namespace metaserver {
 namespace superpartition {
 
-using ::dingofs::base::string::StrFormat;
-using ::dingofs::metaserver::superpartition::LogGuard;
+using base::string::StrFormat;
+using superpartition::LogGuard;
 
-SuperPartition::SuperPartition(std::shared_ptr<KVStorage> kv)
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::Quota;
+using pb::metaserver::Usage;
+
+SuperPartition::SuperPartition(std::shared_ptr<storage::KVStorage> kv)
     : store_(std::make_unique<SuperPartitionStorageImpl>(kv)) {}
 
 MetaStatusCode SuperPartition::SetFsQuota(uint32_t fs_id, const Quota& quota) {
-  MetaStatusCode rc;
+  pb::metaserver::MetaStatusCode rc;
   LogGuard log([&]() {
     return StrFormat("set_fs_quota(%d,%s): %s", fs_id, StrQuota(quota),
                      StrErr(rc));

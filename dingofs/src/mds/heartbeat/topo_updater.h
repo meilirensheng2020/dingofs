@@ -29,13 +29,14 @@
 #include "dingofs/src/mds/topology/topology.h"
 #include "dingofs/src/mds/topology/topology_item.h"
 
-using ::dingofs::mds::topology::CopySetInfo;
-using ::dingofs::mds::topology::Topology;
-
 namespace dingofs {
 namespace mds {
 namespace heartbeat {
-using dingofs::mds::topology::CopySetIdType;
+
+using mds::topology::CopySetIdType;
+using mds::topology::CopySetInfo;
+using mds::topology::Topology;
+
 class TopoUpdater {
  public:
   explicit TopoUpdater(const std::shared_ptr<Topology>& topo) : topo_(topo) {}
@@ -47,8 +48,7 @@ class TopoUpdater {
    *                   statistical data according to reportCopySetInfo
    * @param[in] reportCopySetInfo copyset info reported by metaserver
    */
-  void UpdateCopysetTopo(
-      const ::dingofs::mds::topology::CopySetInfo& reportCopySetInfo);
+  void UpdateCopysetTopo(const mds::topology::CopySetInfo& reportCopySetInfo);
 
   /*
    * @brief UpdatePartitionTopo this function will be called by leader copyset
@@ -57,12 +57,12 @@ class TopoUpdater {
    */
   void UpdatePartitionTopo(
       CopySetIdType copySetId,
-      const std::list<::dingofs::mds::topology::Partition>& partitionList);
+      const std::list<mds::topology::Partition>& partitionList);
 
  public:
   // public for test
-  bool CanPartitionStatusChange(PartitionStatus statusInTopo,
-                                PartitionStatus statusInHeartbeat);
+  bool CanPartitionStatusChange(pb::common::PartitionStatus statusInTopo,
+                                pb::common::PartitionStatus statusInHeartbeat);
 
  private:
   std::shared_ptr<Topology> topo_;

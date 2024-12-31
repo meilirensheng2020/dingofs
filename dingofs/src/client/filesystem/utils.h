@@ -25,32 +25,33 @@
 
 #include <memory>
 
-#include "dingofs/src/client/filesystem/meta.h"
-#include "dingofs/src/client/filesystem/package.h"
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/base/time/time.h"
+#include "dingofs/src/client/inode_wrapper.h"
 
 namespace dingofs {
 namespace client {
 namespace filesystem {
 
 // directory
-bool IsDir(const InodeAttr& attr);
+bool IsDir(const pb::metaserver::InodeAttr& attr);
 
 // file which data is stored in s3
-bool IsS3File(const InodeAttr& attr);
+bool IsS3File(const pb::metaserver::InodeAttr& attr);
 
 // file which data is stored in volume
-bool IsVolmeFile(const InodeAttr& attr);
+bool IsVolmeFile(const pb::metaserver::InodeAttr& attr);
 
 // symbol link
-bool IsSymLink(const InodeAttr& attr);
+bool IsSymLink(const pb::metaserver::InodeAttr& attr);
 
-struct TimeSpec AttrMtime(const InodeAttr& attr);
+base::time::TimeSpec AttrMtime(const pb::metaserver::InodeAttr& attr);
 
-struct TimeSpec AttrCtime(const InodeAttr& attr);
+base::time::TimeSpec AttrCtime(const pb::metaserver::InodeAttr& attr);
 
-struct TimeSpec InodeMtime(const std::shared_ptr<InodeWrapper> inode);
+base::time::TimeSpec InodeMtime(const std::shared_ptr<InodeWrapper> inode);
 
-struct TimeSpec Now();
+base::time::TimeSpec Now();
 
 }  // namespace filesystem
 }  // namespace client

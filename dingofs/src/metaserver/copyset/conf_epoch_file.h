@@ -23,7 +23,6 @@
 #ifndef DINGOFS_SRC_METASERVER_COPYSET_CONF_EPOCH_FILE_H_
 #define DINGOFS_SRC_METASERVER_COPYSET_CONF_EPOCH_FILE_H_
 
-#include <memory>
 #include <string>
 
 #include "dingofs/proto/copyset.pb.h"
@@ -68,7 +67,8 @@ class ConfEpochFile {
            const CopysetId copysetId, const uint64_t epoch);
 
  private:
-  static uint32_t ConfEpochCrc(const ConfEpoch& confEpoch);
+  static uint32_t ConfEpochCrc(
+      const pb::metaserver::copyset::ConfEpoch& confEpoch);
 
   dingofs::fs::LocalFileSystem* fs_;
 };

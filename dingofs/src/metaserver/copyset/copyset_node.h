@@ -30,7 +30,6 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "dingofs/src/metaserver/common/types.h"
 #include "dingofs/src/metaserver/copyset/apply_queue.h"
@@ -44,11 +43,6 @@
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
-
-using ::braft::PeerId;
-using ::dingofs::common::Peer;
-using ::dingofs::mds::heartbeat::ConfigChangeType;
-using ::dingofs::metaserver::MetaStore;
 
 class CopysetNodeManager;
 
@@ -85,7 +79,7 @@ class CopysetNode : public braft::StateMachine {
 
   CopysetId GetCopysetId() const;
 
-  PeerId GetLeaderId() const;
+  braft::PeerId GetLeaderId() const;
 
   MetaStore* GetMetaStore() const;
 
@@ -108,7 +102,7 @@ class CopysetNode : public braft::StateMachine {
    */
   void GetStatus(braft::NodeStatus* status);
 
-  virtual void ListPeers(std::vector<Peer>* peers) const;
+  virtual void ListPeers(std::vector<pb::common::Peer>* peers) const;
 
   ApplyQueue* GetApplyQueue() const;
 
@@ -131,12 +125,15 @@ class CopysetNode : public braft::StateMachine {
  public:
   /** configuration change interfaces **/
 
-  virtual butil::Status TransferLeader(const Peer& target);
-  virtual void AddPeer(const Peer& peer, braft::Closure* done = nullptr);
-  virtual void RemovePeer(const Peer& peer, braft::Closure* done = nullptr);
-  virtual void ChangePeers(const std::vector<Peer>& newPeers,
+  virtual butil::Status TransferLeader(const pb::common::Peer& target);
+  virtual void AddPeer(const pb::common::Peer& peer,
+                       braft::Closure* done = nullptr);
+  virtual void RemovePeer(const pb::common::Peer& peer,
+                          braft::Closure* done = nullptr);
+  virtual void ChangePeers(const std::vector<pb::common::Peer>& newPeers,
                            braft::Closure* done = nullptr);
-  void GetConfChange(ConfigChangeType* type, Peer* alterPeer);
+  void GetConfChange(pb::mds::heartbeat::ConfigChangeType* type,
+                     pb::common::Peer* alterPeer);
   void OnConfChangeComplete();
 
  private:
@@ -145,8 +142,8 @@ class CopysetNode : public braft::StateMachine {
   butil::Status ReadyDoConfChange();
   bool HasOngoingConfChange();
 
-  void DoAddOrRemovePeer(ConfigChangeType type, const Peer& peer,
-                         braft::Closure* done);
+  void DoAddOrRemovePeer(pb::mds::heartbeat::ConfigChangeType type,
+                         const pb::common::Peer& peer, braft::Closure* done);
 
  public:
   /*** implement interfaces from braft::StateMacine ***/
@@ -175,7 +172,8 @@ class CopysetNode : public braft::StateMachine {
 
  public:
   // for heartbeat
-  bool GetPartitionInfoList(std::list<PartitionInfo>* partitionInfoList);
+  bool GetPartitionInfoList(
+      std::list<pb::common::PartitionInfo>* partitionInfoList);
 
   bool IsLoading() const;
 
@@ -250,7 +248,7 @@ inline PoolId CopysetNode::GetPoolId() const { return poolId_; }
 
 inline CopysetId CopysetNode::GetCopysetId() const { return copysetId_; }
 
-inline PeerId CopysetNode::GetLeaderId() const {
+inline braft::PeerId CopysetNode::GetLeaderId() const {
   return raftNode_->leader_id();
 }
 

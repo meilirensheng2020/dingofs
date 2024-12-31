@@ -28,7 +28,7 @@
 #include <string>
 #include <type_traits>
 
-#include "dingofs/src/metaserver/storage/common.h"
+#include "dingofs/proto/metaserver.pb.h"
 
 namespace dingofs {
 namespace metaserver {
@@ -118,7 +118,7 @@ class Key4Inode : public StorageKey {
 
   Key4Inode(uint32_t fsId, uint64_t inodeId);
 
-  explicit Key4Inode(const Inode& inode);
+  explicit Key4Inode(const pb::metaserver::Inode& inode);
 
   bool operator==(const Key4Inode& rhs);
 

@@ -25,29 +25,21 @@
 
 #include <cstdint>
 #include <list>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
 #include <stack>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/client_operator.h"
 #include "dingofs/src/client/filesystem/error.h"
-#include "dingofs/src/common/define.h"
 #include "dingofs/src/utils/interruptible_sleeper.h"
 
 #define DirectIOAlignment 512
 
 namespace dingofs {
 namespace client {
-
-using ::dingofs::utils::Atomic;
-using ::dingofs::utils::InterruptibleSleeper;
-using dingofs::metaserver::FsFileType;
 
 struct SummaryInfo {
   uint64_t files = 0;
@@ -71,10 +63,11 @@ class XattrManager {
 
   void Stop() { isStop_.store(true); }
 
-  DINGOFS_ERROR GetXattr(const char* name, std::string* value, InodeAttr* attr,
-                         bool enableSumInDir);
+  DINGOFS_ERROR GetXattr(const char* name, std::string* value,
+                         pb::metaserver::InodeAttr* attr, bool enableSumInDir);
 
-  DINGOFS_ERROR UpdateParentInodeXattr(uint64_t parentId, const XAttr& xattr,
+  DINGOFS_ERROR UpdateParentInodeXattr(uint64_t parentId,
+                                       const pb::metaserver::XAttr& xattr,
                                        bool direction);
 
   DINGOFS_ERROR UpdateParentXattrAfterRename(uint64_t parent,
@@ -83,45 +76,46 @@ class XattrManager {
                                              RenameOperator* renameOp);
 
  private:
-  bool ConcurrentListDentry(std::list<Dentry>* dentrys,
+  bool ConcurrentListDentry(std::list<pb::metaserver::Dentry>* dentrys,
                             std::stack<uint64_t>* iStack,
                             std::mutex* stackMutex, bool dirOnly,
-                            Atomic<uint32_t>* inflightNum, Atomic<bool>* ret);
+                            utils::Atomic<uint32_t>* inflightNum,
+                            utils::Atomic<bool>* ret);
 
   void ConcurrentGetInodeAttr(
       std::stack<uint64_t>* iStack, std::mutex* stackMutex,
       std::unordered_map<uint64_t, uint64_t>* hardLinkMap, std::mutex* mapMutex,
       SummaryInfo* summaryInfo, std::mutex* valueMutex,
-      Atomic<uint32_t>* inflightNum, Atomic<bool>* ret);
+      utils::Atomic<uint32_t>* inflightNum, utils::Atomic<bool>* ret);
 
   void ConcurrentGetInodeXattr(std::stack<uint64_t>* iStack,
-                               std::mutex* stackMutex, InodeAttr* attr,
+                               std::mutex* stackMutex,
+                               pb::metaserver::InodeAttr* attr,
                                std::mutex* inodeMutex,
-                               Atomic<uint32_t>* inflightNum,
-                               Atomic<bool>* ret);
+                               utils::Atomic<uint32_t>* inflightNum,
+                               utils::Atomic<bool>* ret);
 
-  DINGOFS_ERROR CalOneLayerSumInfo(InodeAttr* attr);
+  DINGOFS_ERROR CalOneLayerSumInfo(pb::metaserver::InodeAttr* attr);
 
-  DINGOFS_ERROR CalAllLayerSumInfo(InodeAttr* attr);
+  DINGOFS_ERROR CalAllLayerSumInfo(pb::metaserver::InodeAttr* attr);
 
-  DINGOFS_ERROR FastCalOneLayerSumInfo(InodeAttr* attr);
+  DINGOFS_ERROR FastCalOneLayerSumInfo(pb::metaserver::InodeAttr* attr);
 
-  DINGOFS_ERROR FastCalAllLayerSumInfo(InodeAttr* attr);
+  DINGOFS_ERROR FastCalAllLayerSumInfo(pb::metaserver::InodeAttr* attr);
 
- private:
   // inode cache manager
   std::shared_ptr<InodeCacheManager> inodeManager_;
 
   // dentry cache manager
   std::shared_ptr<DentryCacheManager> dentryManager_;
 
-  InterruptibleSleeper sleeper_;
+  utils::InterruptibleSleeper sleeper_;
 
   uint32_t listDentryLimit_;
 
   uint32_t listDentryThreads_;
 
-  Atomic<bool> isStop_;
+  utils::Atomic<bool> isStop_;
 };
 
 }  // namespace client

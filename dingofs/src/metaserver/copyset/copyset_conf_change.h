@@ -29,35 +29,35 @@
 
 #include "dingofs/proto/common.pb.h"
 #include "dingofs/proto/heartbeat.pb.h"
-#include "dingofs/src/metaserver/copyset/types.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-using ::dingofs::common::Peer;
-using ::dingofs::mds::heartbeat::ConfigChangeType;
-
 struct OngoingConfChange {
-  OngoingConfChange() : type(ConfigChangeType::NONE), alterPeer() {}
+  OngoingConfChange()
+      : type(pb::mds::heartbeat::ConfigChangeType::NONE), alterPeer() {}
 
-  OngoingConfChange(ConfigChangeType type, const Peer& peer)
+  OngoingConfChange(pb::mds::heartbeat::ConfigChangeType type,
+                    const pb::common::Peer& peer)
       : type(type), alterPeer(peer) {}
 
-  OngoingConfChange(ConfigChangeType type, Peer&& peer)
+  OngoingConfChange(pb::mds::heartbeat::ConfigChangeType type,
+                    pb::common::Peer&& peer)
       : type(type), alterPeer(std::move(peer)) {}
 
   bool HasConfChange() const {
-    return type != ConfigChangeType::NONE && alterPeer.has_address();
+    return type != pb::mds::heartbeat::ConfigChangeType::NONE &&
+           alterPeer.has_address();
   }
 
   void Reset() {
-    type = ConfigChangeType::NONE;
+    type = pb::mds::heartbeat::ConfigChangeType::NONE;
     alterPeer.clear_address();
   }
 
-  ConfigChangeType type;
-  Peer alterPeer;
+  pb::mds::heartbeat::ConfigChangeType type;
+  pb::common::Peer alterPeer;
 };
 
 class CopysetNode;

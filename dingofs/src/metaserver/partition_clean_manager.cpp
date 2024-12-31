@@ -21,10 +21,13 @@
  */
 #include "dingofs/src/metaserver/partition_clean_manager.h"
 
-#include "dingofs/src/metaserver/trash_manager.h"
+#include "dingofs/src/utils/concurrent/concurrent.h"
 
 namespace dingofs {
 namespace metaserver {
+
+using utils::Thread;
+
 void PartitionCleanManager::Add(
     uint32_t partitionId, const std::shared_ptr<PartitionCleaner>& cleaner,
     copyset::CopysetNode* copysetNode) {

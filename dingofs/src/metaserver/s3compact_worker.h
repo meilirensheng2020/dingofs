@@ -96,7 +96,6 @@ class S3CompactWorker {
 
   void CleanupCompact(bool again);
 
- private:
   S3CompactManager* manager_;
   S3CompactWorkerContext* context_;
   S3CompactWorkerOptions* options_;

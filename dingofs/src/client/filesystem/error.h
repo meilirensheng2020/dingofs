@@ -33,8 +33,6 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::metaserver::MetaStatusCode;
-
 enum class DINGOFS_ERROR {
   OK = 0,
   INTERNAL = -1,
@@ -66,7 +64,7 @@ int SysErr(DINGOFS_ERROR code);
 
 std::ostream& operator<<(std::ostream& os, DINGOFS_ERROR code);
 
-DINGOFS_ERROR ToFSError(MetaStatusCode code);
+DINGOFS_ERROR ToFSError(pb::metaserver::MetaStatusCode code);
 
 }  // namespace filesystem
 }  // namespace client

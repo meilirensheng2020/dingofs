@@ -22,9 +22,7 @@
 
 #include "dingofs/src/metaserver/metaserver_service.h"
 
-#include <list>
-#include <string>
-
+#include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/src/metaserver/copyset/meta_operator.h"
 #include "dingofs/src/metaserver/metaservice_closure.h"
 
@@ -34,33 +32,33 @@ static bvar::LatencyRecorder g_oprequest_in_service_before_propose_latency(
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::metaserver::copyset::BatchGetInodeAttrOperator;
-using ::dingofs::metaserver::copyset::BatchGetXAttrOperator;
-using ::dingofs::metaserver::copyset::CreateDentryOperator;
-using ::dingofs::metaserver::copyset::CreateInodeOperator;
-using ::dingofs::metaserver::copyset::CreateManageInodeOperator;
-using ::dingofs::metaserver::copyset::CreatePartitionOperator;
-using ::dingofs::metaserver::copyset::CreateRootInodeOperator;
-using ::dingofs::metaserver::copyset::DeleteDentryOperator;
-using ::dingofs::metaserver::copyset::DeleteDirQuotaOperator;
-using ::dingofs::metaserver::copyset::DeleteInodeOperator;
-using ::dingofs::metaserver::copyset::DeletePartitionOperator;
-using ::dingofs::metaserver::copyset::FlushDirUsagesOperator;
-using ::dingofs::metaserver::copyset::FlushFsUsageOperator;
-using ::dingofs::metaserver::copyset::GetDentryOperator;
-using ::dingofs::metaserver::copyset::GetDirQuotaOperator;
-using ::dingofs::metaserver::copyset::GetFsQuotaOperator;
-using ::dingofs::metaserver::copyset::GetInodeOperator;
-using ::dingofs::metaserver::copyset::GetOrModifyS3ChunkInfoOperator;
-using ::dingofs::metaserver::copyset::GetVolumeExtentOperator;
-using ::dingofs::metaserver::copyset::ListDentryOperator;
-using ::dingofs::metaserver::copyset::LoadDirQuotasOperator;
-using ::dingofs::metaserver::copyset::PrepareRenameTxOperator;
-using ::dingofs::metaserver::copyset::SetDirQuotaOperator;
-using ::dingofs::metaserver::copyset::SetFsQuotaOperator;
-using ::dingofs::metaserver::copyset::UpdateInodeOperator;
-using ::dingofs::metaserver::copyset::UpdateInodeS3VersionOperator;
-using ::dingofs::metaserver::copyset::UpdateVolumeExtentOperator;
+using copyset::BatchGetInodeAttrOperator;
+using copyset::BatchGetXAttrOperator;
+using copyset::CopysetNodeManager;
+using copyset::CreateDentryOperator;
+using copyset::CreateInodeOperator;
+using copyset::CreateManageInodeOperator;
+using copyset::CreatePartitionOperator;
+using copyset::CreateRootInodeOperator;
+using copyset::DeleteDentryOperator;
+using copyset::DeleteDirQuotaOperator;
+using copyset::DeleteInodeOperator;
+using copyset::DeletePartitionOperator;
+using copyset::FlushDirUsagesOperator;
+using copyset::FlushFsUsageOperator;
+using copyset::GetDentryOperator;
+using copyset::GetDirQuotaOperator;
+using copyset::GetFsQuotaOperator;
+using copyset::GetInodeOperator;
+using copyset::GetOrModifyS3ChunkInfoOperator;
+using copyset::GetVolumeExtentOperator;
+using copyset::ListDentryOperator;
+using copyset::LoadDirQuotasOperator;
+using copyset::PrepareRenameTxOperator;
+using copyset::SetDirQuotaOperator;
+using copyset::SetFsQuotaOperator;
+using copyset::UpdateInodeOperator;
+using copyset::UpdateVolumeExtentOperator;
 
 namespace {
 
@@ -80,16 +78,17 @@ struct OperatorHelper {
     if (throttle->IsOverLoad()) {
       LOG_EVERY_N(WARNING, 100)
           << "service overload, request: " << request->ShortDebugString();
-      response->set_statuscode(MetaStatusCode::OVERLOAD);
+      response->set_statuscode(pb::metaserver::MetaStatusCode::OVERLOAD);
       return;
     }
 
-    auto node = manager->GetCopysetNode(poolId, copysetId);
+    auto* node = manager->GetCopysetNode(poolId, copysetId);
 
     if (!node) {
       LOG(WARNING) << "Copyset not found, request: "
                    << request->ShortDebugString();
-      response->set_statuscode(MetaStatusCode::COPYSET_NOTEXIST);
+      response->set_statuscode(
+          pb::metaserver::MetaStatusCode::COPYSET_NOTEXIST);
       return;
     }
 
@@ -111,8 +110,8 @@ struct OperatorHelper {
 #define DEFINE_RPC_METHOD(method)                                            \
   void MetaServerServiceImpl::method(                                        \
       ::google::protobuf::RpcController* controller,                         \
-      const ::dingofs::metaserver::method##Request* request,                 \
-      ::dingofs::metaserver::method##Response* response,                     \
+      const pb::metaserver::method##Request* request,                        \
+      pb::metaserver::method##Response* response,                            \
       ::google::protobuf::Closure* done) {                                   \
     OperatorHelper helper(copysetNodeManager_, inflightThrottle_);           \
     helper.operator()<method##Operator>(controller, request, response, done, \
@@ -131,8 +130,8 @@ DEFINE_RPC_METHOD(FlushDirUsages);
 
 void MetaServerServiceImpl::GetDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::GetDentryRequest* request,
-    ::dingofs::metaserver::GetDentryResponse* response,
+    const pb::metaserver::GetDentryRequest* request,
+    pb::metaserver::GetDentryResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<GetDentryOperator>(controller, request, response, done,
@@ -141,8 +140,8 @@ void MetaServerServiceImpl::GetDentry(
 
 void MetaServerServiceImpl::ListDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::ListDentryRequest* request,
-    ::dingofs::metaserver::ListDentryResponse* response,
+    const pb::metaserver::ListDentryRequest* request,
+    pb::metaserver::ListDentryResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
 
@@ -153,8 +152,8 @@ void MetaServerServiceImpl::ListDentry(
 
 void MetaServerServiceImpl::CreateDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::CreateDentryRequest* request,
-    ::dingofs::metaserver::CreateDentryResponse* response,
+    const pb::metaserver::CreateDentryRequest* request,
+    pb::metaserver::CreateDentryResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<CreateDentryOperator>(controller, request, response, done,
@@ -164,8 +163,8 @@ void MetaServerServiceImpl::CreateDentry(
 
 void MetaServerServiceImpl::DeleteDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::DeleteDentryRequest* request,
-    ::dingofs::metaserver::DeleteDentryResponse* response,
+    const pb::metaserver::DeleteDentryRequest* request,
+    pb::metaserver::DeleteDentryResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<DeleteDentryOperator>(controller, request, response, done,
@@ -175,8 +174,8 @@ void MetaServerServiceImpl::DeleteDentry(
 
 void MetaServerServiceImpl::GetInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::GetInodeRequest* request,
-    ::dingofs::metaserver::GetInodeResponse* response,
+    const pb::metaserver::GetInodeRequest* request,
+    pb::metaserver::GetInodeResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<GetInodeOperator>(controller, request, response, done,
@@ -185,8 +184,8 @@ void MetaServerServiceImpl::GetInode(
 
 void MetaServerServiceImpl::BatchGetInodeAttr(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::BatchGetInodeAttrRequest* request,
-    ::dingofs::metaserver::BatchGetInodeAttrResponse* response,
+    const pb::metaserver::BatchGetInodeAttrRequest* request,
+    pb::metaserver::BatchGetInodeAttrResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<BatchGetInodeAttrOperator>(controller, request, response,
@@ -196,8 +195,8 @@ void MetaServerServiceImpl::BatchGetInodeAttr(
 
 void MetaServerServiceImpl::BatchGetXAttr(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::BatchGetXAttrRequest* request,
-    ::dingofs::metaserver::BatchGetXAttrResponse* response,
+    const pb::metaserver::BatchGetXAttrRequest* request,
+    pb::metaserver::BatchGetXAttrResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<BatchGetXAttrOperator>(controller, request, response, done,
@@ -207,8 +206,8 @@ void MetaServerServiceImpl::BatchGetXAttr(
 
 void MetaServerServiceImpl::CreateInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::CreateInodeRequest* request,
-    ::dingofs::metaserver::CreateInodeResponse* response,
+    const pb::metaserver::CreateInodeRequest* request,
+    pb::metaserver::CreateInodeResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<CreateInodeOperator>(controller, request, response, done,
@@ -218,8 +217,8 @@ void MetaServerServiceImpl::CreateInode(
 
 void MetaServerServiceImpl::CreateRootInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::CreateRootInodeRequest* request,
-    ::dingofs::metaserver::CreateRootInodeResponse* response,
+    const pb::metaserver::CreateRootInodeRequest* request,
+    pb::metaserver::CreateRootInodeResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<CreateRootInodeOperator>(controller, request, response,
@@ -229,8 +228,8 @@ void MetaServerServiceImpl::CreateRootInode(
 
 void MetaServerServiceImpl::CreateManageInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::CreateManageInodeRequest* request,
-    ::dingofs::metaserver::CreateManageInodeResponse* response,
+    const pb::metaserver::CreateManageInodeRequest* request,
+    pb::metaserver::CreateManageInodeResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<CreateManageInodeOperator>(controller, request, response,
@@ -240,8 +239,8 @@ void MetaServerServiceImpl::CreateManageInode(
 
 void MetaServerServiceImpl::UpdateInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::UpdateInodeRequest* request,
-    ::dingofs::metaserver::UpdateInodeResponse* response,
+    const pb::metaserver::UpdateInodeRequest* request,
+    pb::metaserver::UpdateInodeResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<UpdateInodeOperator>(controller, request, response, done,
@@ -251,8 +250,8 @@ void MetaServerServiceImpl::UpdateInode(
 
 void MetaServerServiceImpl::GetOrModifyS3ChunkInfo(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::GetOrModifyS3ChunkInfoRequest* request,
-    ::dingofs::metaserver::GetOrModifyS3ChunkInfoResponse* response,
+    const pb::metaserver::GetOrModifyS3ChunkInfoRequest* request,
+    pb::metaserver::GetOrModifyS3ChunkInfoResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<GetOrModifyS3ChunkInfoOperator>(
@@ -262,8 +261,8 @@ void MetaServerServiceImpl::GetOrModifyS3ChunkInfo(
 
 void MetaServerServiceImpl::DeleteInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::DeleteInodeRequest* request,
-    ::dingofs::metaserver::DeleteInodeResponse* response,
+    const pb::metaserver::DeleteInodeRequest* request,
+    pb::metaserver::DeleteInodeResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<DeleteInodeOperator>(controller, request, response, done,
@@ -273,7 +272,8 @@ void MetaServerServiceImpl::DeleteInode(
 
 void MetaServerServiceImpl::CreatePartition(
     google::protobuf::RpcController* controller,
-    const CreatePartitionRequest* request, CreatePartitionResponse* response,
+    const pb::metaserver::CreatePartitionRequest* request,
+    pb::metaserver::CreatePartitionResponse* response,
     google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<CreatePartitionOperator>(
@@ -283,7 +283,8 @@ void MetaServerServiceImpl::CreatePartition(
 
 void MetaServerServiceImpl::DeletePartition(
     google::protobuf::RpcController* controller,
-    const DeletePartitionRequest* request, DeletePartitionResponse* response,
+    const pb::metaserver::DeletePartitionRequest* request,
+    pb::metaserver::DeletePartitionResponse* response,
     google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<DeletePartitionOperator>(controller, request, response,
@@ -293,7 +294,8 @@ void MetaServerServiceImpl::DeletePartition(
 
 void MetaServerServiceImpl::PrepareRenameTx(
     google::protobuf::RpcController* controller,
-    const PrepareRenameTxRequest* request, PrepareRenameTxResponse* response,
+    const pb::metaserver::PrepareRenameTxRequest* request,
+    pb::metaserver::PrepareRenameTxResponse* response,
     google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<PrepareRenameTxOperator>(controller, request, response,
@@ -303,7 +305,8 @@ void MetaServerServiceImpl::PrepareRenameTx(
 
 void MetaServerServiceImpl::GetVolumeExtent(
     ::google::protobuf::RpcController* controller,
-    const GetVolumeExtentRequest* request, GetVolumeExtentResponse* response,
+    const pb::metaserver::GetVolumeExtentRequest* request,
+    pb::metaserver::GetVolumeExtentResponse* response,
     ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<GetVolumeExtentOperator>(controller, request, response,
@@ -313,8 +316,9 @@ void MetaServerServiceImpl::GetVolumeExtent(
 
 void MetaServerServiceImpl::UpdateVolumeExtent(
     ::google::protobuf::RpcController* controller,
-    const UpdateVolumeExtentRequest* request,
-    UpdateVolumeExtentResponse* response, ::google::protobuf::Closure* done) {
+    const pb::metaserver::UpdateVolumeExtentRequest* request,
+    pb::metaserver::UpdateVolumeExtentResponse* response,
+    ::google::protobuf::Closure* done) {
   OperatorHelper helper(copysetNodeManager_, inflightThrottle_);
   helper.operator()<UpdateVolumeExtentOperator>(controller, request, response,
                                                 done, request->poolid(),
