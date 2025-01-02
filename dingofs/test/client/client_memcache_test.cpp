@@ -56,7 +56,7 @@ class MemCachedTest : public ::testing::Test {
     std::shared_ptr<MemCachedClient> client(new MemCachedClient());
     ASSERT_EQ(true, client->AddServer(hostname, port));
     ASSERT_EQ(true, client->PushServer());
-    KVClientManagerOpt opt;
+    common::KVClientManagerOpt opt;
     opt.setThreadPooln = 2;
     opt.getThreadPooln = 2;
     ASSERT_EQ(true, manager_.Init(opt, client));

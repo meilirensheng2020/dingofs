@@ -25,8 +25,8 @@
 
 #include "dingofs/src/client/s3/client_s3_adaptor.h"
 #include "dingofs/src/client/s3/client_s3_cache_manager.h"
-#include "dingofs/test/client/mock_client_s3_cache_manager.h"
 #include "dingofs/src/utils/concurrent/count_down_event.h"
+#include "dingofs/test/client/mock_client_s3_cache_manager.h"
 
 namespace dingofs {
 namespace client {
@@ -45,7 +45,7 @@ class FsCacheManagerTest : public testing::Test {
   void SetUp() override {
     maxReadCacheByte_ = 16ull * 1024 * 1024;  // 16MiB
     uint64_t maxWriteCacheByte = maxReadCacheByte_;
-    S3ClientAdaptorOption option;
+    common::S3ClientAdaptorOption option;
     option.blockSize = 1 * 1024 * 1024;
     option.chunkSize = 4 * 1024 * 1024;
     option.baseSleepUs = 500;

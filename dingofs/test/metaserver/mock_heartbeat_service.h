@@ -31,16 +31,17 @@ namespace dingofs {
 namespace mds {
 namespace heartbeat {
 
-class MockHeartbeatService : public HeartbeatService {
+class MockHeartbeatService : public pb::mds::heartbeat::HeartbeatService {
  public:
-  MockHeartbeatService() : HeartbeatService() {}
-  ~MockHeartbeatService() = default;
+  MockHeartbeatService() = default;
+  ~MockHeartbeatService() override = default;
 
-  MOCK_METHOD4(MetaServerHeartbeat,
-               void(google::protobuf::RpcController* cntl_base,
-                    const MetaServerHeartbeatRequest* request,
-                    MetaServerHeartbeatResponse* response,
-                    google::protobuf::Closure* done));
+  MOCK_METHOD4(
+      MetaServerHeartbeat,
+      void(google::protobuf::RpcController* cntl_base,
+           const pb::mds::heartbeat::MetaServerHeartbeatRequest* request,
+           pb::mds::heartbeat::MetaServerHeartbeatResponse* response,
+           google::protobuf::Closure* done));
 };
 }  // namespace heartbeat
 }  // namespace mds

@@ -77,7 +77,7 @@ TEST_F(TestCopysetConfGenerator, get_copyset_fail) {
   CopySetIdType copysetId = 2;
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo(poolId, copysetId);
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   EXPECT_CALL(*topology_, GetCopySet(_, _)).WillOnce(Return(false));
 
@@ -94,7 +94,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_leader_fail) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(1);
   reportCopySetInfo.SetLeader(reportId);
@@ -115,7 +115,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_leader_updatecopyset_fail) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(1);
   reportCopySetInfo.SetLeader(reportId);
@@ -139,7 +139,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_leader_updatecopyset_succ) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(1);
   reportCopySetInfo.SetLeader(reportId);
@@ -164,7 +164,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower1) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -185,7 +185,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower2) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -215,7 +215,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower3) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -240,7 +240,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower4) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -264,7 +264,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower5) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -290,7 +290,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower6) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -322,7 +322,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower7) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -354,7 +354,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower8) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -391,7 +391,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower9) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);
@@ -428,7 +428,7 @@ TEST_F(TestCopysetConfGenerator, get_report_copyset_follower10) {
   ::dingofs::mds::topology::CopySetInfo reportCopySetInfo;
   ::dingofs::mds::topology::CopySetInfo recordCopySetInfo;
   ::dingofs::mds::heartbeat::ConfigChangeInfo configChInfo;
-  ::dingofs::mds::heartbeat::CopySetConf copysetConf;
+  pb::mds::heartbeat::CopySetConf copysetConf;
 
   reportCopySetInfo.SetEpoch(2);
   reportCopySetInfo.SetLeader(reportId + 1);

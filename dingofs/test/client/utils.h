@@ -22,8 +22,8 @@
 namespace dingofs {
 namespace client {
 
-using ::dingofs::metaserver::Inode;
-using ::dingofs::metaserver::InodeAttr;
+using pb::metaserver::Inode;
+using pb::metaserver::InodeAttr;
 
 inline InodeAttr ToInodeAttr(const Inode& inode) {
   InodeAttr attr;

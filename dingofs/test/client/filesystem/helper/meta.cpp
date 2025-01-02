@@ -22,9 +22,15 @@
 
 #include "dingofs/test/client/filesystem/helper/meta.h"
 
+#include "dingofs/proto/metaserver.pb.h"
+
 namespace dingofs {
 namespace client {
 namespace filesystem {
+
+using dingofs::pb::metaserver::Dentry;
+using dingofs::pb::metaserver::Inode;
+using dingofs::pb::metaserver::InodeAttr;
 
 AttrOption AttrOption::type(FsFileType type) {
   type_ = type;
@@ -82,7 +88,7 @@ InodeOption InodeOption::mtime(uint64_t seconds, uint32_t naoSeconds) {
 }
 
 InodeOption InodeOption::metaClient(
-    std::shared_ptr<MetaServerClient> metaClient) {
+    std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient) {
   metaClient_ = metaClient;
   return *this;
 }

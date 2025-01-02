@@ -29,6 +29,7 @@
 #include <string>
 
 #include "absl/strings/str_format.h"
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/filesystem/filesystem.h"
 #include "dingofs/src/client/filesystem/meta.h"
 
@@ -37,6 +38,10 @@ namespace client {
 namespace filesystem {
 
 using ::absl::StrFormat;
+using ::dingofs::base::time::TimeSpec;
+using ::dingofs::pb::metaserver::Dentry;
+using ::dingofs::pb::metaserver::FsFileType;
+using ::dingofs::pb::metaserver::InodeAttr;
 
 struct AttrOption {
  public:
@@ -72,14 +77,14 @@ class InodeOption {
  public:
   InodeOption() = default;
   InodeOption mtime(uint64_t seconds, uint32_t naoSeconds);
-  InodeOption metaClient(std::shared_ptr<MetaServerClient> metaClient);
+  InodeOption metaClient(
+      std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient);
 
  private:
   friend std::shared_ptr<InodeWrapper> MkInode(Ino ino, InodeOption option);
 
- private:
   TimeSpec mtime_;
-  std::shared_ptr<MetaServerClient> metaClient_;
+  std::shared_ptr<stub::rpcclient::MetaServerClient> metaClient_;
 };
 
 InodeAttr MkAttr(Ino ino, AttrOption option = AttrOption());

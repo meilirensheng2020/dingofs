@@ -32,8 +32,6 @@
 #include <thread>
 
 #include "dingofs/proto/common.pb.h"
-#include "dingofs/proto/metaserver.pb.h"
-#include "dingofs/src/metaserver/copyset/copyset_node.h"
 #include "dingofs/src/metaserver/inode_manager.h"
 #include "dingofs/src/metaserver/s3compact.h"
 #include "dingofs/src/metaserver/s3compact_manager.h"
@@ -95,7 +93,7 @@ std::shared_ptr<std::map<std::string, std::string>> PrepareInodeList() {
 
 TEST_F(S3CompactWorkerTest, TestCancelCompact) {
   auto mockKvStorage = std::make_shared<storage::MockKVStorage>();
-  auto nameGen = std::make_shared<NameGenerator>(1);
+  auto nameGen = std::make_shared<storage::NameGenerator>(1);
   auto inodeStorage = std::make_shared<InodeStorage>(mockKvStorage, nameGen, 0);
   FileType2InodeNumMap filetype2InodeNum;
   auto inodeManager =
@@ -123,7 +121,7 @@ TEST_F(S3CompactWorkerTest, TestCancelCompact) {
   }));
 
   // generate a fake compaction job
-  PartitionInfo pinfo;
+  pb::common::PartitionInfo pinfo;
   pinfo.set_poolid(1);
   pinfo.set_copysetid(1);
   pinfo.set_partitionid(1);

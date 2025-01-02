@@ -30,18 +30,16 @@
 
 #include <string>
 
+#include "dingofs/proto/mds.pb.h"
 #include "dingofs/src/mds/topology/topology_storage_codec.h"
 #include "dingofs/src/mds/topology/topology_storge_etcd.h"
+#include "dingofs/test/aws/mock_s3_adapter.h"
 #include "dingofs/test/mds/fake_metaserver.h"
 #include "dingofs/test/mds/mock/mock_cli2.h"
 #include "dingofs/test/mds/mock/mock_kvstorage_client.h"
 #include "dingofs/test/mds/mock/mock_topology.h"
-#include "dingofs/test/aws/mock_s3_adapter.h"
 
-using ::dingofs::common::S3Info;
-using ::dingofs::common::Volume;
-using ::dingofs::mds::RefreshSessionRequest;
-using ::dingofs::mds::RefreshSessionResponse;
+using ::dingofs::aws::MockS3Adapter;
 using ::dingofs::mds::topology::DefaultIdGenerator;
 using ::dingofs::mds::topology::DefaultTokenGenerator;
 using ::dingofs::mds::topology::MockEtcdClient;
@@ -53,11 +51,19 @@ using ::dingofs::mds::topology::TopologyStorageEtcd;
 using ::dingofs::mds::topology::TopologyTokenGenerator;
 using ::dingofs::mds::topology::TopoStatusCode;
 using ::dingofs::metaserver::FakeMetaserverImpl;
-using ::dingofs::metaserver::copyset::GetLeaderRequest2;
-using ::dingofs::metaserver::copyset::GetLeaderResponse2;
 using ::dingofs::metaserver::copyset::MockCliService2;
-using ::dingofs::aws::MockS3Adapter;
 
+using ::dingofs::pb::common::FSType;
+using ::dingofs::pb::common::S3Info;
+using ::dingofs::pb::common::Volume;
+using ::dingofs::pb::mds::FsInfo;
+using ::dingofs::pb::mds::Mountpoint;
+using ::dingofs::pb::mds::RefreshSessionRequest;
+using ::dingofs::pb::mds::RefreshSessionResponse;
+using ::dingofs::pb::metaserver::copyset::GetLeaderRequest2;
+using ::dingofs::pb::metaserver::copyset::GetLeaderResponse2;
+
+using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -169,7 +175,7 @@ TEST_F(MdsServiceTest, test1) {
   brpc::Channel channel;
   ASSERT_EQ(channel.Init(server.listen_address(), nullptr), 0);
 
-  MdsService_Stub stub(&channel);
+  pb::mds::MdsService_Stub stub(&channel);
   brpc::Controller cntl;
 
   // test CreateFS
@@ -182,8 +188,8 @@ TEST_F(MdsServiceTest, test1) {
   // create s3 fsinfo1
   FsInfo fsinfo1;
   {
-    CreateFsRequest create_request;
-    CreateFsResponse create_response;
+    pb::mds::CreateFsRequest create_request;
+    pb::mds::CreateFsResponse create_response;
 
     const auto capacity = 100ULL << 30;
     create_request.set_capacity(capacity);
@@ -231,8 +237,8 @@ TEST_F(MdsServiceTest, test1) {
   FsInfo fsinfo2;
 
   {
-    CreateFsRequest create_request;
-    CreateFsResponse create_response;
+    pb::mds::CreateFsRequest create_request;
+    pb::mds::CreateFsResponse create_response;
 
     // create s3 fs, s3info not set
     const auto capacity = 100ULL << 30;
@@ -257,8 +263,8 @@ TEST_F(MdsServiceTest, test1) {
     // create s3 fs, OK
 
     cntl.Reset();
-    CreateFsRequest create_request;
-    CreateFsResponse create_response;
+    pb::mds::CreateFsRequest create_request;
+    pb::mds::CreateFsResponse create_response;
 
     const auto capacity = 100ULL << 30;
     create_request.set_capacity(capacity);
@@ -303,15 +309,15 @@ TEST_F(MdsServiceTest, test1) {
 
   // test MountFs
   cntl.Reset();
-  Mountpoint mount_point;
+  pb::mds::Mountpoint mount_point;
   mount_point.set_hostname("host1");
   mount_point.set_port(9000);
   mount_point.set_path("/a/b/c");
   mount_point.set_cto(false);
-  MountFsRequest mount_request;
-  MountFsResponse mount_response;
+  pb::mds::MountFsRequest mount_request;
+  pb::mds::MountFsResponse mount_response;
   mount_request.set_fsname("fs1");
-  mount_request.set_allocated_mountpoint(new Mountpoint(mount_point));
+  mount_request.set_allocated_mountpoint(new pb::mds::Mountpoint(mount_point));
   stub.MountFs(&cntl, &mount_request, &mount_response, nullptr);
   if (!cntl.Failed()) {
     ASSERT_EQ(mount_response.statuscode(), FSStatusCode::OK);
@@ -337,7 +343,7 @@ TEST_F(MdsServiceTest, test1) {
   }
 
   cntl.Reset();
-  Mountpoint mount_point2;
+  pb::mds::Mountpoint mount_point2;
   mount_point2.set_hostname("host1");
   mount_point2.set_port(9000);
   mount_point2.set_path("/a/b/d");
@@ -395,8 +401,8 @@ TEST_F(MdsServiceTest, test1) {
   // TEST GetFsInfo
   // no fsid and no fsname
   cntl.Reset();
-  GetFsInfoRequest get_request;
-  GetFsInfoResponse get_response;
+  pb::mds::GetFsInfoRequest get_request;
+  pb::mds::GetFsInfoResponse get_response;
   stub.GetFsInfo(&cntl, &get_request, &get_response, nullptr);
   if (!cntl.Failed()) {
     ASSERT_EQ(get_response.statuscode(), FSStatusCode::PARAM_ERROR);
@@ -532,8 +538,8 @@ TEST_F(MdsServiceTest, test1) {
 
   // TEST unmount
   cntl.Reset();
-  UmountFsRequest umount_request;
-  UmountFsResponse umount_response;
+  pb::mds::UmountFsRequest umount_request;
+  pb::mds::UmountFsResponse umount_response;
   umount_request.set_fsname(fsinfo1.fsname());
   mount_point.set_hostname("host1");
   mount_point.set_port(9000);
@@ -589,10 +595,10 @@ TEST_F(MdsServiceTest, test1) {
   cntl.Reset();
   RefreshSessionRequest refresh_session_request;
   RefreshSessionResponse refresh_session_response;
-  PartitionTxId tmp;
+  topology::PartitionTxId tmp;
   tmp.set_partitionid(1);
   tmp.set_txid(1);
-  std::vector<PartitionTxId> partition_list({std::move(tmp)});
+  std::vector<topology::PartitionTxId> partition_list({std::move(tmp)});
   std::string fs_name = "fs1";
   Mountpoint mountpoint;
   mountpoint.set_hostname("127.0.0.1");
@@ -615,8 +621,8 @@ TEST_F(MdsServiceTest, test1) {
     ASSERT_EQ(fs_name, tpair.first);
     // RefreshSession will add a mountpoint to fs1
     cntl.Reset();
-    UmountFsRequest umount_request;
-    UmountFsResponse umount_response;
+    pb::mds::UmountFsRequest umount_request;
+    pb::mds::UmountFsResponse umount_response;
     umount_request.set_fsname("fs1");
     mount_point.set_hostname("127.0.0.1");
     mount_point.set_port(9000);
@@ -630,8 +636,8 @@ TEST_F(MdsServiceTest, test1) {
 
   // test delete fs
   cntl.Reset();
-  DeleteFsRequest delete_request;
-  DeleteFsResponse delete_response;
+  pb::mds::DeleteFsRequest delete_request;
+  pb::mds::DeleteFsResponse delete_response;
   delete_request.set_fsname(fsinfo2.fsname());
   stub.DeleteFs(&cntl, &delete_request, &delete_response, nullptr);
   if (!cntl.Failed()) {

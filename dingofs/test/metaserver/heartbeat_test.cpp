@@ -30,11 +30,13 @@
 
 using ::dingofs::fs::FileSystemType;
 using ::dingofs::fs::LocalFsFactory;
-using ::dingofs::mds::heartbeat::HeartbeatStatusCode;
-using ::dingofs::mds::heartbeat::MetaServerHeartbeatRequest;
-using ::dingofs::mds::heartbeat::MetaServerHeartbeatResponse;
 using ::dingofs::mds::heartbeat::MockHeartbeatService;
 using ::dingofs::metaserver::storage::StorageOptions;
+
+using ::dingofs::pb::mds::heartbeat::HeartbeatStatusCode;
+using ::dingofs::pb::mds::heartbeat::MetaServerHeartbeatRequest;
+using ::dingofs::pb::mds::heartbeat::MetaServerHeartbeatResponse;
+
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::DoAll;
@@ -60,8 +62,8 @@ class HeartbeatTest : public ::testing::Test {
         options_.dataDir);
   }
 
-  bool GetMetaserverSpaceStatus(MetaServerSpaceStatus* status,
-                                uint64_t ncopysets) {
+  bool GetMetaserverSpaceStatus(
+      pb::mds::heartbeat::MetaServerSpaceStatus* status, uint64_t ncopysets) {
     HeartbeatOptions options;
     options.resourceCollector = resourceCollector_.get();
     Heartbeat heartbeat;
@@ -119,7 +121,7 @@ TEST_F(HeartbeatTest, test1) {
   options.ip = "127.0.0.1";
   options.port = 6000;
   options.mdsListenAddr = "127.0.0.1:6710";
-  options.copysetNodeManager = &CopysetNodeManager::GetInstance();
+  options.copysetNodeManager = &copyset::CopysetNodeManager::GetInstance();
   options.storeUri = "local://./metaserver_data/copysets";
   options.fs = LocalFsFactory::CreateFs(FileSystemType::EXT4, "");
   options.resourceCollector =
@@ -143,7 +145,7 @@ TEST_F(HeartbeatTest, test_ok) {
   options.ip = "127.0.0.1";
   options.port = 6000;
   options.mdsListenAddr = "127.0.0.1:6710";
-  options.copysetNodeManager = &CopysetNodeManager::GetInstance();
+  options.copysetNodeManager = &copyset::CopysetNodeManager::GetInstance();
   options.storeUri = "local://./metaserver_data/copysets";
   options.fs = LocalFsFactory::CreateFs(FileSystemType::EXT4, "");
   options.resourceCollector = resourceCollector_.get();
@@ -183,7 +185,7 @@ TEST_F(HeartbeatTest, test_fail) {
   options.ip = "127.0.0.1";
   options.port = 6000;
   options.mdsListenAddr = "127.0.0.1:6710";
-  options.copysetNodeManager = &CopysetNodeManager::GetInstance();
+  options.copysetNodeManager = &copyset::CopysetNodeManager::GetInstance();
   options.storeUri = "local://./metaserver_data/copysets";
   options.fs = LocalFsFactory::CreateFs(FileSystemType::EXT4, "");
 
@@ -220,7 +222,7 @@ TEST_F(HeartbeatTest, GetMetaServerSpaceStatusTest) {
   ASSERT_GT(statistics.diskUsageBytes, 0);
   ASSERT_GT(statistics.memoryUsageBytes, 0);
 
-  MetaServerSpaceStatus status;
+  pb::mds::heartbeat::MetaServerSpaceStatus status;
   succ = GetMetaserverSpaceStatus(&status, 1);
   ASSERT_TRUE(succ);
   LOG(INFO) << "metaserver space status: " << status.ShortDebugString();

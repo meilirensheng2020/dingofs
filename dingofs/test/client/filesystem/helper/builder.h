@@ -38,8 +38,14 @@ namespace dingofs {
 namespace client {
 namespace filesystem {
 
-using ::dingofs::client::common::KernelCacheOption;
-
+using dingofs::client::common::AttrWatcherOption;
+using dingofs::client::common::DeferSyncOption;
+using dingofs::client::common::DirCacheOption;
+using dingofs::client::common::FileSystemOption;
+using dingofs::client::common::KernelCacheOption;
+using dingofs::client::common::LookupCacheOption;
+using dingofs::client::common::OpenFilesOption;
+using dingofs::client::common::RPCOption;
 using dingofs::stub::rpcclient::MockMetaServerClient;
 
 const uint32_t kMockFsId = 100;

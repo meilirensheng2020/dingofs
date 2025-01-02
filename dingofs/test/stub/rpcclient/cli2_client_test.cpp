@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 
 #include "dingofs/proto/cli2.pb.h"
+#include "dingofs/src/stub/common/common.h"
 #include "dingofs/test/stub/rpcclient/mock_cli2_service.h"
 
 namespace dingofs {
@@ -37,9 +38,15 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::SetArgPointee;
 
-using ::dingofs::common::Peer;
-using ::dingofs::metaserver::copyset::GetLeaderRequest2;
-using ::dingofs::metaserver::copyset::GetLeaderResponse2;
+using pb::common::Peer;
+using pb::metaserver::copyset::GetLeaderRequest2;
+using pb::metaserver::copyset::GetLeaderResponse2;
+
+using common::CopysetID;
+using common::CopysetPeerInfo;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PeerAddr;
 
 template <typename RpcRequestType, typename RpcResponseType,
           bool RpcFailed = false>
@@ -76,7 +83,6 @@ class Cli2ClientImplTest : public testing::Test {
     server_.Join();
   }
 
- protected:
   Cli2ClientImpl cli2ClientImp_;
   MockCliService2 mockCliService2_;
 

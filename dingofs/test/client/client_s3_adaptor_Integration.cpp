@@ -26,6 +26,7 @@
 
 #include <memory>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/blockcache/error.h"
 #include "dingofs/src/client/inode_wrapper.h"
 #include "dingofs/src/client/kvclient/kvclient_manager.h"
@@ -59,7 +60,12 @@ using ::testing::SetArrayArgument;
 using ::testing::WithArg;
 
 using dingofs::client::blockcache::BCACHE_ERROR;
+using dingofs::client::common::S3ClientAdaptorOption;
 using dingofs::stub::rpcclient::MockMdsClient;
+
+using dingofs::pb::mds::FSStatusCode;
+using dingofs::pb::metaserver::S3ChunkInfo;
+using dingofs::pb::metaserver::S3ChunkInfoList;
 
 template <typename RpcRequestType, typename RpcResponseType,
           bool RpcFailed = false>
@@ -117,7 +123,7 @@ std::shared_ptr<InodeWrapper> InitInodeForIntegration() {
   inode.set_gid(1);
   inode.set_mode(1);
   inode.set_nlink(1);
-  inode.set_type(dingofs::metaserver::FsFileType::TYPE_S3);
+  inode.set_type(dingofs::pb::metaserver::FsFileType::TYPE_S3);
   gInodeId1++;
 
   return std::make_shared<InodeWrapper>(std::move(inode), nullptr);
@@ -132,7 +138,7 @@ class ClientS3IntegrationTest : public testing::Test {
     ASSERT_EQ(0, server_.AddService(&mockMetaServerService_,
                                     brpc::SERVER_DOESNT_OWN_SERVICE));
     ASSERT_EQ(0, server_.Start(addr_.c_str(), nullptr));
-    S3ClientAdaptorOption option;
+    common::S3ClientAdaptorOption option;
     option.blockSize = 1 * 1024 * 1024;
     option.chunkSize = 4 * 1024 * 1024;
     option.baseSleepUs = 500;
@@ -166,7 +172,7 @@ class ClientS3IntegrationTest : public testing::Test {
   void InitKVClientManager() {
     kvClientManager_ = std::make_shared<KVClientManager>();
 
-    KVClientManagerOpt opt;
+    common::KVClientManagerOpt opt;
     std::shared_ptr<MockKVClient> mockKVClient(&mockKVClient_);
     kvClientManager_->Init(opt, mockKVClient);
   }

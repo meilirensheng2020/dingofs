@@ -30,6 +30,7 @@
 #include <chrono>
 #include <thread>
 
+#include "dingofs/proto/common.pb.h"
 #include "dingofs/test/fs/mock_local_filesystem.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_node_manager.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_service.h"
@@ -48,6 +49,7 @@ using ::testing::SetArgPointee;
 using ::testing::SetArrayArgument;
 
 using ::dingofs::fs::MockLocalFileSystem;
+using ::dingofs::pb::common::Peer;
 
 class CopysetNodeTest : public testing::Test {
  protected:
@@ -395,12 +397,13 @@ TEST_F(CopysetNodeTest,
   EXPECT_CALL(*mockCopysetService_, GetCopysetStatus(_, _, _, _))
       .WillOnce(Invoke(
           [](::google::protobuf::RpcController* controller,
-             const ::dingofs::metaserver::copyset::CopysetStatusRequest*
+             const ::dingofs::pb::metaserver::copyset::CopysetStatusRequest*
                  request,
-             ::dingofs::metaserver::copyset::CopysetStatusResponse* response,
+             ::dingofs::pb::metaserver::copyset::CopysetStatusResponse*
+                 response,
              ::google::protobuf::Closure* done) {
-            response->set_status(
-                COPYSET_OP_STATUS::COPYSET_OP_STATUS_COPYSET_NOTEXIST);
+            response->set_status(pb::metaserver::copyset::COPYSET_OP_STATUS::
+                                     COPYSET_OP_STATUS_COPYSET_NOTEXIST);
             done->Run();
           }));
 
@@ -428,11 +431,13 @@ TEST_F(
   EXPECT_CALL(*mockCopysetService_, GetCopysetStatus(_, _, _, _))
       .WillOnce(Invoke(
           [](::google::protobuf::RpcController* controller,
-             const ::dingofs::metaserver::copyset::CopysetStatusRequest*
+             const ::dingofs::pb::metaserver::copyset::CopysetStatusRequest*
                  request,
-             ::dingofs::metaserver::copyset::CopysetStatusResponse* response,
+             ::dingofs::pb::metaserver::copyset::CopysetStatusResponse*
+                 response,
              ::google::protobuf::Closure* done) {
-            response->set_status(COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS);
+            response->set_status(pb::metaserver::copyset::COPYSET_OP_STATUS::
+                                     COPYSET_OP_STATUS_SUCCESS);
             done->Run();
           }));
 
@@ -459,11 +464,13 @@ TEST_F(CopysetNodeTest,
   EXPECT_CALL(*mockCopysetService_, GetCopysetStatus(_, _, _, _))
       .WillOnce(Invoke(
           [](::google::protobuf::RpcController* controller,
-             const ::dingofs::metaserver::copyset::CopysetStatusRequest*
+             const ::dingofs::pb::metaserver::copyset::CopysetStatusRequest*
                  request,
-             ::dingofs::metaserver::copyset::CopysetStatusResponse* response,
+             ::dingofs::pb::metaserver::copyset::CopysetStatusResponse*
+                 response,
              ::google::protobuf::Closure* done) {
-            response->set_status(COPYSET_OP_STATUS::COPYSET_OP_STATUS_SUCCESS);
+            response->set_status(pb::metaserver::copyset::COPYSET_OP_STATUS::
+                                     COPYSET_OP_STATUS_SUCCESS);
 
             auto* status = response->mutable_copysetstatus();
             status->set_state(braft::State::STATE_LEADER);

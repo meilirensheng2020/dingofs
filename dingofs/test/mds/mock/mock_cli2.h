@@ -30,12 +30,13 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-class MockCliService2 : public CliService2 {
+class MockCliService2 : public pb::metaserver::copyset::CliService2 {
  public:
-  MOCK_METHOD4(GetLeader, void(::google::protobuf::RpcController* controller,
-                               const GetLeaderRequest2* request,
-                               GetLeaderResponse2* response,
-                               ::google::protobuf::Closure* done));
+  MOCK_METHOD4(GetLeader,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::metaserver::copyset::GetLeaderRequest2* request,
+                    pb::metaserver::copyset::GetLeaderResponse2* response,
+                    ::google::protobuf::Closure* done));
 };
 
 }  // namespace copyset

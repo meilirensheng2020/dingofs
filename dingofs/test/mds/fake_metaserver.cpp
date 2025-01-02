@@ -23,10 +23,13 @@
 
 namespace dingofs {
 namespace metaserver {
+
+using pb::metaserver::MetaStatusCode;
+
 void FakeMetaserverImpl::GetDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::GetDentryRequest* request,
-    ::dingofs::metaserver::GetDentryResponse* response,
+    const pb::metaserver::GetDentryRequest* request,
+    pb::metaserver::GetDentryResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -37,8 +40,8 @@ void FakeMetaserverImpl::GetDentry(
 
 void FakeMetaserverImpl::ListDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::ListDentryRequest* request,
-    ::dingofs::metaserver::ListDentryResponse* response,
+    const pb::metaserver::ListDentryRequest* request,
+    pb::metaserver::ListDentryResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -49,8 +52,8 @@ void FakeMetaserverImpl::ListDentry(
 
 void FakeMetaserverImpl::CreateDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::CreateDentryRequest* request,
-    ::dingofs::metaserver::CreateDentryResponse* response,
+    const pb::metaserver::CreateDentryRequest* request,
+    pb::metaserver::CreateDentryResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -61,8 +64,8 @@ void FakeMetaserverImpl::CreateDentry(
 
 void FakeMetaserverImpl::DeleteDentry(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::DeleteDentryRequest* request,
-    ::dingofs::metaserver::DeleteDentryResponse* response,
+    const pb::metaserver::DeleteDentryRequest* request,
+    pb::metaserver::DeleteDentryResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -73,8 +76,8 @@ void FakeMetaserverImpl::DeleteDentry(
 
 void FakeMetaserverImpl::GetInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::GetInodeRequest* request,
-    ::dingofs::metaserver::GetInodeResponse* response,
+    const pb::metaserver::GetInodeRequest* request,
+    pb::metaserver::GetInodeResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -85,8 +88,8 @@ void FakeMetaserverImpl::GetInode(
 
 void FakeMetaserverImpl::CreateInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::CreateInodeRequest* request,
-    ::dingofs::metaserver::CreateInodeResponse* response,
+    const pb::metaserver::CreateInodeRequest* request,
+    pb::metaserver::CreateInodeResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -97,8 +100,8 @@ void FakeMetaserverImpl::CreateInode(
 
 void FakeMetaserverImpl::CreateRootInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::CreateRootInodeRequest* request,
-    ::dingofs::metaserver::CreateRootInodeResponse* response,
+    const pb::metaserver::CreateRootInodeRequest* request,
+    pb::metaserver::CreateRootInodeResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -109,8 +112,8 @@ void FakeMetaserverImpl::CreateRootInode(
 
 void FakeMetaserverImpl::UpdateInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::UpdateInodeRequest* request,
-    ::dingofs::metaserver::UpdateInodeResponse* response,
+    const pb::metaserver::UpdateInodeRequest* request,
+    pb::metaserver::UpdateInodeResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);
@@ -121,8 +124,8 @@ void FakeMetaserverImpl::UpdateInode(
 
 void FakeMetaserverImpl::DeleteInode(
     ::google::protobuf::RpcController* controller,
-    const ::dingofs::metaserver::DeleteInodeRequest* request,
-    ::dingofs::metaserver::DeleteInodeResponse* response,
+    const pb::metaserver::DeleteInodeRequest* request,
+    pb::metaserver::DeleteInodeResponse* response,
     ::google::protobuf::Closure* done) {
   brpc::ClosureGuard doneGuard(done);
   // brpc::Controller* cntl = static_cast<brpc::Controller*>(controller);

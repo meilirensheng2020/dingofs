@@ -21,7 +21,7 @@
 
 namespace dingofs {
 namespace client {
-
+using dingofs::pb::metaserver::S3ChunkInfo;
 class FlatFileChunkTest : public ::testing::Test {
  protected:
   FlatFileChunk chunk;

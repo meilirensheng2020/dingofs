@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 #include <unistd.h>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/dentry_cache_manager.h"
 #include "dingofs/test/client/mock_metaserver_client.h"
 
@@ -44,12 +45,17 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
+using dingofs::pb::metaserver::Dentry;
+using dingofs::pb::metaserver::FsFileType;
+using dingofs::pb::metaserver::MetaStatusCode;
+
+using dingofs::client::filesystem::DINGOFS_ERROR;
 using dingofs::stub::rpcclient::MockMetaServerClient;
 
 class TestDentryCacheManager : public ::testing::Test {
  protected:
   TestDentryCacheManager() {}
-  ~TestDentryCacheManager() {}
+  ~TestDentryCacheManager() override = default;
 
   virtual void SetUp() {
     metaClient_ = std::make_shared<MockMetaServerClient>();

@@ -30,15 +30,19 @@
 #include <memory>
 
 #include "absl/types/optional.h"
-#include "dingofs/src/stub/filesystem/xattr.h"
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/common/define.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/storage/converter.h"
+#include "dingofs/src/metaserver/storage/iterator.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
+#include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/test/metaserver/storage/utils.h"
 #include "dingofs/test/metaserver/test_helper.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
 
+using ::dingofs::metaserver::storage::Converter;
+using ::dingofs::metaserver::storage::Iterator;
 using ::dingofs::metaserver::storage::Key4S3ChunkInfoList;
 using ::dingofs::metaserver::storage::KVStorage;
 using ::dingofs::metaserver::storage::NameGenerator;
@@ -50,6 +54,12 @@ using ::dingofs::stub::filesystem::XATTR_DIR_ENTRIES;
 using ::dingofs::stub::filesystem::XATTR_DIR_FBYTES;
 using ::dingofs::stub::filesystem::XATTR_DIR_FILES;
 using ::dingofs::stub::filesystem::XATTR_DIR_SUBDIRS;
+
+using dingofs::pb::metaserver::FsFileType;
+using dingofs::pb::metaserver::InodeAttr;
+using dingofs::pb::metaserver::ManageInodeType;
+using dingofs::pb::metaserver::MetaStatusCode;
+using dingofs::pb::metaserver::XAttr;
 
 namespace dingofs {
 namespace metaserver {

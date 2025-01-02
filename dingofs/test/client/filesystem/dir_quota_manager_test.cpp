@@ -14,6 +14,7 @@
 
 #include "dingofs/src/client/filesystem/dir_quota_manager.h"
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/test/client/mock_dir_parent_watcher.h"
 #include "dingofs/test/client/mock_inode_cache_manager.h"
 #include "dingofs/test/client/mock_metaserver_client.h"
@@ -29,6 +30,10 @@ using testing::Return;
 
 using base::timer::MockTimer;
 using dingofs::stub::rpcclient::MockMetaServerClient;
+
+using dingofs::pb::metaserver::MetaStatusCode;
+using dingofs::pb::metaserver::Quota;
+using dingofs::pb::metaserver::Usage;
 
 class DirQuotaTest : public ::testing::Test {
  protected:

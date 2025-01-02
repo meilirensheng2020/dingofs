@@ -30,17 +30,16 @@
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
-class MockCliService2 : public dingofs::metaserver::copyset::CliService2 {
+class MockCliService2 : public pb::metaserver::copyset::CliService2 {
  public:
-  MockCliService2() : CliService2() {}
-  ~MockCliService2() = default;
+  MockCliService2() = default;
+  ~MockCliService2() override = default;
 
-  MOCK_METHOD4(
-      GetLeader,
-      void(::google::protobuf::RpcController* controller,
-           const dingofs::metaserver::copyset::GetLeaderRequest2* request,
-           dingofs::metaserver::copyset::GetLeaderResponse2* response,
-           ::google::protobuf::Closure* done));
+  MOCK_METHOD4(GetLeader,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::metaserver::copyset::GetLeaderRequest2* request,
+                    pb::metaserver::copyset::GetLeaderResponse2* response,
+                    ::google::protobuf::Closure* done));
 };
 }  // namespace rpcclient
 }  // namespace stub

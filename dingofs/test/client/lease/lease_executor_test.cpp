@@ -29,9 +29,9 @@
 #include "dingofs/test/stub/rpcclient/mock_mds_client.h"
 #include "dingofs/test/stub/rpcclient/mock_metacache.h"
 
+using dingofs::pb::mds::topology::PartitionTxId;
 using dingofs::stub::rpcclient::MockMdsClient;
 using dingofs::stub::rpcclient::MockMetaCache;
-using dingofs::mds::topology::PartitionTxId;
 
 using ::testing::AtLeast;
 using ::testing::Return;
@@ -52,7 +52,7 @@ class LeaseExecutorTest : public ::testing::Test {
  protected:
   std::shared_ptr<MockMdsClient> mdsCli_;
   std::shared_ptr<MockMetaCache> metaCache_;
-  LeaseOpt opt_;
+  common::LeaseOpt opt_;
 };
 
 TEST_F(LeaseExecutorTest, test_start) {
@@ -89,9 +89,9 @@ TEST_F(LeaseExecutorTest, test_start_stop) {
       .WillOnce(SetArgPointee<0>(std::vector<PartitionTxId>{}))
       .WillRepeatedly(SetArgPointee<0>(txIds));
   EXPECT_CALL(*mdsCli_, RefreshSession(_, _, _, _, _))
-      .WillOnce(Return(FSStatusCode::UNKNOWN_ERROR))
-      .WillRepeatedly(
-          testing::DoAll(SetArgPointee<1>(txIds), Return(FSStatusCode::OK)));
+      .WillOnce(Return(pb::mds::FSStatusCode::UNKNOWN_ERROR))
+      .WillRepeatedly(testing::DoAll(SetArgPointee<1>(txIds),
+                                     Return(pb::mds::FSStatusCode::OK)));
   EXPECT_CALL(*metaCache_, SetTxId(1, 2)).Times(AtLeast(1));
 
   // lease executor start

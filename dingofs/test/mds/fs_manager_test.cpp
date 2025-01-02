@@ -28,16 +28,17 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/mds.pb.h"
 #include "dingofs/src/common/define.h"
 #include "dingofs/src/mds/topology/topology_storage_codec.h"
 #include "dingofs/src/mds/topology/topology_storge_etcd.h"
+#include "dingofs/test/aws/mock_s3_adapter.h"
 #include "dingofs/test/mds/mock/mock_cli2.h"
 #include "dingofs/test/mds/mock/mock_metaserver.h"
 #include "dingofs/test/mds/mock/mock_topology.h"
-#include "dingofs/test/aws/mock_s3_adapter.h"
 
-using ::dingofs::common::S3Info;
-using ::dingofs::common::Volume;
+using ::dingofs::aws::MockS3Adapter;
 using ::dingofs::mds::topology::DefaultIdGenerator;
 using ::dingofs::mds::topology::DefaultTokenGenerator;
 using ::dingofs::mds::topology::FsIdType;
@@ -49,17 +50,24 @@ using ::dingofs::mds::topology::TopologyStorageCodec;
 using ::dingofs::mds::topology::TopologyStorageEtcd;
 using ::dingofs::mds::topology::TopologyTokenGenerator;
 using ::dingofs::mds::topology::TopoStatusCode;
-using ::dingofs::metaserver::CreateRootInodeRequest;
-using ::dingofs::metaserver::CreateRootInodeResponse;
-using ::dingofs::metaserver::MetaStatusCode;
 using ::dingofs::metaserver::MockMetaserverService;
-using ::dingofs::metaserver::copyset::GetLeaderRequest2;
-using ::dingofs::metaserver::copyset::GetLeaderResponse2;
 using ::dingofs::metaserver::copyset::MockCliService2;
-using ::dingofs::aws::MockS3Adapter;
+
+using ::dingofs::pb::common::FSType;
+using ::dingofs::pb::common::S3Info;
+using ::dingofs::pb::common::Volume;
+using ::dingofs::pb::mds::FsDetail;
+using ::dingofs::pb::mds::FsInfo;
+using ::dingofs::pb::mds::FsStatus;
+using ::dingofs::pb::metaserver::CreateRootInodeRequest;
+using ::dingofs::pb::metaserver::CreateRootInodeResponse;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+using ::dingofs::pb::metaserver::copyset::GetLeaderRequest2;
+using ::dingofs::pb::metaserver::copyset::GetLeaderResponse2;
 
 using ::google::protobuf::util::MessageDifferencer;
 
+using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -185,7 +193,7 @@ TEST_F(FSManagerTest, background_thread_deletefs_test) {
   uint64_t blockSize = 4096;
   bool enableSumInDir = false;
 
-  CreateFsRequest req;
+  pb::mds::CreateFsRequest req;
   req.set_blocksize(blockSize);
   req.set_enablesumindir(enableSumInDir);
   req.set_owner("test");
@@ -197,7 +205,7 @@ TEST_F(FSManagerTest, background_thread_deletefs_test) {
 
   // create s3 test
   std::string fsName2 = "fs2";
-  dingofs::common::S3Info s3Info;
+  dingofs::pb::common::S3Info s3Info;
   FsInfo s3FsInfo;
   s3Info.set_ak("ak");
   s3Info.set_sk("sk");
@@ -282,20 +290,20 @@ TEST_F(FSManagerTest, background_thread_deletefs_test) {
 }
 
 TEST_F(FSManagerTest, test_refreshSession) {
-  PartitionTxId tmp;
+  topology::PartitionTxId tmp;
   tmp.set_partitionid(1);
   tmp.set_txid(1);
   std::string fsName = "fs1";
-  Mountpoint mountpoint;
+  pb::mds::Mountpoint mountpoint;
   mountpoint.set_hostname("127.0.0.1");
   mountpoint.set_port(9000);
   mountpoint.set_path("/mnt");
 
   {
     LOG(INFO) << "### case1: partition txid need update ###";
-    RefreshSessionRequest request;
-    RefreshSessionResponse response;
-    std::vector<PartitionTxId> txidlist({std::move(tmp)});
+    pb::mds::RefreshSessionRequest request;
+    pb::mds::RefreshSessionResponse response;
+    std::vector<topology::PartitionTxId> txidlist({std::move(tmp)});
     *request.mutable_txids() = {txidlist.begin(), txidlist.end()};
     request.set_fsname(fsName);
     *request.mutable_mountpoint() = mountpoint;
@@ -306,8 +314,8 @@ TEST_F(FSManagerTest, test_refreshSession) {
   }
   {
     LOG(INFO) << "### case2: partition txid do not need update ###";
-    RefreshSessionResponse response;
-    RefreshSessionRequest request;
+    pb::mds::RefreshSessionResponse response;
+    pb::mds::RefreshSessionRequest request;
     request.set_fsname(fsName);
     *request.mutable_mountpoint() = mountpoint;
     fsManager_->RefreshSession(&request, &response);
@@ -318,16 +326,16 @@ TEST_F(FSManagerTest, test_refreshSession) {
 TEST_F(FSManagerTest, GetLatestTxId_ParamFsId) {
   // CASE 1: GetLatestTxId without fsid param
   {
-    GetLatestTxIdRequest request;
-    GetLatestTxIdResponse response;
+    pb::mds::GetLatestTxIdRequest request;
+    pb::mds::GetLatestTxIdResponse response;
     fsManager_->GetLatestTxId(&request, &response);
     ASSERT_EQ(response.statuscode(), FSStatusCode::PARAM_ERROR);
   }
 
   // CASE 2: GetLatestTxId with fsid
   {
-    GetLatestTxIdRequest request;
-    GetLatestTxIdResponse response;
+    pb::mds::GetLatestTxIdRequest request;
+    pb::mds::GetLatestTxIdResponse response;
     request.set_fsid(1);
     EXPECT_CALL(*topoManager_, ListPartitionOfFs(_, _))
         .WillOnce(Invoke([&](FsIdType fsId, std::list<PartitionInfo>* list) {

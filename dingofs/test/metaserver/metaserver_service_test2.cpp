@@ -66,14 +66,15 @@ TEST_F(MetaServerServiceTest2, ServiceOverload) {
 
   throttle_->Increment();
 
-#define TEST_SERVICE_OVERLOAD(TYPE)                             \
-  do {                                                          \
-    TYPE##Request request;                                      \
-    TYPE##Response response;                                    \
-    FakeClosure closure;                                        \
-    metaServer_->TYPE(nullptr, &request, &response, &closure);  \
-    closure.WaitRunned();                                       \
-    EXPECT_EQ(MetaStatusCode::OVERLOAD, response.statuscode()); \
+#define TEST_SERVICE_OVERLOAD(TYPE)                            \
+  do {                                                         \
+    pb::metaserver::TYPE##Request request;                     \
+    pb::metaserver::TYPE##Response response;                   \
+    FakeClosure closure;                                       \
+    metaServer_->TYPE(nullptr, &request, &response, &closure); \
+    closure.WaitRunned();                                      \
+    EXPECT_EQ(pb::metaserver::MetaStatusCode::OVERLOAD,        \
+              response.statuscode());                          \
   } while (0)
 
   TEST_SERVICE_OVERLOAD(GetDentry);
@@ -99,16 +100,17 @@ TEST_F(MetaServerServiceTest2, ServiceOverload) {
 TEST_F(MetaServerServiceTest2, CopysetNodeNotFound) {
   throttle_ = absl::make_unique<InflightThrottle>(1);
   metaServer_ = absl::make_unique<MetaServerServiceImpl>(
-      &CopysetNodeManager::GetInstance(), throttle_.get());
+      &copyset::CopysetNodeManager::GetInstance(), throttle_.get());
 
-#define TEST_COPYSETNODE_NOTFOUND(TYPE)                                 \
-  do {                                                                  \
-    TYPE##Request request;                                              \
-    TYPE##Response response;                                            \
-    FakeClosure closure;                                                \
-    metaServer_->TYPE(nullptr, &request, &response, &closure);          \
-    closure.WaitRunned();                                               \
-    EXPECT_EQ(MetaStatusCode::COPYSET_NOTEXIST, response.statuscode()); \
+#define TEST_COPYSETNODE_NOTFOUND(TYPE)                         \
+  do {                                                          \
+    pb::metaserver::TYPE##Request request;                      \
+    pb::metaserver::TYPE##Response response;                    \
+    FakeClosure closure;                                        \
+    metaServer_->TYPE(nullptr, &request, &response, &closure);  \
+    closure.WaitRunned();                                       \
+    EXPECT_EQ(pb::metaserver::MetaStatusCode::COPYSET_NOTEXIST, \
+              response.statuscode());                           \
   } while (0)
 
   TEST_COPYSETNODE_NOTFOUND(GetDentry);

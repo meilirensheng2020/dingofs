@@ -111,8 +111,8 @@ class MdsTest : public ::testing::Test {
 
 pid_t MdsTest::etcdPid_ = 0;
 
-void GetChunkIds(std::shared_ptr<dingofs::utils::Configuration> conf,
-                 int numChunkIds, vector<uint64_t>* data) {
+void GetChunkIds(std::shared_ptr<utils::Configuration> conf, int numChunkIds,
+                 vector<uint64_t>* data) {
   brpc::Channel channel;
   std::string allocateServer(kMdsListenAddr);
   if (channel.Init(allocateServer.c_str(), NULL) != 0) {
@@ -122,9 +122,9 @@ void GetChunkIds(std::shared_ptr<dingofs::utils::Configuration> conf,
   }
 
   brpc::Controller* cntl = new brpc::Controller();
-  AllocateS3ChunkRequest request;
-  AllocateS3ChunkResponse response;
-  dingofs::mds::MdsService_Stub stub(&channel);
+  pb::mds::AllocateS3ChunkRequest request;
+  pb::mds::AllocateS3ChunkResponse response;
+  pb::mds::MdsService_Stub stub(&channel);
   request.set_fsid(0);
   request.set_chunkidnum(1);
   for (int i = 0; i < numChunkIds; ++i) {
@@ -140,8 +140,8 @@ void GetChunkIds(std::shared_ptr<dingofs::utils::Configuration> conf,
       return;
     }
 
-    ::dingofs::mds::FSStatusCode ssCode = response.statuscode();
-    if (ssCode != ::dingofs::mds::FSStatusCode::OK) {
+    pb::mds::FSStatusCode ssCode = response.statuscode();
+    if (ssCode != pb::mds::FSStatusCode::OK) {
       LOG(WARNING) << "Allocate s3 chunkid response Failed, retCode = "
                    << ssCode;
       delete cntl;
@@ -159,7 +159,7 @@ void GetChunkIds(std::shared_ptr<dingofs::utils::Configuration> conf,
 
 TEST_F(MdsTest, test_chunkIds_allocate) {
   dingofs::mds::MDS mds;
-  auto conf = std::make_shared<Configuration>();
+  auto conf = std::make_shared<utils::Configuration>();
   conf->SetConfigPath("dingofs/conf/mds.conf");
   ASSERT_TRUE(conf->LoadConfig());
   conf->SetStringValue("mds.listen.addr", kMdsListenAddr);
@@ -187,7 +187,7 @@ TEST_F(MdsTest, test_chunkIds_allocate) {
 
 TEST_F(MdsTest, test1) {
   dingofs::mds::MDS mds;
-  auto conf = std::make_shared<Configuration>();
+  auto conf = std::make_shared<utils::Configuration>();
   conf->SetConfigPath("dingofs/conf/mds.conf");
   ASSERT_TRUE(conf->LoadConfig());
   conf->SetStringValue("mds.listen.addr", kMdsListenAddr);
@@ -213,7 +213,7 @@ TEST_F(MdsTest, test1) {
 
 TEST_F(MdsTest, test2) {
   dingofs::mds::MDS mds;
-  auto conf = std::make_shared<Configuration>();
+  auto conf = std::make_shared<utils::Configuration>();
   conf->SetConfigPath("dingofs/conf/mds.conf");
   ASSERT_TRUE(conf->LoadConfig());
   conf->SetStringValue("mds.listen.addr", kMdsListenAddr);

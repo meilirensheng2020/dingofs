@@ -38,83 +38,87 @@ class MockMDSBaseClient : public MDSBaseClient {
   MockMDSBaseClient() : MDSBaseClient() {}
   ~MockMDSBaseClient() = default;
 
-  MOCK_METHOD5(MountFs,
-               void(const std::string& fsName, const Mountpoint& mountPt,
-                    MountFsResponse* response, brpc::Controller* cntl,
-                    brpc::Channel* channel));
+  MOCK_METHOD5(MountFs, void(const std::string& fsName,
+                             const pb::mds::Mountpoint& mountPt,
+                             pb::mds::MountFsResponse* response,
+                             brpc::Controller* cntl, brpc::Channel* channel));
 
-  MOCK_METHOD5(UmountFs,
-               void(const std::string& fsName, const Mountpoint& mountPt,
-                    UmountFsResponse* response, brpc::Controller* cntl,
-                    brpc::Channel* channel));
+  MOCK_METHOD5(UmountFs, void(const std::string& fsName,
+                              const pb::mds::Mountpoint& mountPt,
+                              pb::mds::UmountFsResponse* response,
+                              brpc::Controller* cntl, brpc::Channel* channel));
 
-  MOCK_METHOD4(GetFsInfo,
-               void(const std::string& fsName, GetFsInfoResponse* response,
-                    brpc::Controller* cntl, brpc::Channel* channel));
-
-  MOCK_METHOD4(GetFsInfo, void(uint32_t fsId, GetFsInfoResponse* response,
+  MOCK_METHOD4(GetFsInfo, void(const std::string& fsName,
+                               pb::mds::GetFsInfoResponse* response,
                                brpc::Controller* cntl, brpc::Channel* channel));
 
-  MOCK_METHOD4(GetLatestTxId,
-               void(const GetLatestTxIdRequest& request,
-                    GetLatestTxIdResponse* response, brpc::Controller* cntl,
-                    brpc::Channel* channel));
-
-  MOCK_METHOD4(CommitTx,
-               void(const CommitTxRequest& request, CommitTxResponse* response,
+  MOCK_METHOD4(GetFsInfo,
+               void(uint32_t fsId, pb::mds::GetFsInfoResponse* response,
                     brpc::Controller* cntl, brpc::Channel* channel));
+
+  MOCK_METHOD4(GetLatestTxId,
+               void(const pb::mds::GetLatestTxIdRequest& request,
+                    pb::mds::GetLatestTxIdResponse* response,
+                    brpc::Controller* cntl, brpc::Channel* channel));
+
+  MOCK_METHOD4(CommitTx, void(const pb::mds::CommitTxRequest& request,
+                              pb::mds::CommitTxResponse* response,
+                              brpc::Controller* cntl, brpc::Channel* channel));
 
   MOCK_METHOD5(GetMetaServerInfo,
                void(uint32_t port, std::string ip,
-                    GetMetaServerInfoResponse* response, brpc::Controller* cntl,
-                    brpc::Channel* channel));
-
-  MOCK_METHOD5(GetMetaServerListInCopysets,
-               void(const LogicPoolID& logicalpooid,
-                    const std::vector<CopysetID>& copysetidvec,
-                    GetMetaServerListInCopySetsResponse* response,
+                    pb::mds::topology::GetMetaServerInfoResponse* response,
                     brpc::Controller* cntl, brpc::Channel* channel));
+
+  MOCK_METHOD5(
+      GetMetaServerListInCopysets,
+      void(const common::LogicPoolID& logicalpooid,
+           const std::vector<common::CopysetID>& copysetidvec,
+           pb::mds::topology::GetMetaServerListInCopySetsResponse* response,
+           brpc::Controller* cntl, brpc::Channel* channel));
 
   MOCK_METHOD5(CreatePartition,
                void(uint32_t fsID, uint32_t count,
-                    CreatePartitionResponse* response, brpc::Controller* cntl,
-                    brpc::Channel* channel));
+                    pb::mds::topology::CreatePartitionResponse* response,
+                    brpc::Controller* cntl, brpc::Channel* channel));
 
   MOCK_METHOD4(GetCopysetOfPartitions,
                void(const std::vector<uint32_t>& partitionIDList,
-                    GetCopysetOfPartitionResponse* response,
+                    pb::mds::topology::GetCopysetOfPartitionResponse* response,
                     brpc::Controller* cntl, brpc::Channel* channel));
 
   MOCK_METHOD4(ListPartition,
-               void(uint32_t fsID, ListPartitionResponse* response,
+               void(uint32_t fsID,
+                    pb::mds::topology::ListPartitionResponse* response,
                     brpc::Controller* cntl, brpc::Channel* channel));
 
   MOCK_METHOD4(RefreshSession,
-               void(const RefreshSessionRequest& request,
-                    RefreshSessionResponse* response, brpc::Controller* cntl,
-                    brpc::Channel* channel));
+               void(const pb::mds::RefreshSessionRequest& request,
+                    pb::mds::RefreshSessionResponse* response,
+                    brpc::Controller* cntl, brpc::Channel* channel));
 
   MOCK_METHOD6(AllocateVolumeBlockGroup,
                void(uint32_t fsId, uint32_t count, const std::string& owner,
-                    AllocateBlockGroupResponse* response,
+                    pb::mds::space::AllocateBlockGroupResponse* response,
                     brpc::Controller* cntl, brpc::Channel* channel));
 
   MOCK_METHOD6(AcquireVolumeBlockGroup,
                void(uint32_t fsId, uint64_t blockGroupOffset,
                     const std::string& owner,
-                    AcquireBlockGroupResponse* response, brpc::Controller* cntl,
-                    brpc::Channel* channel));
-
-  MOCK_METHOD6(
-      ReleaseVolumeBlockGroup,
-      void(uint32_t fsId, const std::string& owner,
-           const std::vector<dingofs::mds::space::BlockGroup>& blockGroups,
-           ReleaseBlockGroupResponse* response, brpc::Controller* cntl,
-           brpc::Channel* channel));
-
-  MOCK_METHOD4(AllocOrGetMemcacheCluster,
-               void(uint32_t fsId, AllocOrGetMemcacheClusterResponse* response,
+                    pb::mds::space::AcquireBlockGroupResponse* response,
                     brpc::Controller* cntl, brpc::Channel* channel));
+
+  MOCK_METHOD6(ReleaseVolumeBlockGroup,
+               void(uint32_t fsId, const std::string& owner,
+                    const std::vector<pb::mds::space::BlockGroup>& blockGroups,
+                    pb::mds::space::ReleaseBlockGroupResponse* response,
+                    brpc::Controller* cntl, brpc::Channel* channel));
+
+  MOCK_METHOD4(
+      AllocOrGetMemcacheCluster,
+      void(uint32_t fsId,
+           pb::mds::topology::AllocOrGetMemcacheClusterResponse* response,
+           brpc::Controller* cntl, brpc::Channel* channel));
 };
 }  // namespace rpcclient
 }  // namespace stub

@@ -24,9 +24,13 @@
 
 #include <gtest/gtest.h>
 
+#include "dingofs/src/client/common/config.h"
+
 namespace dingofs {
 namespace client {
 namespace filesystem {
+
+using dingofs::client::common::LookupCacheOption;
 
 class LookupCacheTest : public ::testing::Test {
  protected:

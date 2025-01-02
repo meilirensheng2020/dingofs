@@ -87,7 +87,7 @@ inline std::unique_ptr<Message> GenerateAnDefaultInitializedMessage(
         refl->SetBool(message.get(), fieldDesc, {});
         break;
       case google::protobuf::FieldDescriptor::TYPE_STRING:
-        refl->SetString(message.get(), fieldDesc, {});
+        refl->SetString(message.get(), fieldDesc, "");
         break;
       case google::protobuf::FieldDescriptor::TYPE_GROUP:
         return message;

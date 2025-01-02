@@ -25,6 +25,8 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/common.pb.h"
+
 using ::google::protobuf::util::MessageDifferencer;
 
 namespace dingofs {
@@ -43,69 +45,72 @@ class FSStorageTest : public ::testing::Test {
 
 TEST_F(FSStorageTest, test1) {
   MemoryFsStorage storage;
-  common::Volume volume;
+  pb::common::Volume volume;
   uint32_t fsId = 1;
   uint64_t rootInodeId = 1;
   uint64_t blockSize = 4096;
 
-  FsDetail detail;
-  detail.set_allocated_volume(new common::Volume(volume));
-  CreateFsRequest req;
+  pb::mds::FsDetail detail;
+  detail.set_allocated_volume(new pb::common::Volume(volume));
+  pb::mds::CreateFsRequest req;
   req.set_fsname("name1");
   req.set_blocksize(blockSize);
-  req.set_fstype(FSType::TYPE_VOLUME);
-  req.set_allocated_fsdetail(new FsDetail(detail));
+  req.set_fstype(pb::common::FSType::TYPE_VOLUME);
+  req.set_allocated_fsdetail(new pb::mds::FsDetail(detail));
   req.set_enablesumindir(false);
   req.set_owner("test");
   req.set_capacity((uint64_t)100 * 1024 * 1024 * 1024);
-  FsInfoWrapper fs1 = FsInfoWrapper(&req, fsId, INSERT_ROOT_INODE_ERROR);
+  FsInfoWrapper fs1 =
+      FsInfoWrapper(&req, fsId, pb::mds::INSERT_ROOT_INODE_ERROR);
   // test insert
-  ASSERT_EQ(FSStatusCode::OK, storage.Insert(fs1));
-  ASSERT_EQ(FSStatusCode::FS_EXIST, storage.Insert(fs1));
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Insert(fs1));
+  ASSERT_EQ(pb::mds::FSStatusCode::FS_EXIST, storage.Insert(fs1));
 
   // test get
   FsInfoWrapper fs2;
-  ASSERT_EQ(FSStatusCode::OK, storage.Get(fs1.GetFsId(), &fs2));
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Get(fs1.GetFsId(), &fs2));
   ASSERT_EQ(fs1.GetFsName(), fs2.GetFsName());
   ASSERT_TRUE(fs1 == fs2);
-  ASSERT_EQ(FSStatusCode::NOT_FOUND, storage.Get(fs1.GetFsId() + 1, &fs2));
-  ASSERT_EQ(FSStatusCode::OK, storage.Get(fs1.GetFsName(), &fs2));
+  ASSERT_EQ(pb::mds::FSStatusCode::NOT_FOUND,
+            storage.Get(fs1.GetFsId() + 1, &fs2));
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Get(fs1.GetFsName(), &fs2));
   ASSERT_EQ(fs2.GetFsName(), fs1.GetFsName());
-  ASSERT_EQ(FSStatusCode::NOT_FOUND, storage.Get(fs1.GetFsName() + "1", &fs2));
+  ASSERT_EQ(pb::mds::FSStatusCode::NOT_FOUND,
+            storage.Get(fs1.GetFsName() + "1", &fs2));
   ASSERT_TRUE(storage.Exist(fs1.GetFsId()));
   ASSERT_FALSE(storage.Exist(fs1.GetFsId() + 1));
   ASSERT_TRUE(storage.Exist(fs1.GetFsName()));
   ASSERT_FALSE(storage.Exist(fs1.GetFsName() + "1"));
 
   // test update
-  fs1.SetStatus(FsStatus::INITED);
-  ASSERT_EQ(FSStatusCode::OK, storage.Update(fs1));
-  ASSERT_EQ(FSStatusCode::OK, storage.Get(fs1.GetFsId(), &fs2));
-  ASSERT_EQ(fs2.GetStatus(), FsStatus::INITED);
+  fs1.SetStatus(pb::mds::FsStatus::INITED);
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Update(fs1));
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Get(fs1.GetFsId(), &fs2));
+  ASSERT_EQ(fs2.GetStatus(), pb::mds::FsStatus::INITED);
   req.set_fsname("name3");
   FsInfoWrapper fs3 = FsInfoWrapper(&req, fsId, rootInodeId);
 
   LOG(INFO) << "NAME " << fs3.GetFsName();
-  ASSERT_EQ(FSStatusCode::NOT_FOUND, storage.Update(fs3));
+  ASSERT_EQ(pb::mds::FSStatusCode::NOT_FOUND, storage.Update(fs3));
 
   req.set_fsname("name1");
   FsInfoWrapper fs4 = FsInfoWrapper(&req, fsId + 1, rootInodeId);
-  ASSERT_EQ(FSStatusCode::FS_ID_MISMATCH, storage.Update(fs4));
+  ASSERT_EQ(pb::mds::FSStatusCode::FS_ID_MISMATCH, storage.Update(fs4));
 
   // test rename
   FsInfoWrapper fs5 = fs1;
   fs5.SetFsName("name5");
-  fs5.SetStatus(FsStatus::DELETING);
-  ASSERT_EQ(FSStatusCode::OK, storage.Rename(fs1, fs5));
+  fs5.SetStatus(pb::mds::FsStatus::DELETING);
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Rename(fs1, fs5));
   FsInfoWrapper fs6;
-  ASSERT_EQ(FSStatusCode::OK, storage.Get(fs1.GetFsId(), &fs6));
-  ASSERT_EQ(fs6.GetStatus(), FsStatus::DELETING);
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Get(fs1.GetFsId(), &fs6));
+  ASSERT_EQ(fs6.GetStatus(), pb::mds::FsStatus::DELETING);
   ASSERT_EQ(fs6.GetFsName(), "name5");
 
   // test delete
-  ASSERT_EQ(FSStatusCode::NOT_FOUND, storage.Delete(fs1.GetFsName()));
-  ASSERT_EQ(FSStatusCode::OK, storage.Delete(fs5.GetFsName()));
-  ASSERT_EQ(FSStatusCode::NOT_FOUND, storage.Delete(fs5.GetFsName()));
+  ASSERT_EQ(pb::mds::FSStatusCode::NOT_FOUND, storage.Delete(fs1.GetFsName()));
+  ASSERT_EQ(pb::mds::FSStatusCode::OK, storage.Delete(fs5.GetFsName()));
+  ASSERT_EQ(pb::mds::FSStatusCode::NOT_FOUND, storage.Delete(fs5.GetFsName()));
 }
 }  // namespace mds
 }  // namespace dingofs

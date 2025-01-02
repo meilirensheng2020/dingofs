@@ -28,6 +28,7 @@
 
 #include <string>
 
+#include "dingofs/src/stub/common/common.h"
 #include "dingofs/src/stub/rpcclient/cli2_client.h"
 
 using ::testing::_;
@@ -37,10 +38,15 @@ namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
+using common::CopysetID;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PeerAddr;
+
 class MockCli2Client : public Cli2Client {
  public:
-  MockCli2Client() {}
-  ~MockCli2Client() {}
+  MockCli2Client() = default;
+  ~MockCli2Client() override = default;
 
   MOCK_METHOD6(GetLeader,
                bool(const LogicPoolID& poolID, const CopysetID& copysetID,

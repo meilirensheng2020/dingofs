@@ -71,7 +71,7 @@ TEST_F(TestScheduleService, test_QueryMetaServerRecoverStatus) {
   brpc::Channel channel;
   ASSERT_EQ(0, channel.Init(listenAddr_, NULL));
 
-  ScheduleService_Stub stub(&channel);
+  pb::mds::schedule::ScheduleService_Stub stub(&channel);
   QueryMetaServerRecoverStatusRequest request;
   request.add_metaserverid(1);
   QueryMetaServerRecoverStatusResponse response;
@@ -81,13 +81,15 @@ TEST_F(TestScheduleService, test_QueryMetaServerRecoverStatus) {
     std::map<MetaServerIdType, bool> expectRes{{1, 1}};
     EXPECT_CALL(*coordinator_, QueryMetaServerRecoverStatus(
                                    std::vector<MetaServerIdType>{1}, _))
-        .WillOnce(DoAll(SetArgPointee<1>(expectRes),
-                        Return(ScheduleStatusCode::Success)));
+        .WillOnce(
+            DoAll(SetArgPointee<1>(expectRes),
+                  Return(pb::mds::schedule::ScheduleStatusCode::Success)));
 
     brpc::Controller cntl;
     stub.QueryMetaServerRecoverStatus(&cntl, &request, &response, nullptr);
     ASSERT_FALSE(cntl.Failed());
-    ASSERT_EQ(ScheduleStatusCode::Success, response.statuscode());
+    ASSERT_EQ(pb::mds::schedule::ScheduleStatusCode::Success,
+              response.statuscode());
     ASSERT_EQ(1, response.recoverstatusmap_size());
     ASSERT_TRUE(response.recoverstatusmap().begin()->second);
   }
@@ -97,11 +99,12 @@ TEST_F(TestScheduleService, test_QueryMetaServerRecoverStatus) {
     std::map<MetaServerIdType, bool> expectRes{{1, 1}};
     EXPECT_CALL(*coordinator_, QueryMetaServerRecoverStatus(
                                    std::vector<MetaServerIdType>{1}, _))
-        .WillOnce(Return(ScheduleStatusCode::InvalidQueryMetaserverID));
+        .WillOnce(Return(
+            pb::mds::schedule::ScheduleStatusCode::InvalidQueryMetaserverID));
     brpc::Controller cntl;
     stub.QueryMetaServerRecoverStatus(&cntl, &request, &response, nullptr);
     ASSERT_FALSE(cntl.Failed());
-    ASSERT_EQ(ScheduleStatusCode::InvalidQueryMetaserverID,
+    ASSERT_EQ(pb::mds::schedule::ScheduleStatusCode::InvalidQueryMetaserverID,
               response.statuscode());
   }
 }

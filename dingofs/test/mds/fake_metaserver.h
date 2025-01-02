@@ -29,46 +29,46 @@
 
 namespace dingofs {
 namespace metaserver {
-class FakeMetaserverImpl : public MetaServerService {
+class FakeMetaserverImpl : public pb::metaserver::MetaServerService {
  public:
-  FakeMetaserverImpl() {}
+  FakeMetaserverImpl() = default;
+
   void GetDentry(::google::protobuf::RpcController* controller,
-                 const ::dingofs::metaserver::GetDentryRequest* request,
-                 ::dingofs::metaserver::GetDentryResponse* response,
-                 ::google::protobuf::Closure* done);
+                 const pb::metaserver::GetDentryRequest* request,
+                 pb::metaserver::GetDentryResponse* response,
+                 ::google::protobuf::Closure* done) override;
   void ListDentry(::google::protobuf::RpcController* controller,
-                  const ::dingofs::metaserver::ListDentryRequest* request,
-                  ::dingofs::metaserver::ListDentryResponse* response,
-                  ::google::protobuf::Closure* done);
+                  const pb::metaserver::ListDentryRequest* request,
+                  pb::metaserver::ListDentryResponse* response,
+                  ::google::protobuf::Closure* done) override;
   void CreateDentry(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::CreateDentryRequest* request,
-                    ::dingofs::metaserver::CreateDentryResponse* response,
-                    ::google::protobuf::Closure* done);
+                    const pb::metaserver::CreateDentryRequest* request,
+                    pb::metaserver::CreateDentryResponse* response,
+                    ::google::protobuf::Closure* done) override;
   void DeleteDentry(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::DeleteDentryRequest* request,
-                    ::dingofs::metaserver::DeleteDentryResponse* response,
-                    ::google::protobuf::Closure* done);
+                    const pb::metaserver::DeleteDentryRequest* request,
+                    pb::metaserver::DeleteDentryResponse* response,
+                    ::google::protobuf::Closure* done) override;
   void GetInode(::google::protobuf::RpcController* controller,
-                const ::dingofs::metaserver::GetInodeRequest* request,
-                ::dingofs::metaserver::GetInodeResponse* response,
-                ::google::protobuf::Closure* done);
+                const pb::metaserver::GetInodeRequest* request,
+                pb::metaserver::GetInodeResponse* response,
+                ::google::protobuf::Closure* done) override;
   void CreateInode(::google::protobuf::RpcController* controller,
-                   const ::dingofs::metaserver::CreateInodeRequest* request,
-                   ::dingofs::metaserver::CreateInodeResponse* response,
-                   ::google::protobuf::Closure* done);
-  void CreateRootInode(
-      ::google::protobuf::RpcController* controller,
-      const ::dingofs::metaserver::CreateRootInodeRequest* request,
-      ::dingofs::metaserver::CreateRootInodeResponse* response,
-      ::google::protobuf::Closure* done);
+                   const pb::metaserver::CreateInodeRequest* request,
+                   pb::metaserver::CreateInodeResponse* response,
+                   ::google::protobuf::Closure* done) override;
+  void CreateRootInode(::google::protobuf::RpcController* controller,
+                       const pb::metaserver::CreateRootInodeRequest* request,
+                       pb::metaserver::CreateRootInodeResponse* response,
+                       ::google::protobuf::Closure* done) override;
   void UpdateInode(::google::protobuf::RpcController* controller,
-                   const ::dingofs::metaserver::UpdateInodeRequest* request,
-                   ::dingofs::metaserver::UpdateInodeResponse* response,
-                   ::google::protobuf::Closure* done);
+                   const pb::metaserver::UpdateInodeRequest* request,
+                   pb::metaserver::UpdateInodeResponse* response,
+                   ::google::protobuf::Closure* done) override;
   void DeleteInode(::google::protobuf::RpcController* controller,
-                   const ::dingofs::metaserver::DeleteInodeRequest* request,
-                   ::dingofs::metaserver::DeleteInodeResponse* response,
-                   ::google::protobuf::Closure* done);
+                   const pb::metaserver::DeleteInodeRequest* request,
+                   pb::metaserver::DeleteInodeResponse* response,
+                   ::google::protobuf::Closure* done) override;
 };
 
 }  // namespace metaserver

@@ -40,9 +40,9 @@ using ::testing::WithArg;
 class DataCacheTest : public testing::Test {
  protected:
   DataCacheTest() {}
-  ~DataCacheTest() {}
+  ~DataCacheTest() override = default;
   void SetUp() override {
-    S3ClientAdaptorOption option;
+    common::S3ClientAdaptorOption option;
     option.blockSize = 1 * 1024 * 1024;
     option.chunkSize = 4 * 1024 * 1024;
     option.baseSleepUs = 500;
@@ -53,10 +53,10 @@ class DataCacheTest : public testing::Test {
     option.readCacheMaxByte = 104857600;
     option.readCacheThreads = 5;
     s3ClientAdaptor_ = new S3ClientAdaptorImpl();
-    auto fsCacheManager = std::make_shared<FsCacheManager>(
+    auto fs_cache_manager = std::make_shared<FsCacheManager>(
         s3ClientAdaptor_, option.readCacheMaxByte, option.writeCacheMaxByte,
         option.readCacheThreads, nullptr);
-    s3ClientAdaptor_->Init(option, nullptr, nullptr, nullptr, fsCacheManager,
+    s3ClientAdaptor_->Init(option, nullptr, nullptr, nullptr, fs_cache_manager,
                            nullptr, nullptr, nullptr);
     mockChunkCacheManager_ = std::make_shared<MockChunkCacheManager>();
     uint64_t offset = 512 * 1024;
@@ -139,9 +139,9 @@ TEST_F(DataCacheTest, test_write6) {
   char* buf = new char[len];
   std::vector<DataCachePtr> mergeDataCacheVer;
   uint64_t offset1 = offset + len;
-  auto dataCache = std::make_shared<DataCache>(
+  auto data_cache = std::make_shared<DataCache>(
       s3ClientAdaptor_, mockChunkCacheManager_, offset1, len, buf, nullptr);
-  mergeDataCacheVer.push_back(dataCache);
+  mergeDataCacheVer.push_back(data_cache);
   dataCache_->Write(offset, len, buf, mergeDataCacheVer);
   ASSERT_EQ(512 * 1024, dataCache_->GetChunkPos());
   ASSERT_EQ(2560 * 1024, dataCache_->GetLen());

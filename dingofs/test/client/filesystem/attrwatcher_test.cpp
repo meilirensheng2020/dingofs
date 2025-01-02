@@ -27,6 +27,7 @@
 namespace dingofs {
 namespace client {
 namespace filesystem {
+using dingofs::client::common::AttrWatcherOption;
 
 class AttrWatcherTest : public ::testing::Test {
  protected:

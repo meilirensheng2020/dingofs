@@ -30,8 +30,8 @@
 #include <string>
 #include <utility>
 
-#include "dingofs/src/metaserver/s3compact_manager.h"
 #include "dingofs/src/aws/s3_adapter.h"
+#include "dingofs/src/metaserver/s3compact_manager.h"
 
 using ::dingofs::aws::S3Adapter;
 using ::testing::Return;
@@ -41,9 +41,9 @@ namespace metaserver {
 
 class MockS3AdapterManager : public S3AdapterManager {
  public:
-  MockS3AdapterManager(uint64_t size, const S3AdapterOption& opts)
+  MockS3AdapterManager(uint64_t size, const aws::S3AdapterOption& opts)
       : S3AdapterManager(size, opts) {}
-  ~MockS3AdapterManager() {}
+  ~MockS3AdapterManager() override = default;
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(GetS3Adapter, std::pair<uint64_t, S3Adapter*>());
   MOCK_METHOD1(ReleaseS3Adapter, void(uint64_t));
@@ -51,12 +51,12 @@ class MockS3AdapterManager : public S3AdapterManager {
 
 class MockS3Adapter : public S3Adapter {
  public:
-  MockS3Adapter() {}
-  ~MockS3Adapter() {}
+  MockS3Adapter() = default;
+  ~MockS3Adapter() override = default;
 
   MOCK_METHOD1(Init, void(const std::string&));
   MOCK_METHOD0(Deinit, void());
-  MOCK_METHOD1(Reinit, void(const S3AdapterOption& opt));
+  MOCK_METHOD1(Reinit, void(const aws::S3AdapterOption& opt));
   MOCK_METHOD0(GetS3Ak, std::string());
   MOCK_METHOD0(GetS3Sk, std::string());
   MOCK_METHOD0(GetS3Endpoint, std::string());

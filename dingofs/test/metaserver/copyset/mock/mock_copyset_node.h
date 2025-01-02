@@ -27,11 +27,14 @@
 
 #include <vector>
 
+#include "dingofs/proto/common.pb.h"
 #include "dingofs/src/metaserver/copyset/copyset_node.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
+
+using pb::common::Peer;
 
 class MockCopysetNode : public CopysetNode {
  public:

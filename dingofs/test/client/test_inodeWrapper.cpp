@@ -36,8 +36,7 @@
 #include "dingofs/src/stub/rpcclient/task_excutor.h"
 #include "dingofs/src/utils/timeutility.h"
 #include "dingofs/test/client/mock_metaserver_client.h"
-
-using ::google::protobuf::util::MessageDifferencer;
+#include "dingofs/test/client/utils.h"
 
 namespace dingofs {
 namespace client {
@@ -47,6 +46,8 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
+
+using ::google::protobuf::util::MessageDifferencer;
 
 using dingofs::stub::rpcclient::DataIndices;
 using dingofs::stub::rpcclient::MetaServerClientDone;
@@ -70,8 +71,9 @@ class TestInodeWrapper : public ::testing::Test {
 };
 
 TEST(TestAppendS3ChunkInfoToMap, testAppendS3ChunkInfoToMap) {
-  google::protobuf::Map<uint64_t, S3ChunkInfoList> s3ChunkInfoMap;
-  S3ChunkInfo info1;
+  google::protobuf::Map<uint64_t, pb::metaserver::S3ChunkInfoList>
+      s3ChunkInfoMap;
+  pb::metaserver::S3ChunkInfo info1;
   info1.set_chunkid(1);
   info1.set_compaction(2);
   info1.set_offset(0);
@@ -86,7 +88,7 @@ TEST(TestAppendS3ChunkInfoToMap, testAppendS3ChunkInfoToMap) {
       info1, s3ChunkInfoMap[chunkIndex1].s3chunks(0)));
 
   // add to same chunkIndex
-  S3ChunkInfo info2;
+  pb::metaserver::S3ChunkInfo info2;
   info2.set_chunkid(2);
   info2.set_compaction(3);
   info2.set_offset(1024);
@@ -102,7 +104,7 @@ TEST(TestAppendS3ChunkInfoToMap, testAppendS3ChunkInfoToMap) {
       info2, s3ChunkInfoMap[chunkIndex1].s3chunks(1)));
 
   // add to diff chunkIndex
-  S3ChunkInfo info3;
+  pb::metaserver::S3ChunkInfo info3;
   info3.set_chunkid(3);
   info3.set_compaction(4);
   info3.set_offset(2048);
@@ -126,9 +128,9 @@ TEST(TestAppendS3ChunkInfoToMap, testAppendS3ChunkInfoToMap) {
 TEST_F(TestInodeWrapper, testSyncSuccess) {
   inodeWrapper_->MarkDirty();
   inodeWrapper_->SetLength(1024);
-  inodeWrapper_->SetType(FsFileType::TYPE_S3);
+  inodeWrapper_->SetType(pb::metaserver::FsFileType::TYPE_S3);
 
-  S3ChunkInfo info1;
+  pb::metaserver::S3ChunkInfo info1;
   info1.set_chunkid(1);
   info1.set_compaction(2);
   info1.set_offset(0);
@@ -139,7 +141,7 @@ TEST_F(TestInodeWrapper, testSyncSuccess) {
   inodeWrapper_->AppendS3ChunkInfo(chunkIndex1, info1);
 
   EXPECT_CALL(*metaClient_, UpdateInodeAttrWithOutNlink(_, _, _, _, _))
-      .WillOnce(Return(MetaStatusCode::OK));
+      .WillOnce(Return(pb::metaserver::MetaStatusCode::OK));
 
   DINGOFS_ERROR ret = inodeWrapper_->Sync();
   ASSERT_EQ(DINGOFS_ERROR::OK, ret);
@@ -148,9 +150,9 @@ TEST_F(TestInodeWrapper, testSyncSuccess) {
 TEST_F(TestInodeWrapper, testSyncFailed) {
   inodeWrapper_->MarkDirty();
   inodeWrapper_->SetLength(1024);
-  inodeWrapper_->SetType(FsFileType::TYPE_S3);
+  inodeWrapper_->SetType(pb::metaserver::FsFileType::TYPE_S3);
 
-  S3ChunkInfo info1;
+  pb::metaserver::S3ChunkInfo info1;
   info1.set_chunkid(1);
   info1.set_compaction(2);
   info1.set_offset(0);
@@ -161,7 +163,7 @@ TEST_F(TestInodeWrapper, testSyncFailed) {
   inodeWrapper_->AppendS3ChunkInfo(chunkIndex1, info1);
 
   EXPECT_CALL(*metaClient_, UpdateInodeAttrWithOutNlink(_, _, _, _, _))
-      .WillOnce(Return(MetaStatusCode::NOT_FOUND));
+      .WillOnce(Return(pb::metaserver::MetaStatusCode::NOT_FOUND));
 
   DINGOFS_ERROR ret = inodeWrapper_->Sync();
   ASSERT_EQ(DINGOFS_ERROR::NOTEXIST, ret);
@@ -169,10 +171,11 @@ TEST_F(TestInodeWrapper, testSyncFailed) {
 
 TEST_F(TestInodeWrapper, TestRefreshNlink) {
   google::protobuf::uint32 nlink = 10086;
-  InodeAttr attr;
+  pb::metaserver::InodeAttr attr;
   attr.set_nlink(nlink);
   EXPECT_CALL(*metaClient_, GetInodeAttr(_, _, _))
-      .WillOnce(DoAll(SetArgPointee<2>(attr), Return(MetaStatusCode::OK)));
+      .WillOnce(DoAll(SetArgPointee<2>(attr),
+                      Return(pb::metaserver::MetaStatusCode::OK)));
   inodeWrapper_->RefreshNlink();
   Inode inode = inodeWrapper_->GetInode();
   ASSERT_EQ(nlink, inode.nlink());
@@ -182,8 +185,9 @@ TEST_F(TestInodeWrapper, TestNeedRefreshData) {
   Inode inode;
   inode.set_inodeid(1);
   auto s3ChunkInfoMap = inode.mutable_s3chunkinfomap();
-  S3ChunkInfoList* s3ChunkInfoList = new S3ChunkInfoList();
-  S3ChunkInfo* s3ChunkInfo = s3ChunkInfoList->add_s3chunks();
+  pb::metaserver::S3ChunkInfoList* s3ChunkInfoList =
+      new pb::metaserver::S3ChunkInfoList();
+  pb::metaserver::S3ChunkInfo* s3ChunkInfo = s3ChunkInfoList->add_s3chunks();
   s3ChunkInfo->set_chunkid(1);
   s3ChunkInfo->set_compaction(1);
   s3ChunkInfo->set_offset(0);
@@ -221,11 +225,13 @@ struct FakeCallback : public MetaServerClientDone {
 
 struct FakeUpdateInodeWithOutNlinkAsync {
   void operator()(uint32_t /*fsid*/, uint64_t /*inodeId*/,
-                  const InodeAttr& attr, MetaServerClientDone* done,
-                  DataIndices indices) const {
+                  const pb::metaserver::InodeAttr& attr,
+                  MetaServerClientDone* done, DataIndices indices) const {
+    (void)attr;
+    (void)indices;
     std::thread th{[done]() {
       std::this_thread::sleep_for(std::chrono::seconds(1));
-      done->SetMetaStatusCode(MetaStatusCode::OK);
+      done->SetMetaStatusCode(pb::metaserver::MetaStatusCode::OK);
       done->Run();
     }};
 
@@ -236,8 +242,10 @@ struct FakeUpdateInodeWithOutNlinkAsync {
 }  // namespace
 
 TEST_F(TestInodeWrapper, TestAsyncInode) {
-  for (auto type : {FsFileType::TYPE_DIRECTORY, FsFileType::TYPE_FILE,
-                    FsFileType::TYPE_S3, FsFileType::TYPE_SYM_LINK}) {
+  for (auto type : {pb::metaserver::FsFileType::TYPE_DIRECTORY,
+                    pb::metaserver::FsFileType::TYPE_FILE,
+                    pb::metaserver::FsFileType::TYPE_S3,
+                    pb::metaserver::FsFileType::TYPE_SYM_LINK}) {
     for (auto dirty : {true, false}) {
       inodeWrapper_->SetType(type);
       if (!dirty) {
@@ -251,14 +259,14 @@ TEST_F(TestInodeWrapper, TestAsyncInode) {
       FakeCallback done;
       inodeWrapper_->Async(&done);
       done.Wait();
-      ASSERT_EQ(MetaStatusCode::OK, done.GetStatusCode());
+      ASSERT_EQ(pb::metaserver::MetaStatusCode::OK, done.GetStatusCode());
     }
   }
 }
 
 TEST_F(TestInodeWrapper, TestUpdateInodeAttrIncrementally) {
   Inode inode;
-  inode.set_type(FsFileType::TYPE_S3);
+  inode.set_type(pb::metaserver::FsFileType::TYPE_S3);
   inode.set_length(0);
   inode.set_atime(0);
   inode.set_atime_ns(0);
@@ -275,13 +283,13 @@ TEST_F(TestInodeWrapper, TestUpdateInodeAttrIncrementally) {
   }
 
   EXPECT_CALL(*metaClient_, UpdateInodeAttrWithOutNlink(_, _, _, _, _))
-      .WillOnce(Invoke([](uint32_t /*fsId*/, uint64_t /*inodeId*/,
-                          const InodeAttr& attr, S3ChunkInfoMap* /*s3info*/,
-                          bool /*internal*/
-                       ) {
-        EXPECT_FALSE(attr.has_length());
-        return MetaStatusCode::OK;
-      }));
+      .WillOnce(Invoke(
+          [](uint32_t /*fsId*/, uint64_t /*inodeId*/, const InodeAttr& attr,
+             stub::rpcclient::S3ChunkInfoMap* /*s3info*/, bool /*internal*/
+          ) {
+            EXPECT_FALSE(attr.has_length());
+            return pb::metaserver::MetaStatusCode::OK;
+          }));
 
   ASSERT_EQ(DINGOFS_ERROR::OK, wrapper.Sync());
 
@@ -292,7 +300,7 @@ TEST_F(TestInodeWrapper, TestUpdateInodeAttrIncrementally) {
 
 TEST_F(TestInodeWrapper, TestSetXattr) {
   inodeWrapper_->SetXattrLocked("name", "value");
-  XAttr xattr = inodeWrapper_->GetXattr();
+  pb::metaserver::XAttr xattr = inodeWrapper_->GetXattr();
   ASSERT_TRUE(xattr.xattrinfos().find("name") != xattr.xattrinfos().end());
   ASSERT_EQ((*xattr.mutable_xattrinfos())["name"], "value");
   ASSERT_TRUE(inodeWrapper_->IsDirty());

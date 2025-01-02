@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/heartbeat.pb.h"
 #include "dingofs/src/metaserver/heartbeat.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_node.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_node_manager.h"
@@ -80,7 +81,7 @@ class HeartbeatTaskExecutorTest : public testing::Test {
 TEST_F(HeartbeatTaskExecutorTest, CopysetNotFound) {
   EXPECT_CALL(mockCopysetMgr_, GetCopysetNode(_, _)).WillOnce(Return(nullptr));
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
@@ -94,7 +95,7 @@ TEST_F(HeartbeatTaskExecutorTest, NeedPurge_EpochIsZeroAndConfIsEmpty) {
 
   EXPECT_CALL(mockCopysetMgr_, PurgeCopysetNode(_, _)).Times(1);
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
@@ -110,7 +111,7 @@ TEST_F(HeartbeatTaskExecutorTest, NeedPurge_ConfDoesnotContainCurrentServer) {
 
   EXPECT_CALL(mockCopysetMgr_, PurgeCopysetNode(_, _)).Times(1);
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
@@ -134,7 +135,7 @@ TEST_F(HeartbeatTaskExecutorTest, EpochMismatch) {
   EXPECT_CALL(mockCopysetNode_, RemovePeer(_, _)).Times(0);
   EXPECT_CALL(mockCopysetNode_, ChangePeers(_, _)).Times(0);
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
@@ -158,7 +159,7 @@ TEST_F(HeartbeatTaskExecutorTest, HasNoConfChangeType) {
   EXPECT_CALL(mockCopysetNode_, RemovePeer(_, _)).Times(0);
   EXPECT_CALL(mockCopysetNode_, ChangePeers(_, _)).Times(0);
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
@@ -182,12 +183,13 @@ TEST_F(HeartbeatTaskExecutorTest, TransferLeader_Success) {
   EXPECT_CALL(mockCopysetNode_, TransferLeader(_))
       .WillOnce(Return(butil::Status::OK()));
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
   conf->set_epoch(1);
-  conf->set_type(dingofs::mds::heartbeat::ConfigChangeType::TRANSFER_LEADER);
+  conf->set_type(
+      dingofs::pb::mds::heartbeat::ConfigChangeType::TRANSFER_LEADER);
   auto* peer = conf->add_peers();
   peer->set_address(current_ + ":0");
 
@@ -206,12 +208,12 @@ TEST_F(HeartbeatTaskExecutorTest, AddPeer_Success) {
 
   EXPECT_CALL(mockCopysetNode_, AddPeer(_, _)).Times(1);
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
   conf->set_epoch(1);
-  conf->set_type(dingofs::mds::heartbeat::ConfigChangeType::ADD_PEER);
+  conf->set_type(dingofs::pb::mds::heartbeat::ConfigChangeType::ADD_PEER);
   auto* peer = conf->add_peers();
   peer->set_address(current_ + ":0");
 
@@ -230,12 +232,12 @@ TEST_F(HeartbeatTaskExecutorTest, RemovePeer_Success) {
 
   EXPECT_CALL(mockCopysetNode_, RemovePeer(_, _)).Times(1);
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
   conf->set_epoch(1);
-  conf->set_type(dingofs::mds::heartbeat::ConfigChangeType::REMOVE_PEER);
+  conf->set_type(dingofs::pb::mds::heartbeat::ConfigChangeType::REMOVE_PEER);
   auto* peer = conf->add_peers();
   peer->set_address(current_ + ":0");
 
@@ -254,12 +256,12 @@ TEST_F(HeartbeatTaskExecutorTest, ChangePeer_Success) {
 
   EXPECT_CALL(mockCopysetNode_, ChangePeers(_, _)).Times(1);
 
-  HeartbeatResponse response;
+  pb::mds::heartbeat::MetaServerHeartbeatResponse response;
   auto* conf = response.add_needupdatecopysets();
   conf->set_poolid(1);
   conf->set_copysetid(1);
   conf->set_epoch(1);
-  conf->set_type(dingofs::mds::heartbeat::ConfigChangeType::CHANGE_PEER);
+  conf->set_type(dingofs::pb::mds::heartbeat::ConfigChangeType::CHANGE_PEER);
   auto* peer = conf->add_peers();
   peer->set_address(current_ + ":0");
 

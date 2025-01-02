@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 
 #include "dingofs/proto/common.pb.h"
+#include "dingofs/src/stub/common/common.h"
 #include "dingofs/test/stub/rpcclient/mock_cli2_client.h"
 #include "dingofs/test/stub/rpcclient/mock_mds_client.h"
 
@@ -38,7 +39,8 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
-using ::dingofs::common::PartitionInfo;
+using common::MetaserverID;
+using pb::common::PartitionInfo;
 class MetaCacheTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -53,20 +55,17 @@ class MetaCacheTest : public testing::Test {
     dingofs::stub::common::PeerAddr pd2;
     pd2.Parse("127.0.0.1:9120:0");
 
-    dingofs::stub::common::CopysetPeerInfo<MetaserverID> peerinfo_1(1, pd1,
-                                                                    pd2);
+    stub::common::CopysetPeerInfo<MetaserverID> peerinfo_1(1, pd1, pd2);
     metaServerList_.AddCopysetPeerInfo(peerinfo_1);
 
     pd1.addr_.port = 9121;
     pd2.addr_.port = 9121;
-    dingofs::stub::common::CopysetPeerInfo<MetaserverID> peerinfo_2(2, pd1,
-                                                                    pd2);
+    stub::common::CopysetPeerInfo<MetaserverID> peerinfo_2(2, pd1, pd2);
     metaServerList_.AddCopysetPeerInfo(peerinfo_2);
 
     pd1.addr_.port = 9122;
     pd2.addr_.port = 9122;
-    dingofs::stub::common::CopysetPeerInfo<MetaserverID> peerinfo_3(3, pd1,
-                                                                    pd2);
+    stub::common::CopysetPeerInfo<MetaserverID> peerinfo_3(3, pd1, pd2);
     metaServerList_.AddCopysetPeerInfo(peerinfo_3);
     metaServerList_.UpdateLeaderIndex(0);
 
@@ -132,14 +131,14 @@ class MetaCacheTest : public testing::Test {
 
  protected:
   MetaCache metaCache_;
-  MetaCacheOpt opt_;
+  common::MetaCacheOpt opt_;
   std::shared_ptr<MockMdsClient> mockMdsClient_;
   std::shared_ptr<MockCli2Client> mockCli2Client_;
 
   dingofs::stub::common::CopysetInfo<MetaserverID> metaServerList_;
   MetaCache::PartitionInfoList pInfoList_;
   MetaCache::PartitionInfoList pInfoList2_;
-  std::map<PartitionID, Copyset> copysetMap_;
+  std::map<common::PartitionID, Copyset> copysetMap_;
 
   CopysetTarget expect;
 };

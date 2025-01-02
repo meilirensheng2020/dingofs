@@ -54,8 +54,8 @@ class FakeClosure : public google::protobuf::Closure {
 
 TEST(MetaOperatorClosureTest, TestOperatorSuccess) {
   FakeClosure done;
-  CreateInodeRequest request;
-  CreateInodeResponse response;
+  pb::metaserver::CreateInodeRequest request;
+  pb::metaserver::CreateInodeResponse response;
 
   auto op = absl::make_unique<CreateInodeOperator>(nullptr, nullptr, &request,
                                                    &response, &done);
@@ -66,13 +66,13 @@ TEST(MetaOperatorClosureTest, TestOperatorSuccess) {
 
   done.WaitRunned();
   EXPECT_TRUE(done.Runned());
-  EXPECT_NE(MetaStatusCode::REDIRECTED, response.statuscode());
+  EXPECT_NE(pb::metaserver::MetaStatusCode::REDIRECTED, response.statuscode());
 }
 
 TEST(MetaOperatorClosureTest, TestLeaderRedirect) {
   FakeClosure done;
-  CreateInodeRequest request;
-  CreateInodeResponse response;
+  pb::metaserver::CreateInodeRequest request;
+  pb::metaserver::CreateInodeResponse response;
 
   auto op = absl::make_unique<CreateInodeOperator>(nullptr, nullptr, &request,
                                                    &response, &done);
@@ -83,7 +83,7 @@ TEST(MetaOperatorClosureTest, TestLeaderRedirect) {
 
   done.WaitRunned();
   EXPECT_TRUE(done.Runned());
-  EXPECT_EQ(MetaStatusCode::REDIRECTED, response.statuscode());
+  EXPECT_EQ(pb::metaserver::MetaStatusCode::REDIRECTED, response.statuscode());
 }
 
 }  // namespace copyset

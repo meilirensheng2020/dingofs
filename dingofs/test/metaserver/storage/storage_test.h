@@ -28,12 +28,15 @@
 #include <string>
 #include <unordered_map>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/dentry_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace storage {
+
+using pb::metaserver::Dentry;
 
 Dentry Value(const std::string& name);
 

@@ -26,13 +26,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <memory>
-#include <string>
-
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/s3compact_inode.h"
 
-usingS3Adapter;
 using dingofs::metaserver::copyset::CopysetNode;
+using dingofs::pb::common::PartitionInfo;
+using dingofs::pb::metaserver::MetaStatusCode;
+using dingofs::pb::metaserver::S3ChunkInfoList;
 
 namespace dingofs {
 namespace metaserver {

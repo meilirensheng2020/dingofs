@@ -27,15 +27,18 @@
 #include <memory>
 #include <string>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/s3/metaserver_s3_adaptor.h"
+
+using ::dingofs::pb::metaserver::Inode;
 
 namespace dingofs {
 namespace metaserver {
 
 class MockS3ClientAdaptor : public S3ClientAdaptor {
  public:
-  MockS3ClientAdaptor() {}
-  ~MockS3ClientAdaptor() {}
+  MockS3ClientAdaptor() = default;
+  ~MockS3ClientAdaptor() override = default;
 
   MOCK_METHOD2(Init,
                void(const S3ClientAdaptorOption& option, S3Client* client));

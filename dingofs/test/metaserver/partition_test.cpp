@@ -25,17 +25,27 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "dingofs/src/stub/filesystem/xattr.h"
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
+#include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/test/metaserver/storage/utils.h"
 #include "dingofs/test/metaserver/test_helper.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
 
 using ::dingofs::metaserver::storage::KVStorage;
 using ::dingofs::metaserver::storage::RandomStoragePath;
 using ::dingofs::metaserver::storage::RocksDBStorage;
 using ::dingofs::metaserver::storage::StorageOptions;
+using ::dingofs::pb::common::PartitionInfo;
+using ::dingofs::pb::common::PartitionStatus;
+using ::dingofs::pb::metaserver::Dentry;
+using ::dingofs::pb::metaserver::FsFileType;
+using ::dingofs::pb::metaserver::Inode;
+using ::dingofs::pb::metaserver::InodeAttr;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+using ::dingofs::pb::metaserver::PrepareRenameTxRequest;
+using ::dingofs::pb::metaserver::XAttr;
 
 using ::dingofs::stub::filesystem::XATTR_DIR_ENTRIES;
 using ::dingofs::stub::filesystem::XATTR_DIR_FBYTES;

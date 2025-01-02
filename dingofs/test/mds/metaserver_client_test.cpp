@@ -30,24 +30,26 @@
 #include "dingofs/test/mds/mock/mock_cli2.h"
 #include "dingofs/test/mds/mock/mock_metaserver.h"
 
-using dingofs::metaserver::CreateDentryRequest;
-using dingofs::metaserver::CreateDentryResponse;
-using dingofs::metaserver::CreateManageInodeRequest;
-using dingofs::metaserver::CreateManageInodeResponse;
-using dingofs::metaserver::CreateRootInodeRequest;
-using dingofs::metaserver::CreateRootInodeResponse;
-using dingofs::metaserver::DeleteInodeRequest;
-using dingofs::metaserver::DeleteInodeResponse;
-using dingofs::metaserver::DeletePartitionResponse;
-using dingofs::metaserver::MetaStatusCode;
-using ::dingofs::metaserver::MockMetaserverService;
-using dingofs::metaserver::copyset::COPYSET_OP_STATUS;
-using dingofs::metaserver::copyset::CreateCopysetRequest;
-using dingofs::metaserver::copyset::CreateCopysetResponse;
-using dingofs::metaserver::copyset::GetLeaderRequest2;
-using dingofs::metaserver::copyset::GetLeaderResponse2;
+using dingofs::pb::metaserver::CreateDentryRequest;
+using dingofs::pb::metaserver::CreateDentryResponse;
+using dingofs::pb::metaserver::CreateManageInodeRequest;
+using dingofs::pb::metaserver::CreateManageInodeResponse;
+using dingofs::pb::metaserver::CreateRootInodeRequest;
+using dingofs::pb::metaserver::CreateRootInodeResponse;
+using dingofs::pb::metaserver::DeleteInodeRequest;
+using dingofs::pb::metaserver::DeleteInodeResponse;
+using dingofs::pb::metaserver::DeletePartitionResponse;
+using dingofs::pb::metaserver::MetaStatusCode;
+using dingofs::pb::metaserver::copyset::COPYSET_OP_STATUS;
+using dingofs::pb::metaserver::copyset::CreateCopysetRequest;
+using dingofs::pb::metaserver::copyset::CreateCopysetResponse;
+using dingofs::pb::metaserver::copyset::GetLeaderRequest2;
+using dingofs::pb::metaserver::copyset::GetLeaderResponse2;
+
+using dingofs::metaserver::MockMetaserverService;
 using dingofs::metaserver::copyset::MockCliService2;
 using dingofs::metaserver::copyset::MockCopysetService;
+
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::DoAll;
@@ -186,10 +188,10 @@ TEST_F(MetaserverClientTest, CreateRootInodeGetLeaderFail) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  GetLeaderResponse2 GetLeaderResponse;
+  GetLeaderResponse2 get_leader_response;
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.CreateRootInode(fsId, poolId, copysetId, partitionId, uid,
                                    gid, mode, addrs),
@@ -211,12 +213,12 @@ TEST_F(MetaserverClientTest, CreateRootInodeRpcFail) {
 
   CreateRootInodeResponse response;
   response.set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address("127.0.0.1:6705:0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address("127.0.0.1:6705:0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .Times(2)
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.CreateRootInode(fsId, poolId, copysetId, partitionId, uid,
                                    gid, mode, addrs),
@@ -237,11 +239,11 @@ TEST_F(MetaserverClientTest, CreateRootInodeFail) {
 
   CreateRootInodeResponse response;
   response.set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateRootInode(_, _, _, _))
       .WillOnce(DoAll(
@@ -267,11 +269,11 @@ TEST_F(MetaserverClientTest, CreateRootInodeRetrySuccess) {
   CreateRootInodeResponse response, response1;
   response.set_statuscode(MetaStatusCode::OVERLOAD);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateRootInode(_, _, _, _))
       .Times(2)
@@ -301,11 +303,11 @@ TEST_F(MetaserverClientTest, CreateRootInodeRefreshLeaderSuccess) {
   CreateRootInodeResponse response, response1;
   response.set_statuscode(MetaStatusCode::REDIRECTED);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateRootInode(_, _, _, _))
       .Times(2)
@@ -335,11 +337,11 @@ TEST_F(MetaserverClientTest, CreateManageInodeSuccess) {
 
   CreateManageInodeResponse response;
   response.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateManageInode(_, _, _, _))
       .WillOnce(DoAll(SetArgPointee<2>(response),
@@ -365,11 +367,11 @@ TEST_F(MetaserverClientTest, CreateManageInodeExist) {
 
   CreateManageInodeResponse response;
   response.set_statuscode(MetaStatusCode::INODE_EXIST);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateManageInode(_, _, _, _))
       .WillOnce(DoAll(SetArgPointee<2>(response),
@@ -393,10 +395,10 @@ TEST_F(MetaserverClientTest, CreateManageInodeGetLeaderFail) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  GetLeaderResponse2 GetLeaderResponse;
+  GetLeaderResponse2 get_leader_response;
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.CreateManageInode(fsId, poolId, copysetId, partitionId, uid,
                                      gid, mode, type, addrs),
@@ -419,12 +421,12 @@ TEST_F(MetaserverClientTest, CreateManageInodeRpcFail) {
 
   CreateManageInodeResponse response;
   response.set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address("127.0.0.1:6705:0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address("127.0.0.1:6705:0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .Times(2)
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.CreateManageInode(fsId, poolId, copysetId, partitionId, uid,
                                      gid, mode, type, addrs),
@@ -446,11 +448,11 @@ TEST_F(MetaserverClientTest, CreateManageInodeFail) {
 
   CreateManageInodeResponse response;
   response.set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateManageInode(_, _, _, _))
       .WillOnce(DoAll(SetArgPointee<2>(response),
@@ -477,11 +479,11 @@ TEST_F(MetaserverClientTest, CreateManageInodeRetrySuccess) {
   CreateManageInodeResponse response, response1;
   response.set_statuscode(MetaStatusCode::OVERLOAD);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateManageInode(_, _, _, _))
       .Times(2)
@@ -513,11 +515,11 @@ TEST_F(MetaserverClientTest, CreateManageInodeRefreshLeaderSuccess) {
   CreateManageInodeResponse response, response1;
   response.set_statuscode(MetaStatusCode::REDIRECTED);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateManageInode(_, _, _, _))
       .Times(2)
@@ -547,11 +549,11 @@ TEST_F(MetaserverClientTest, CreateDentrySuccess) {
 
   CreateDentryResponse response;
   response.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateDentry(_, _, _, _))
       .WillOnce(
@@ -576,11 +578,11 @@ TEST_F(MetaserverClientTest, CreateDentryExist) {
 
   CreateDentryResponse response;
   response.set_statuscode(MetaStatusCode::INODE_EXIST);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateDentry(_, _, _, _))
       .WillOnce(
@@ -603,10 +605,10 @@ TEST_F(MetaserverClientTest, CreateDentryGetLeaderFail) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  GetLeaderResponse2 GetLeaderResponse;
+  GetLeaderResponse2 get_leader_response;
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.CreateDentry(fsId, poolId, copysetId, partitionId,
                                 parentInodeId, name, inodeId, addrs),
@@ -628,12 +630,12 @@ TEST_F(MetaserverClientTest, CreateDentryRpcFail) {
 
   CreateDentryResponse response;
   response.set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address("127.0.0.1:6705:0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address("127.0.0.1:6705:0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .Times(2)
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.CreateDentry(fsId, poolId, copysetId, partitionId,
                                 parentInodeId, name, inodeId, addrs),
@@ -654,11 +656,11 @@ TEST_F(MetaserverClientTest, CreateDentryFail) {
 
   CreateDentryResponse response;
   response.set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateDentry(_, _, _, _))
       .WillOnce(
@@ -684,11 +686,11 @@ TEST_F(MetaserverClientTest, CreateDentryRetrySuccess) {
   CreateDentryResponse response, response1;
   response.set_statuscode(MetaStatusCode::OVERLOAD);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateDentry(_, _, _, _))
       .Times(2)
@@ -717,11 +719,11 @@ TEST_F(MetaserverClientTest, CreateDentryRefreshLeaderSuccess) {
   CreateDentryResponse response, response1;
   response.set_statuscode(MetaStatusCode::REDIRECTED);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreateDentry(_, _, _, _))
       .Times(2)
@@ -779,7 +781,7 @@ TEST_F(MetaserverClientTest, GetLeaderSuccess) {
   std::string leader;
 
   GetLeaderResponse2 response;
-  dingofs::common::Peer* peer = response.mutable_leader();
+  dingofs::pb::common::Peer* peer = response.mutable_leader();
   peer->set_address("127.0.0.1:6704");
   peer->set_id(1);
 
@@ -805,7 +807,7 @@ TEST_F(MetaserverClientTest, GetLeaderRetrySuccess) {
   std::string leader;
 
   GetLeaderResponse2 response;
-  dingofs::common::Peer* peer = response.mutable_leader();
+  dingofs::pb::common::Peer* peer = response.mutable_leader();
   peer->set_address("127.0.0.1:6704");
   peer->set_id(1);
 
@@ -843,19 +845,20 @@ TEST_F(MetaserverClientTest, CreatePartitionSuccess) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::CreatePartitionResponse response;
+  dingofs::pb::metaserver::CreatePartitionResponse response;
   response.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreatePartition(_, _, _, _))
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::CreatePartitionRequest,
-                            dingofs::metaserver::CreatePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::CreatePartitionRequest,
+                         dingofs::pb::metaserver::CreatePartitionResponse>)));
   ASSERT_EQ(client.CreatePartition(0, 1, 2, 3, 1, 100, addrs),
             FSStatusCode::OK);
 }
@@ -865,12 +868,12 @@ TEST_F(MetaserverClientTest, CreatePartitionGetLeaderFailed) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::CreatePartitionResponse response;
+  dingofs::pb::metaserver::CreatePartitionResponse response;
   response.set_statuscode(MetaStatusCode::PARTITION_EXIST);
-  GetLeaderResponse2 GetLeaderResponse;
+  GetLeaderResponse2 get_leader_response;
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.CreatePartition(0, 1, 2, 3, 1, 100, addrs),
             FSStatusCode::NOT_FOUND);
@@ -881,19 +884,20 @@ TEST_F(MetaserverClientTest, CreatePartitionFailed) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::CreatePartitionResponse response;
+  dingofs::pb::metaserver::CreatePartitionResponse response;
   response.set_statuscode(MetaStatusCode::PARTITION_EXIST);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreatePartition(_, _, _, _))
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::CreatePartitionRequest,
-                            dingofs::metaserver::CreatePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::CreatePartitionRequest,
+                         dingofs::pb::metaserver::CreatePartitionResponse>)));
   ASSERT_EQ(client.CreatePartition(0, 1, 2, 3, 1, 100, addrs),
             FSStatusCode::PARTITION_EXIST);
 }
@@ -904,25 +908,26 @@ TEST_F(MetaserverClientTest, CreatePartitionRetrySuccess) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::CreatePartitionResponse response, response1;
+  dingofs::pb::metaserver::CreatePartitionResponse response, response1;
   response.set_statuscode(MetaStatusCode::OVERLOAD);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreatePartition(_, _, _, _))
       .Times(2)
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::CreatePartitionRequest,
-                            dingofs::metaserver::CreatePartitionResponse>)))
+          Invoke(RpcService<dingofs::pb::metaserver::CreatePartitionRequest,
+                            dingofs::pb::metaserver::CreatePartitionResponse>)))
       .WillOnce(DoAll(
           SetArgPointee<2>(response1),
-          Invoke(RpcService<dingofs::metaserver::CreatePartitionRequest,
-                            dingofs::metaserver::CreatePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::CreatePartitionRequest,
+                         dingofs::pb::metaserver::CreatePartitionResponse>)));
   ASSERT_EQ(client.CreatePartition(0, 1, 2, 3, 1, 100, addrs),
             FSStatusCode::OK);
 }
@@ -933,25 +938,26 @@ TEST_F(MetaserverClientTest, CreatePartitionRefreshLeaderSuccess) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::CreatePartitionResponse response, response1;
+  dingofs::pb::metaserver::CreatePartitionResponse response, response1;
   response.set_statuscode(MetaStatusCode::REDIRECTED);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, CreatePartition(_, _, _, _))
       .Times(2)
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::CreatePartitionRequest,
-                            dingofs::metaserver::CreatePartitionResponse>)))
+          Invoke(RpcService<dingofs::pb::metaserver::CreatePartitionRequest,
+                            dingofs::pb::metaserver::CreatePartitionResponse>)))
       .WillOnce(DoAll(
           SetArgPointee<2>(response1),
-          Invoke(RpcService<dingofs::metaserver::CreatePartitionRequest,
-                            dingofs::metaserver::CreatePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::CreatePartitionRequest,
+                         dingofs::pb::metaserver::CreatePartitionResponse>)));
   ASSERT_EQ(client.CreatePartition(0, 1, 2, 3, 1, 100, addrs),
             FSStatusCode::OK);
 }
@@ -961,49 +967,52 @@ TEST_F(MetaserverClientTest, DeletePartitionSuccess) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::DeletePartitionResponse response;
-  GetLeaderResponse2 GetLeaderResponse;
+  dingofs::pb::metaserver::DeletePartitionResponse response;
+  GetLeaderResponse2 get_leader_response;
 
   // metaserver return MetaStatusCode::OK
   response.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, DeletePartition(_, _, _, _))
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                         dingofs::pb::metaserver::DeletePartitionResponse>)));
   ASSERT_EQ(client.DeletePartition(0, 1, 2, addrs), FSStatusCode::OK);
 
   // metaserver return MetaStatusCode::PARTITION_NOT_FOUND
   response.set_statuscode(MetaStatusCode::PARTITION_NOT_FOUND);
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, DeletePartition(_, _, _, _))
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                         dingofs::pb::metaserver::DeletePartitionResponse>)));
   ASSERT_EQ(client.DeletePartition(0, 1, 2, addrs), FSStatusCode::OK);
 
   // metaserver return MetaStatusCode::PARTITION_DELETING
   response.set_statuscode(MetaStatusCode::PARTITION_DELETING);
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, DeletePartition(_, _, _, _))
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                         dingofs::pb::metaserver::DeletePartitionResponse>)));
   ASSERT_EQ(client.DeletePartition(0, 1, 2, addrs),
             FSStatusCode::UNDER_DELETING);
 }
@@ -1013,12 +1022,12 @@ TEST_F(MetaserverClientTest, DeletePartitionGetLeaderFailed) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::DeletePartitionResponse response;
+  dingofs::pb::metaserver::DeletePartitionResponse response;
   response.set_statuscode(MetaStatusCode::PARTITION_EXIST);
-  GetLeaderResponse2 GetLeaderResponse;
+  GetLeaderResponse2 get_leader_response;
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   ASSERT_EQ(client.DeletePartition(0, 1, 2, addrs), FSStatusCode::NOT_FOUND);
 }
@@ -1028,19 +1037,20 @@ TEST_F(MetaserverClientTest, DeletePartitionFailed) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::DeletePartitionResponse response;
+  dingofs::pb::metaserver::DeletePartitionResponse response;
   response.set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, DeletePartition(_, _, _, _))
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                         dingofs::pb::metaserver::DeletePartitionResponse>)));
   ASSERT_EQ(client.DeletePartition(0, 1, 2, addrs),
             FSStatusCode::DELETE_PARTITION_ERROR);
 }
@@ -1051,25 +1061,26 @@ TEST_F(MetaserverClientTest, DeletePartitionRetrySuccess) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::DeletePartitionResponse response, response1;
+  dingofs::pb::metaserver::DeletePartitionResponse response, response1;
   response.set_statuscode(MetaStatusCode::OVERLOAD);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, DeletePartition(_, _, _, _))
       .Times(2)
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)))
+          Invoke(RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                            dingofs::pb::metaserver::DeletePartitionResponse>)))
       .WillOnce(DoAll(
           SetArgPointee<2>(response1),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                         dingofs::pb::metaserver::DeletePartitionResponse>)));
   ASSERT_EQ(client.DeletePartition(0, 1, 2, addrs), FSStatusCode::OK);
 }
 
@@ -1079,25 +1090,26 @@ TEST_F(MetaserverClientTest, DeletePartitionRefreshLeaderSuccess) {
   std::set<std::string> addrs;
   addrs.emplace(addr_);
 
-  dingofs::metaserver::DeletePartitionResponse response, response1;
+  dingofs::pb::metaserver::DeletePartitionResponse response, response1;
   response.set_statuscode(MetaStatusCode::REDIRECTED);
   response1.set_statuscode(MetaStatusCode::OK);
-  GetLeaderResponse2 GetLeaderResponse;
-  GetLeaderResponse.mutable_leader()->set_address(addr_ + ":0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address(addr_ + ":0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillRepeatedly(
-          DoAll(SetArgPointee<2>(GetLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
   EXPECT_CALL(mockMetaserverService_, DeletePartition(_, _, _, _))
       .Times(2)
       .WillOnce(DoAll(
           SetArgPointee<2>(response),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)))
+          Invoke(RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                            dingofs::pb::metaserver::DeletePartitionResponse>)))
       .WillOnce(DoAll(
           SetArgPointee<2>(response1),
-          Invoke(RpcService<dingofs::metaserver::DeletePartitionRequest,
-                            dingofs::metaserver::DeletePartitionResponse>)));
+          Invoke(
+              RpcService<dingofs::pb::metaserver::DeletePartitionRequest,
+                         dingofs::pb::metaserver::DeletePartitionResponse>)));
   ASSERT_EQ(client.DeletePartition(0, 1, 2, addrs), FSStatusCode::OK);
 }
 

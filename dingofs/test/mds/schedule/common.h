@@ -30,7 +30,6 @@
 #include "dingofs/src/mds/schedule/operatorStep.h"
 #include "dingofs/src/mds/schedule/topoAdapter.h"
 
-using ::dingofs::mds::heartbeat::CandidateError;
 using ::dingofs::mds::schedule::AddPeer;
 using ::dingofs::mds::schedule::CopySetConf;
 using ::dingofs::mds::schedule::PeerInfo;
@@ -41,6 +40,8 @@ using ::dingofs::mds::topology::EpochType;
 using ::dingofs::mds::topology::MetaServerIdType;
 using ::dingofs::mds::topology::PoolIdType;
 using ::dingofs::mds::topology::ServerIdType;
+
+using ::dingofs::pb::mds::heartbeat::CandidateError;
 
 namespace dingofs {
 namespace mds {

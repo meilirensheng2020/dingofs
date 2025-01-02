@@ -38,10 +38,10 @@ namespace dingofs {
 namespace metaserver {
 class MockS3Client : public S3Client {
  public:
-  MockS3Client() {}
-  ~MockS3Client() {}
+  MockS3Client() = default;
+  ~MockS3Client() override = default;
 
-  MOCK_METHOD1(Init, void(constS3AdapterOption& options));
+  MOCK_METHOD1(Init, void(const aws::S3AdapterOption& options));
   MOCK_METHOD1(Delete, int(const std::string& name));
   MOCK_METHOD1(DeleteBatch, int(const std::list<std::string>& nameList));
   MOCK_METHOD4(Reinit, void(const std::string& ak, const std::string& sk,

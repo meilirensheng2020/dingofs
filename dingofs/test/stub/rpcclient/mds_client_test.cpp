@@ -43,84 +43,110 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::SetArgPointee;
 
-using ::dingofs::mds::topology::TopoStatusCode;
+using common::CopysetID;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PartitionID;
 
-void MountFsRpcFailed(const std::string& fsName, const Mountpoint& mountPt,
-                      MountFsResponse* response, brpc::Controller* cntl,
-                      brpc::Channel* channel) {
+using pb::common::PartitionInfo;
+using pb::common::Peer;
+using pb::mds::CommitTxRequest;
+using pb::mds::CommitTxResponse;
+using pb::mds::FsInfo;
+using pb::mds::FSStatusCode;
+using pb::mds::GetLatestTxIdRequest;
+using pb::mds::GetLatestTxIdResponse;
+using pb::mds::Mountpoint;
+using pb::mds::space::SpaceErrCode;
+using pb::mds::topology::Copyset;
+using pb::mds::topology::PartitionTxId;
+using pb::mds::topology::TopoStatusCode;
+
+void MountFsRpcFailed(const std::string& fsName,
+                      const pb::mds::Mountpoint& mountPt,
+                      pb::mds::MountFsResponse* response,
+                      brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
-void UmountFsRpcFailed(const std::string& fsName, const Mountpoint& mountPt,
-                       UmountFsResponse* response, brpc::Controller* cntl,
-                       brpc::Channel* channel) {
+void UmountFsRpcFailed(const std::string& fsName,
+                       const pb::mds::Mountpoint& mountPt,
+                       pb::mds::UmountFsResponse* response,
+                       brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
 void AllocOrGetMemcacheClusterRpcFailed(
-    uint32_t fsId, AllocOrGetMemcacheClusterResponse* response,
+    uint32_t fsId,
+    pb::mds::topology::AllocOrGetMemcacheClusterResponse* response,
     brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
 void GetFsInfoByFsnameRpcFailed(const std::string& fsName,
-                                GetFsInfoResponse* response,
+                                pb::mds::GetFsInfoResponse* response,
                                 brpc::Controller* cntl,
                                 brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
-void GetFsInfoByFsIDRpcFailed(uint32_t fsId, GetFsInfoResponse* response,
+void GetFsInfoByFsIDRpcFailed(uint32_t fsId,
+                              pb::mds::GetFsInfoResponse* response,
                               brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
-void GetMetaServerInfoRpcFailed(uint32_t port, std::string ip,
-                                GetMetaServerInfoResponse* response,
-                                brpc::Controller* cntl,
-                                brpc::Channel* channel) {
+void GetMetaServerInfoRpcFailed(
+    uint32_t port, std::string ip,
+    pb::mds::topology::GetMetaServerInfoResponse* response,
+    brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
 void GetMetaServerListInCopysetsRpcFailed(
-    const LogicPoolID& logicalpooid, const std::vector<CopysetID>& copysetidvec,
-    GetMetaServerListInCopySetsResponse* response, brpc::Controller* cntl,
-    brpc::Channel* channel) {
+    const common::LogicPoolID& logicalpooid,
+    const std::vector<common::CopysetID>& copysetidvec,
+    pb::mds::topology::GetMetaServerListInCopySetsResponse* response,
+    brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
-void CreatePartitionRpcFailed(uint32_t fsID, uint32_t count,
-                              CreatePartitionResponse* response,
-                              brpc::Controller* cntl, brpc::Channel* channel) {
+void CreatePartitionRpcFailed(
+    uint32_t fsID, uint32_t count,
+    pb::mds::topology::CreatePartitionResponse* response,
+    brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
 void GetCopysetOfPartitionsRpcFailed(
     const std::vector<uint32_t>& partitionIDList,
-    GetCopysetOfPartitionResponse* response, brpc::Controller* cntl,
-    brpc::Channel* channel) {
+    pb::mds::topology::GetCopysetOfPartitionResponse* response,
+    brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
-void ListPartitionRpcFailed(uint32_t fsID, ListPartitionResponse* response,
+void ListPartitionRpcFailed(uint32_t fsID,
+                            pb::mds::topology::ListPartitionResponse* response,
                             brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
-void RefreshSessionRpcFailed(const RefreshSessionRequest& request,
-                             RefreshSessionResponse* response,
+void RefreshSessionRpcFailed(const pb::mds::RefreshSessionRequest& request,
+                             pb::mds::RefreshSessionResponse* response,
                              brpc::Controller* cntl, brpc::Channel* channel) {
   cntl->SetFailed(112, "Not connected to");
 }
 
-bool ComparePartition(PartitionInfo first, PartitionInfo second) {
+bool ComparePartition(pb::common::PartitionInfo first,
+                      pb::common::PartitionInfo second) {
   return first.fsid() == second.fsid() && first.poolid() == second.poolid() &&
          first.copysetid() == second.copysetid() &&
          first.partitionid() == second.partitionid() &&
          first.start() == second.start() && first.end() == second.end();
 }
 
-bool CompareCopyset(Copyset first, Copyset second) {
+bool CompareCopyset(pb::mds::topology::Copyset first,
+                    pb::mds::topology::Copyset second) {
   return first.poolid() == second.poolid() &&
          first.copysetid() == second.copysetid();
 }
@@ -128,7 +154,7 @@ bool CompareCopyset(Copyset first, Copyset second) {
 class MdsClientImplTest : public testing::Test {
  protected:
   void SetUp() override {
-    ::dingofs::stub::common::MdsOption mdsopt;
+    stub::common::MdsOption mdsopt;
     mdsopt.rpcRetryOpt.addrs = {addr_};
     mdsopt.rpcRetryOpt.rpcTimeoutMs = 500;            // 500ms
     mdsopt.rpcRetryOpt.maxRPCTimeoutMS = 1000;        // 1s
@@ -136,7 +162,8 @@ class MdsClientImplTest : public testing::Test {
     mdsopt.mdsMaxRetryMS = 2000;                      // 2s
     mdsopt.rpcRetryOpt.maxFailedTimesBeforeChangeAddr = 2;
 
-    ASSERT_EQ(FSStatusCode::OK, mdsclient_.Init(mdsopt, &mockmdsbasecli_));
+    ASSERT_EQ(pb::mds::FSStatusCode::OK,
+              mdsclient_.Init(mdsopt, &mockmdsbasecli_));
 
     ASSERT_EQ(0, server_.AddService(&mockMdsService_,
                                     brpc::SERVER_DOESNT_OWN_SERVICE));
@@ -159,30 +186,30 @@ class MdsClientImplTest : public testing::Test {
 
 TEST_F(MdsClientImplTest, test_MountFs) {
   std::string fsName = "test1";
-  Mountpoint mp;
+  pb::mds::Mountpoint mp;
   mp.set_hostname("0.0.0.0");
   mp.set_port(9000);
   mp.set_path("/data");
-  FsInfo out;
+  pb::mds::FsInfo out;
 
-  dingofs::mds::MountFsResponse response;
-  auto fsinfo = new dingofs::mds::FsInfo();
+  pb::mds::MountFsResponse response;
+  auto fsinfo = new pb::mds::FsInfo();
   fsinfo->set_fsid(1);
   fsinfo->set_fsname(fsName);
   fsinfo->set_rootinodeid(1);
   fsinfo->set_capacity(10 * 1024 * 1024L);
   fsinfo->set_blocksize(4 * 1024);
-  auto vresp = new dingofs::common::Volume();
+  auto vresp = new pb::common::Volume();
   vresp->set_volumesize(10 * 1024 * 1024L);
   vresp->set_blocksize(4 * 1024);
   vresp->set_volumename("test1");
   vresp->set_user("test");
   vresp->set_password("test");
-  auto detail = new dingofs::mds::FsDetail();
+  auto detail = new pb::mds::FsDetail();
   detail->set_allocated_volume(vresp);
   fsinfo->set_allocated_detail(detail);
   fsinfo->set_mountnum(1);
-  Mountpoint mountPoint;
+  pb::mds::Mountpoint mountPoint;
   mountPoint.set_hostname("0.0.0.0");
   mountPoint.set_port(9000);
   mountPoint.set_path("/data");
@@ -190,7 +217,7 @@ TEST_F(MdsClientImplTest, test_MountFs) {
   response.set_allocated_fsinfo(fsinfo);
 
   // 1. mount ok
-  response.set_statuscode(dingofs::mds::FSStatusCode::OK);
+  response.set_statuscode(pb::mds::FSStatusCode::OK);
   EXPECT_CALL(mockmdsbasecli_, MountFs(_, _, _, _, _))
       .WillOnce(SetArgPointee<2>(response));
   ASSERT_EQ(FSStatusCode::OK, mdsclient_.MountFs(fsName, mp, &out));
@@ -198,7 +225,7 @@ TEST_F(MdsClientImplTest, test_MountFs) {
 
   // 2. mount point not exist
   out.Clear();
-  response.set_statuscode(dingofs::mds::FSStatusCode::MOUNT_POINT_NOT_EXIST);
+  response.set_statuscode(pb::mds::FSStatusCode::MOUNT_POINT_NOT_EXIST);
   EXPECT_CALL(mockmdsbasecli_, MountFs(_, _, _, _, _))
       .WillOnce(SetArgPointee<2>(response));
   ASSERT_EQ(FSStatusCode::MOUNT_POINT_NOT_EXIST,
@@ -220,16 +247,16 @@ TEST_F(MdsClientImplTest, test_UmountFs) {
   mp.set_hostname("0.0.0.0");
   mp.set_port(9000);
   mp.set_path("/data");
-  dingofs::mds::UmountFsResponse response;
+  pb::mds::UmountFsResponse response;
 
   // 1. umount ok
-  response.set_statuscode(dingofs::mds::FSStatusCode::OK);
+  response.set_statuscode(pb::mds::FSStatusCode::OK);
   EXPECT_CALL(mockmdsbasecli_, UmountFs(_, _, _, _, _))
       .WillOnce(SetArgPointee<2>(response));
   ASSERT_EQ(FSStatusCode::OK, mdsclient_.UmountFs(fsName, mp));
 
   // 2. umount unknown error
-  response.set_statuscode(dingofs::mds::FSStatusCode::UNKNOWN_ERROR);
+  response.set_statuscode(pb::mds::FSStatusCode::UNKNOWN_ERROR);
   EXPECT_CALL(mockmdsbasecli_, UmountFs(_, _, _, _, _))
       .WillOnce(SetArgPointee<2>(response));
   ASSERT_EQ(FSStatusCode::UNKNOWN_ERROR, mdsclient_.UmountFs(fsName, mp));
@@ -246,20 +273,20 @@ TEST_F(MdsClientImplTest, test_GetFsInfo_by_fsname) {
   std::string fsName = "test1";
   FsInfo out;
 
-  dingofs::mds::GetFsInfoResponse response;
-  auto fsinfo = new dingofs::mds::FsInfo();
+  pb::mds::GetFsInfoResponse response;
+  auto fsinfo = new pb::mds::FsInfo();
   fsinfo->set_fsid(1);
   fsinfo->set_fsname(fsName);
   fsinfo->set_rootinodeid(1);
   fsinfo->set_capacity(10 * 1024 * 1024L);
   fsinfo->set_blocksize(4 * 1024);
-  auto vresp = new dingofs::common::Volume();
+  auto vresp = new pb::common::Volume();
   vresp->set_volumesize(10 * 1024 * 1024L);
   vresp->set_blocksize(4 * 1024);
   vresp->set_volumename("test1");
   vresp->set_user("test");
   vresp->set_password("test");
-  auto detail = new dingofs::mds::FsDetail();
+  auto detail = new pb::mds::FsDetail();
   detail->set_allocated_volume(vresp);
   fsinfo->set_allocated_detail(detail);
   fsinfo->set_mountnum(1);
@@ -271,7 +298,7 @@ TEST_F(MdsClientImplTest, test_GetFsInfo_by_fsname) {
   response.set_allocated_fsinfo(fsinfo);
 
   // 1. get fsinfo ok
-  response.set_statuscode(dingofs::mds::FSStatusCode::OK);
+  response.set_statuscode(pb::mds::FSStatusCode::OK);
   EXPECT_CALL(mockmdsbasecli_, GetFsInfo(fsName, _, _, _))
       .WillOnce(SetArgPointee<1>(response));
   ASSERT_EQ(FSStatusCode::OK, mdsclient_.GetFsInfo(fsName, &out));
@@ -279,7 +306,7 @@ TEST_F(MdsClientImplTest, test_GetFsInfo_by_fsname) {
 
   // 2. get fsinfo not found
   out.Clear();
-  response.set_statuscode(dingofs::mds::FSStatusCode::NOT_FOUND);
+  response.set_statuscode(pb::mds::FSStatusCode::NOT_FOUND);
   EXPECT_CALL(mockmdsbasecli_, GetFsInfo(fsName, _, _, _))
       .WillOnce(SetArgPointee<1>(response));
   ASSERT_EQ(FSStatusCode::NOT_FOUND, mdsclient_.GetFsInfo(fsName, &out));
@@ -298,20 +325,20 @@ TEST_F(MdsClientImplTest, test_GetFsInfo_by_fsid) {
   uint32_t fsid = 1;
   FsInfo out;
 
-  dingofs::mds::GetFsInfoResponse response;
-  auto fsinfo = new dingofs::mds::FsInfo();
+  pb::mds::GetFsInfoResponse response;
+  auto fsinfo = new pb::mds::FsInfo();
   fsinfo->set_fsid(1);
   fsinfo->set_fsname("test1");
   fsinfo->set_rootinodeid(1);
   fsinfo->set_capacity(10 * 1024 * 1024L);
   fsinfo->set_blocksize(4 * 1024);
-  auto vresp = new dingofs::common::Volume();
+  auto vresp = new pb::common::Volume();
   vresp->set_volumesize(10 * 1024 * 1024L);
   vresp->set_blocksize(4 * 1024);
   vresp->set_volumename("test1");
   vresp->set_user("test");
   vresp->set_password("test");
-  auto detail = new dingofs::mds::FsDetail();
+  auto detail = new pb::mds::FsDetail();
   detail->set_allocated_volume(vresp);
   fsinfo->set_allocated_detail(detail);
   fsinfo->set_mountnum(1);
@@ -323,7 +350,7 @@ TEST_F(MdsClientImplTest, test_GetFsInfo_by_fsid) {
   response.set_allocated_fsinfo(fsinfo);
 
   // 1. get file info ok
-  response.set_statuscode(dingofs::mds::FSStatusCode::OK);
+  response.set_statuscode(pb::mds::FSStatusCode::OK);
   EXPECT_CALL(mockmdsbasecli_, GetFsInfo(fsid, _, _, _))
       .WillOnce(SetArgPointee<1>(response));
   ASSERT_EQ(FSStatusCode::OK, mdsclient_.GetFsInfo(fsid, &out));
@@ -331,7 +358,7 @@ TEST_F(MdsClientImplTest, test_GetFsInfo_by_fsid) {
 
   // 2. get fsinfo unknow error
   out.Clear();
-  response.set_statuscode(dingofs::mds::FSStatusCode::UNKNOWN_ERROR);
+  response.set_statuscode(pb::mds::FSStatusCode::UNKNOWN_ERROR);
   EXPECT_CALL(mockmdsbasecli_, GetFsInfo(fsid, _, _, _))
       .WillOnce(SetArgPointee<1>(response));
   ASSERT_EQ(FSStatusCode::UNKNOWN_ERROR, mdsclient_.GetFsInfo(fsid, &out));
@@ -347,14 +374,14 @@ TEST_F(MdsClientImplTest, test_GetFsInfo_by_fsid) {
 }
 
 TEST_F(MdsClientImplTest, CommitTx) {
-  dingofs::mds::CommitTxResponse response;
+  pb::mds::CommitTxResponse response;
 
   // CASE 1: CommitTx success
   response.set_statuscode(FSStatusCode::OK);
   EXPECT_CALL(mockmdsbasecli_, CommitTx(_, _, _, _))
       .WillOnce(SetArgPointee<1>(response));
 
-  auto txIds = std::vector<PartitionTxId>();
+  auto txIds = std::vector<pb::mds::topology::PartitionTxId>();
   auto rc = mdsclient_.CommitTx(txIds);
   ASSERT_EQ(rc, FSStatusCode::OK);
 
@@ -371,7 +398,8 @@ TEST_F(MdsClientImplTest, CommitTx) {
   EXPECT_CALL(mockmdsbasecli_, CommitTx(_, _, _, _))
       .Times(6)
       .WillRepeatedly(
-          Invoke([&](const CommitTxRequest& request, CommitTxResponse* response,
+          Invoke([&](const pb::mds::CommitTxRequest& request,
+                     pb::mds::CommitTxResponse* response,
                      brpc::Controller* cntl, brpc::Channel* channel) {
             if (++count <= 5) {
               cntl->SetFailed(112, "Not connected to");
@@ -546,22 +574,22 @@ TEST_F(MdsClientImplTest, GetLatestTxIdWithLock) {
 
 TEST_F(MdsClientImplTest, test_GetMetaServerInfo) {
   // in
-  dingofs::stub::common::EndPoint ep;
+  stub::common::EndPoint ep;
   butil::str2endpoint("127.0.0.1", 5000, &ep);
-  dingofs::stub::common::PeerAddr addr(ep);
+  stub::common::PeerAddr addr(ep);
 
   // out
-  CopysetPeerInfo<MetaserverID> out;
+  common::CopysetPeerInfo<MetaserverID> out;
 
-  dingofs::mds::topology::GetMetaServerInfoResponse response;
-  auto metaserverInfo = new dingofs::mds::topology::MetaServerInfo();
+  pb::mds::topology::GetMetaServerInfoResponse response;
+  auto metaserverInfo = new pb::mds::topology::MetaServerInfo();
   metaserverInfo->set_metaserverid(1);
   metaserverInfo->set_hostname("hangzhou");
   metaserverInfo->set_internalip("127.0.0.1");
   metaserverInfo->set_internalport(5000);
   metaserverInfo->set_externalip("127.0.0.1");
   metaserverInfo->set_externalport(5000);
-  metaserverInfo->set_onlinestate(::dingofs::mds::topology::ONLINE);
+  metaserverInfo->set_onlinestate(pb::mds::topology::ONLINE);
   response.set_allocated_metaserverinfo(metaserverInfo);
 
   // 1. get metaserver info ok
@@ -569,8 +597,8 @@ TEST_F(MdsClientImplTest, test_GetMetaServerInfo) {
   EXPECT_CALL(mockmdsbasecli_, GetMetaServerInfo(_, _, _, _, _))
       .WillOnce(SetArgPointee<2>(response));
   ASSERT_TRUE(mdsclient_.GetMetaServerInfo(addr, &out));
-  ASSERT_TRUE(out ==
-              CopysetPeerInfo<MetaserverID>(1, PeerAddr(ep), PeerAddr(ep)));
+  ASSERT_TRUE(out == common::CopysetPeerInfo<MetaserverID>(
+                         1, common::PeerAddr(ep), common::PeerAddr(ep)));
 
   // 2. get metaserver info not found
   response.set_statuscode(TopoStatusCode::TOPO_METASERVER_NOT_FOUND);
@@ -592,9 +620,9 @@ TEST_F(MdsClientImplTest, GetMetaServerListInCopysets) {
   std::vector<CopysetID> copysetidvec{1};
 
   // out
-  std::vector<CopysetInfo<MetaserverID>> out;
+  std::vector<common::CopysetInfo<MetaserverID>> out;
 
-  dingofs::mds::topology::GetMetaServerListInCopySetsResponse response;
+  pb::mds::topology::GetMetaServerListInCopySetsResponse response;
   auto copysetInfo = response.add_csinfo();
   copysetInfo->set_copysetid(1);
   auto l1 = copysetInfo->add_cslocs();
@@ -663,7 +691,7 @@ TEST_F(MdsClientImplTest, CreatePartition) {
   partitioninfo2.set_start(5);
   partitioninfo2.set_end(6);
 
-  dingofs::mds::topology::CreatePartitionResponse response;
+  pb::mds::topology::CreatePartitionResponse response;
   // 1. create partition return ok, but no partition info returns
   response.set_statuscode(TopoStatusCode::TOPO_OK);
   EXPECT_CALL(mockmdsbasecli_, CreatePartition(_, _, _, _, _))
@@ -719,7 +747,7 @@ TEST_F(MdsClientImplTest, ListPartition) {
   partitioninfo2.set_start(5);
   partitioninfo2.set_end(6);
 
-  dingofs::mds::topology::ListPartitionResponse response;
+  pb::mds::topology::ListPartitionResponse response;
   response.add_partitioninfolist()->CopyFrom(partitioninfo1);
   response.add_partitioninfolist()->CopyFrom(partitioninfo2);
 
@@ -770,7 +798,7 @@ TEST_F(MdsClientImplTest, GetCopysetOfPartition) {
   peer2.set_address("addr2");
   copyset2.add_peers()->CopyFrom(peer2);
 
-  dingofs::mds::topology::GetCopysetOfPartitionResponse response;
+  pb::mds::topology::GetCopysetOfPartitionResponse response;
 
   // 1. get metaserver list return ok, but no copyset returns
   response.set_statuscode(TopoStatusCode::TOPO_OK);
@@ -819,7 +847,7 @@ TEST_F(MdsClientImplTest, RefreshSession) {
   // out
   std::vector<PartitionTxId> out;
   std::atomic<bool>* enableSumInDir = new std::atomic<bool>(true);
-  RefreshSessionResponse response;
+  pb::mds::RefreshSessionResponse response;
 
   {
     LOG(INFO) << "### case1: refresh session ok, no need update ###";
@@ -862,26 +890,27 @@ TEST_F(MdsClientImplTest, TestAllocateVolumeBlockGroup) {
   // rpc error
   {
     EXPECT_CALL(mockmdsbasecli_, AllocateVolumeBlockGroup(_, _, _, _, _, _))
-        .WillRepeatedly(Invoke(
-            [](uint32_t, uint32_t, const std::string&,
-               AllocateBlockGroupResponse*, brpc::Controller* cntl,
-               brpc::Channel*) { cntl->SetFailed(ENOENT, "Not Found"); }));
+        .WillRepeatedly(Invoke([](uint32_t, uint32_t, const std::string&,
+                                  pb::mds::space::AllocateBlockGroupResponse*,
+                                  brpc::Controller* cntl, brpc::Channel*) {
+          cntl->SetFailed(ENOENT, "Not Found");
+        }));
 
-    std::vector<dingofs::mds::space::BlockGroup> groups;
+    std::vector<pb::mds::space::BlockGroup> groups;
 
-    ASSERT_EQ(SpaceErrCode::SpaceErrUnknown,
+    ASSERT_EQ(pb::mds::space::SpaceErrCode::SpaceErrUnknown,
               mdsclient_.AllocateVolumeBlockGroup(1, 1, "hello", &groups));
   }
 
   // response error
   {
-    AllocateBlockGroupResponse response;
-    response.set_status(SpaceErrCode::SpaceErrNoSpace);
+    pb::mds::space::AllocateBlockGroupResponse response;
+    response.set_status(pb::mds::space::SpaceErrCode::SpaceErrNoSpace);
 
     EXPECT_CALL(mockmdsbasecli_, AllocateVolumeBlockGroup(_, _, _, _, _, _))
         .WillOnce(SetArgPointee<3>(response));
 
-    std::vector<dingofs::mds::space::BlockGroup> groups;
+    std::vector<pb::mds::space::BlockGroup> groups;
 
     ASSERT_EQ(SpaceErrCode::SpaceErrNoSpace,
               mdsclient_.AllocateVolumeBlockGroup(1, 1, "hello", &groups));
@@ -889,13 +918,13 @@ TEST_F(MdsClientImplTest, TestAllocateVolumeBlockGroup) {
 
   // no block groups
   {
-    AllocateBlockGroupResponse response;
+    pb::mds::space::AllocateBlockGroupResponse response;
     response.set_status(SpaceErrCode::SpaceOk);
 
     EXPECT_CALL(mockmdsbasecli_, AllocateVolumeBlockGroup(_, _, _, _, _, _))
         .WillOnce(SetArgPointee<3>(response));
 
-    std::vector<dingofs::mds::space::BlockGroup> groups;
+    std::vector<pb::mds::space::BlockGroup> groups;
 
     ASSERT_EQ(SpaceErrCode::SpaceErrNoSpace,
               mdsclient_.AllocateVolumeBlockGroup(1, 1, "hello", &groups));
@@ -903,18 +932,18 @@ TEST_F(MdsClientImplTest, TestAllocateVolumeBlockGroup) {
 
   // success
   {
-    AllocateBlockGroupResponse response;
+    pb::mds::space::AllocateBlockGroupResponse response;
     response.set_status(SpaceErrCode::SpaceOk);
 
     auto blockgroup = dingofs::test::GenerateAnDefaultInitializedMessage(
         "dingofs.mds.space.BlockGroup");
     *response.add_blockgroups() =
-        static_cast<dingofs::mds::space::BlockGroup&>(*blockgroup);
+        static_cast<pb::mds::space::BlockGroup&>(*blockgroup);
 
     EXPECT_CALL(mockmdsbasecli_, AllocateVolumeBlockGroup(_, _, _, _, _, _))
         .WillOnce(SetArgPointee<3>(response));
 
-    std::vector<dingofs::mds::space::BlockGroup> groups;
+    std::vector<pb::mds::space::BlockGroup> groups;
 
     ASSERT_EQ(SpaceErrCode::SpaceOk,
               mdsclient_.AllocateVolumeBlockGroup(1, 1, "hello", &groups));
@@ -926,12 +955,13 @@ TEST_F(MdsClientImplTest, TestAcquireVolumeBlockGroup) {
   // rpc error
   {
     EXPECT_CALL(mockmdsbasecli_, AcquireVolumeBlockGroup(_, _, _, _, _, _))
-        .WillRepeatedly(Invoke(
-            [](uint32_t, uint64_t, const std::string&,
-               AcquireBlockGroupResponse*, brpc::Controller* cntl,
-               brpc::Channel*) { cntl->SetFailed(ENOENT, "Not Found"); }));
+        .WillRepeatedly(Invoke([](uint32_t, uint64_t, const std::string&,
+                                  pb::mds::space::AcquireBlockGroupResponse*,
+                                  brpc::Controller* cntl, brpc::Channel*) {
+          cntl->SetFailed(ENOENT, "Not Found");
+        }));
 
-    dingofs::mds::space::BlockGroup blockGroup;
+    pb::mds::space::BlockGroup blockGroup;
 
     ASSERT_EQ(SpaceErrCode::SpaceErrUnknown,
               mdsclient_.AcquireVolumeBlockGroup(1, 1, "hello", &blockGroup));
@@ -939,12 +969,12 @@ TEST_F(MdsClientImplTest, TestAcquireVolumeBlockGroup) {
 
   // response error
   {
-    AcquireBlockGroupResponse response;
+    pb::mds::space::AcquireBlockGroupResponse response;
     response.set_status(SpaceErrCode::SpaceErrNotFound);
     EXPECT_CALL(mockmdsbasecli_, AcquireVolumeBlockGroup(_, _, _, _, _, _))
         .WillOnce(SetArgPointee<3>(response));
 
-    dingofs::mds::space::BlockGroup blockGroup;
+    pb::mds::space::BlockGroup blockGroup;
 
     ASSERT_EQ(SpaceErrCode::SpaceErrNotFound,
               mdsclient_.AcquireVolumeBlockGroup(1, 1, "hello", &blockGroup));
@@ -955,13 +985,15 @@ TEST_F(MdsClientImplTest, TestReleaseVolumeBlockGroup) {
   // rpc error
   {
     EXPECT_CALL(mockmdsbasecli_, ReleaseVolumeBlockGroup(_, _, _, _, _, _))
-        .WillRepeatedly(Invoke(
-            [](uint32_t, const std::string&,
-               const std::vector<dingofs::mds::space::BlockGroup>&,
-               ReleaseBlockGroupResponse*, brpc::Controller* cntl,
-               brpc::Channel*) { cntl->SetFailed(ENOENT, "Not Found"); }));
+        .WillRepeatedly(
+            Invoke([](uint32_t, const std::string&,
+                      const std::vector<pb::mds::space::BlockGroup>&,
+                      pb::mds::space::ReleaseBlockGroupResponse*,
+                      brpc::Controller* cntl, brpc::Channel*) {
+              cntl->SetFailed(ENOENT, "Not Found");
+            }));
 
-    std::vector<dingofs::mds::space::BlockGroup> blockGroups;
+    std::vector<pb::mds::space::BlockGroup> blockGroups;
 
     ASSERT_EQ(SpaceErrCode::SpaceErrUnknown,
               mdsclient_.ReleaseVolumeBlockGroup(1, "hello", blockGroups));
@@ -969,12 +1001,12 @@ TEST_F(MdsClientImplTest, TestReleaseVolumeBlockGroup) {
 
   {
     for (auto err : {SpaceErrCode::SpaceOk, SpaceErrCode::SpaceErrNoSpace}) {
-      ReleaseBlockGroupResponse response;
+      pb::mds::space::ReleaseBlockGroupResponse response;
       response.set_status(err);
       EXPECT_CALL(mockmdsbasecli_, ReleaseVolumeBlockGroup(_, _, _, _, _, _))
           .WillOnce(SetArgPointee<3>(response));
 
-      std::vector<dingofs::mds::space::BlockGroup> blockGroups;
+      std::vector<pb::mds::space::BlockGroup> blockGroups;
 
       ASSERT_EQ(err,
                 mdsclient_.ReleaseVolumeBlockGroup(1, "hello", blockGroups));
@@ -983,25 +1015,25 @@ TEST_F(MdsClientImplTest, TestReleaseVolumeBlockGroup) {
 }
 
 TEST_F(MdsClientImplTest, test_AllocOrGetMemcacheCluster) {
-  AllocOrGetMemcacheClusterResponse response;
-  MemcacheClusterInfo cluster1;
+  pb::mds::topology::AllocOrGetMemcacheClusterResponse response;
+  pb::mds::topology::MemcacheClusterInfo cluster1;
   cluster1.set_clusterid(1);
-  mds::topology::MemcacheServerInfo server;
+  pb::mds::topology::MemcacheServerInfo server;
   server.set_ip("127.0.0.1");
   server.set_port(1);
   *cluster1.add_servers() = server;
-  response.set_allocated_cluster(new MemcacheClusterInfo(cluster1));
+  response.set_allocated_cluster(
+      new pb::mds::topology::MemcacheClusterInfo(cluster1));
 
   // 1. ok
-  response.set_statuscode(dingofs::mds::topology::TOPO_OK);
+  response.set_statuscode(pb::mds::topology::TOPO_OK);
   EXPECT_CALL(mockmdsbasecli_, AllocOrGetMemcacheCluster(_, _, _, _))
       .WillOnce(SetArgPointee<1>(response));
-  MemcacheClusterInfo cluster2;
+  pb::mds::topology::MemcacheClusterInfo cluster2;
   ASSERT_EQ(true, mdsclient_.AllocOrGetMemcacheCluster(1, &cluster2));
 
   // 2. no memcached
-  response.set_statuscode(
-      dingofs::mds::topology::TOPO_MEMCACHECLUSTER_NOT_FOUND);
+  response.set_statuscode(pb::mds::topology::TOPO_MEMCACHECLUSTER_NOT_FOUND);
   EXPECT_CALL(mockmdsbasecli_, AllocOrGetMemcacheCluster(_, _, _, _))
       .WillOnce(SetArgPointee<1>(response));
   ASSERT_EQ(false, mdsclient_.AllocOrGetMemcacheCluster(1, &cluster2));

@@ -21,19 +21,19 @@
  */
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/partition.h"
 #include "dingofs/src/metaserver/partition_clean_manager.h"
 #include "dingofs/src/metaserver/partition_cleaner.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
-#include "dingofs/test/stub/rpcclient/mock_mds_client.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_node.h"
 #include "dingofs/test/metaserver/mock_metaserver_s3_adaptor.h"
 #include "dingofs/test/metaserver/storage/utils.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
+#include "dingofs/test/stub/rpcclient/mock_mds_client.h"
 
-using ::dingofs::stub::rpcclient::MockMdsClient;
-using ::dingofs::mds::FSStatusCode;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Matcher;
@@ -43,6 +43,13 @@ using ::dingofs::metaserver::storage::KVStorage;
 using ::dingofs::metaserver::storage::RandomStoragePath;
 using ::dingofs::metaserver::storage::RocksDBStorage;
 using ::dingofs::metaserver::storage::StorageOptions;
+using ::dingofs::pb::common::PartitionInfo;
+using ::dingofs::pb::mds::FSStatusCode;
+using ::dingofs::pb::metaserver::Dentry;
+using ::dingofs::pb::metaserver::FsFileType;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+
+using ::dingofs::stub::rpcclient::MockMdsClient;
 
 namespace dingofs {
 namespace metaserver {

@@ -31,6 +31,9 @@
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_service.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_raft_node.h"
 
+using ::dingofs::pb::common::Peer;
+using ::dingofs::pb::mds::heartbeat::ConfigChangeType;
+
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
@@ -120,7 +123,7 @@ TEST_F(CopysetNodeConfChangeTest, GetConfTest_NoConfChange) {
   EXPECT_TRUE(node.Init(options_));
 
   ConfigChangeType type;
-  Configuration oldConf;
+  braft::Configuration oldConf;
   Peer alterPeer;
 
   node.GetConfChange(&type, &alterPeer);
@@ -215,10 +218,10 @@ TEST_F(CopysetNodeConfChangeTest, TestTransferLeader) {
       return peerId;
     }));
 
-    EXPECT_CALL(*raftNode, transfer_leadership_to(_)).WillOnce(Return(OK));
+    EXPECT_CALL(*raftNode, transfer_leadership_to(_)).WillOnce(Return(0));
 
     auto st = node.TransferLeader(peer);
-    EXPECT_EQ(OK, st.error_code());
+    EXPECT_EQ(0, st.error_code());
 
     // get conf change
     ConfigChangeType type;
@@ -635,10 +638,10 @@ TEST_F(CopysetNodeConfChangeTest, UpdateTransferLeaderStateWhenGetConfChange) {
     return peerId;
   }));
 
-  EXPECT_CALL(*raftNode, transfer_leadership_to(_)).WillOnce(Return(OK));
+  EXPECT_CALL(*raftNode, transfer_leadership_to(_)).WillOnce(Return(0));
 
   auto st = node.TransferLeader(peer);
-  EXPECT_EQ(OK, st.error_code());
+  EXPECT_EQ(0, st.error_code());
 
   // get conf change
   ConfigChangeType type;

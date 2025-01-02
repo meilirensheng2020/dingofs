@@ -28,6 +28,9 @@
 namespace dingofs {
 namespace metaserver {
 
+using pb::metaserver::Inode;
+using pb::metaserver::UpdateInodeRequest;
+
 UpdateInodeRequest MakeUpdateInodeRequestFromInode(const Inode& inode,
                                                    uint32_t poolId = 0,
                                                    uint32_t copysetId = 0,

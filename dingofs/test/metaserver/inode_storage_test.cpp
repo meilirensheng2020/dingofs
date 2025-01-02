@@ -33,21 +33,24 @@
 #include <string>
 
 #include "dingofs/proto/metaserver.pb.h"
-#include "dingofs/src/stub/filesystem/xattr.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/storage/config.h"
 #include "dingofs/src/metaserver/storage/converter.h"
 #include "dingofs/src/metaserver/storage/memory_storage.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/status.h"
 #include "dingofs/src/metaserver/storage/storage.h"
+#include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/test/metaserver/mock/mock_kv_storage.h"
 #include "dingofs/test/metaserver/storage/utils.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
 
 using ::testing::Return;
 
+using ::dingofs::metaserver::storage::Converter;
+using ::dingofs::metaserver::storage::Key4Inode;
 using ::dingofs::metaserver::storage::Key4S3ChunkInfoList;
 using ::dingofs::metaserver::storage::KVStorage;
+using ::dingofs::metaserver::storage::NameGenerator;
 using ::dingofs::metaserver::storage::RandomStoragePath;
 using ::dingofs::metaserver::storage::RocksDBStorage;
 using ::dingofs::metaserver::storage::StorageOptions;
@@ -61,7 +64,43 @@ using ::dingofs::stub::filesystem::XATTR_DIR_RFILES;
 using ::dingofs::stub::filesystem::XATTR_DIR_RSUBDIRS;
 using ::dingofs::stub::filesystem::XATTR_DIR_SUBDIRS;
 
+using ::dingofs::pb::metaserver::FsFileType;
+using ::dingofs::pb::metaserver::Inode;
+using ::dingofs::pb::metaserver::InodeAttr;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+using ::dingofs::pb::metaserver::S3ChunkInfo;
+using ::dingofs::pb::metaserver::S3ChunkInfoList;
+using ::dingofs::pb::metaserver::VolumeExtent;
+using ::dingofs::pb::metaserver::VolumeExtentList;
+using ::dingofs::pb::metaserver::XAttr;
+
 namespace dingofs {
+namespace pb {
+namespace metaserver {
+static bool operator==(const VolumeExtentList& list,
+                       const std::vector<VolumeExtentSlice>& slices) {
+  std::vector<VolumeExtentSlice> clist(list.slices().begin(),
+                                       list.slices().end());
+
+  auto copy = slices;
+  std::sort(copy.begin(), copy.end(),
+            [](const VolumeExtentSlice& s1, const VolumeExtentSlice& s2) {
+              return s1.offset() < s2.offset();
+            });
+
+  return true;
+}
+
+static bool operator==(const VolumeExtentSlice& s1,
+                       const VolumeExtentSlice& s2) {
+  return google::protobuf::util::MessageDifferencer::Equals(s1, s2);
+}
+}  // namespace metaserver
+
+}  // namespace pb
+
+using ::dingofs::pb::metaserver::VolumeExtentSlice;
+
 namespace metaserver {
 
 namespace {
@@ -791,25 +830,6 @@ static bool PrepareGetAllVolumeExtentTest(InodeStorage* storage, uint32_t fsId,
   out->push_back(slice1);
   out->push_back(slice2);
   return true;
-}
-
-static bool operator==(const VolumeExtentList& list,
-                       const std::vector<VolumeExtentSlice>& slices) {
-  std::vector<VolumeExtentSlice> clist(list.slices().begin(),
-                                       list.slices().end());
-
-  auto copy = slices;
-  std::sort(copy.begin(), copy.end(),
-            [](const VolumeExtentSlice& s1, const VolumeExtentSlice& s2) {
-              return s1.offset() < s2.offset();
-            });
-
-  return true;
-}
-
-static bool operator==(const VolumeExtentSlice& s1,
-                       const VolumeExtentSlice& s2) {
-  return google::protobuf::util::MessageDifferencer::Equals(s1, s2);
 }
 
 TEST_F(InodeStorageTest, TestGetAllVolumeExtent) {

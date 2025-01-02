@@ -23,13 +23,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
 #include "dingofs/src/metaserver/trash_manager.h"
-#include "dingofs/test/stub/rpcclient/mock_mds_client.h"
 #include "dingofs/test/metaserver/mock_metaserver_s3_adaptor.h"
 #include "dingofs/test/metaserver/storage/utils.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
+#include "dingofs/test/stub/rpcclient/mock_mds_client.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -47,11 +48,15 @@ namespace {
 auto localfs = dingofs::fs::Ext4FileSystemImpl::getInstance();
 }
 
-using ::dingofs::stub::rpcclient::MockMdsClient;
 using ::dingofs::metaserver::storage::KVStorage;
+using ::dingofs::metaserver::storage::NameGenerator;
 using ::dingofs::metaserver::storage::RandomStoragePath;
 using ::dingofs::metaserver::storage::RocksDBStorage;
 using ::dingofs::metaserver::storage::StorageOptions;
+using ::dingofs::stub::rpcclient::MockMdsClient;
+
+using ::dingofs::pb::metaserver::FsFileType;
+using ::dingofs::pb::metaserver::Inode;
 
 class TestTrash : public ::testing::Test {
  protected:

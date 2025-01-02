@@ -30,28 +30,28 @@
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
-class MockMdsService : public dingofs::mds::MdsService {
+class MockMdsService : public pb::mds::MdsService {
  public:
-  MockMdsService() : MdsService() {}
-  ~MockMdsService() = default;
+  MockMdsService() = default;
+  ~MockMdsService() override = default;
 
   MOCK_METHOD4(MountFs, void(::google::protobuf::RpcController* controller,
-                             const ::dingofs::mds::MountFsRequest* request,
-                             ::dingofs::mds::MountFsResponse* response,
+                             const pb::mds::MountFsRequest* request,
+                             pb::mds::MountFsResponse* response,
                              ::google::protobuf::Closure* done));
   MOCK_METHOD4(UmountFs, void(::google::protobuf::RpcController* controller,
-                              const ::dingofs::mds::UmountFsRequest* request,
-                              ::dingofs::mds::UmountFsResponse* response,
+                              const pb::mds::UmountFsRequest* request,
+                              pb::mds::UmountFsResponse* response,
                               ::google::protobuf::Closure* done));
   MOCK_METHOD4(GetFsInfo, void(::google::protobuf::RpcController* controller,
-                               const ::dingofs::mds::GetFsInfoRequest* request,
-                               ::dingofs::mds::GetFsInfoResponse* response,
+                               const pb::mds::GetFsInfoRequest* request,
+                               pb::mds::GetFsInfoResponse* response,
                                ::google::protobuf::Closure* done));
 
   MOCK_METHOD4(RefreshSession,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::mds::RefreshSessionRequest* request,
-                    ::dingofs::mds::RefreshSessionResponse* response,
+                    const pb::mds::RefreshSessionRequest* request,
+                    pb::mds::RefreshSessionResponse* response,
                     ::google::protobuf::Closure* done));
 };
 }  // namespace rpcclient

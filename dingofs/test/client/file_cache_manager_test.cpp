@@ -26,10 +26,10 @@
 #include "dingofs/src/client/blockcache/error.h"
 #include "dingofs/src/client/s3/client_s3_adaptor.h"
 #include "dingofs/src/client/s3/client_s3_cache_manager.h"
+#include "dingofs/src/utils/concurrent/task_thread_pool.h"
 #include "dingofs/test/client/mock_client_s3.h"
 #include "dingofs/test/client/mock_client_s3_cache_manager.h"
 #include "dingofs/test/client/mock_inode_cache_manager.h"
-#include "dingofs/src/utils/concurrent/task_thread_pool.h"
 
 namespace dingofs {
 namespace client {
@@ -62,7 +62,7 @@ class FileCacheManagerTest : public testing::Test {
   void SetUp() override {
     uint64_t inodeId = 1;
     uint64_t fsId = 2;
-    S3ClientAdaptorOption option;
+    common::S3ClientAdaptorOption option;
     option.blockSize = 1 * 1024 * 1024;
     option.chunkSize = 4 * 1024 * 1024;
     option.baseSleepUs = 500;
@@ -247,7 +247,7 @@ TEST_F(FileCacheManagerTest, test_read_s3) {
   Inode inode;
   inode.set_length(len);
   auto* s3ChunkInfoMap = inode.mutable_s3chunkinfomap();
-  auto* s3ChunkInfoList = new S3ChunkInfoList();
+  auto* s3ChunkInfoList = new pb::metaserver::S3ChunkInfoList();
   auto* s3ChunkInfo = s3ChunkInfoList->add_s3chunks();
   s3ChunkInfo->set_chunkid(25);
   s3ChunkInfo->set_compaction(0);

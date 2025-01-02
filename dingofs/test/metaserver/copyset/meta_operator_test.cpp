@@ -30,16 +30,50 @@
 #include <regex>
 
 #include "absl/memory/memory.h"
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/utils/timeutility.h"
 #include "dingofs/test/fs/mock_local_filesystem.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_node_manager.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_raft_node.h"
 #include "dingofs/test/metaserver/mock/mock_metastore.h"
-#include "dingofs/test/utils/protobuf_message_utils.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
+
+using pb::metaserver::BatchGetInodeAttrRequest;
+using pb::metaserver::BatchGetInodeAttrResponse;
+using pb::metaserver::BatchGetXAttrRequest;
+using pb::metaserver::BatchGetXAttrResponse;
+using pb::metaserver::CreateDentryRequest;
+using pb::metaserver::CreateDentryResponse;
+using pb::metaserver::CreateInodeRequest;
+using pb::metaserver::CreateInodeResponse;
+using pb::metaserver::CreateManageInodeRequest;
+using pb::metaserver::CreateManageInodeResponse;
+using pb::metaserver::CreatePartitionRequest;
+using pb::metaserver::CreatePartitionResponse;
+using pb::metaserver::CreateRootInodeRequest;
+using pb::metaserver::CreateRootInodeResponse;
+using pb::metaserver::DeleteDentryRequest;
+using pb::metaserver::DeleteDentryResponse;
+using pb::metaserver::DeleteInodeRequest;
+using pb::metaserver::DeleteInodeResponse;
+using pb::metaserver::DeletePartitionRequest;
+using pb::metaserver::DeletePartitionResponse;
+using pb::metaserver::GetDentryRequest;
+using pb::metaserver::GetDentryResponse;
+using pb::metaserver::GetInodeRequest;
+using pb::metaserver::GetInodeResponse;
+using pb::metaserver::GetOrModifyS3ChunkInfoRequest;
+using pb::metaserver::GetOrModifyS3ChunkInfoResponse;
+using pb::metaserver::ListDentryRequest;
+using pb::metaserver::ListDentryResponse;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::PrepareRenameTxRequest;
+using pb::metaserver::PrepareRenameTxResponse;
+using pb::metaserver::UpdateInodeRequest;
+using pb::metaserver::UpdateInodeResponse;
 
 const int kDummyServerPort = 32000;
 
@@ -198,7 +232,7 @@ TEST_F(MetaOperatorTest, OnApplyErrorTest) {
     EXPECT_CALL(*mockMetaStore, GetOrModifyS3ChunkInfo(_, _, _))
         .WillOnce(Invoke([&](const GetOrModifyS3ChunkInfoRequest* request,
                              GetOrModifyS3ChunkInfoResponse* response,
-                             std::shared_ptr<Iterator>* iterator) {
+                             std::shared_ptr<storage::Iterator>* iterator) {
           response->set_statuscode(MetaStatusCode::UNKNOWN_ERROR);
           return MetaStatusCode::UNKNOWN_ERROR;
         }));

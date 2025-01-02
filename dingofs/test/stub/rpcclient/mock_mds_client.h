@@ -42,14 +42,30 @@ namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
+using common::CopysetID;
+using common::CopysetInfo;
+using common::CopysetPeerInfo;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PeerAddr;
+using stub::common::MdsOption;
+using stub::rpcclient::MDSBaseClient;
+
+using pb::common::PartitionInfo;
+using pb::mds::FsInfo;
+using pb::mds::FSStatusCode;
+using pb::mds::Mountpoint;
+using pb::mds::space::SpaceErrCode;
+using pb::mds::topology::Copyset;
+using pb::mds::topology::PartitionTxId;
+
 class MockMdsClient : public MdsClient {
  public:
   MockMdsClient() {}
   ~MockMdsClient() {}
 
-  MOCK_METHOD2(Init,
-               FSStatusCode(const ::dingofs::stub::common::MdsOption& mdsOpt,
-                            MDSBaseClient* baseclient));
+  MOCK_METHOD2(Init, FSStatusCode(const MdsOption& mdsOpt,
+                                  MDSBaseClient* baseclient));
 
   MOCK_METHOD3(MountFs,
                FSStatusCode(const std::string& fsName,
@@ -111,19 +127,18 @@ class MockMdsClient : public MdsClient {
 
   MOCK_METHOD4(AllocateVolumeBlockGroup,
                SpaceErrCode(uint32_t, uint32_t, const std::string&,
-                            std::vector<dingofs::mds::space::BlockGroup>*));
+                            std::vector<pb::mds::space::BlockGroup>*));
 
   MOCK_METHOD4(AcquireVolumeBlockGroup,
                SpaceErrCode(uint32_t, uint64_t, const std::string&,
-                            dingofs::mds::space::BlockGroup*));
+                            pb::mds::space::BlockGroup*));
 
-  MOCK_METHOD3(
-      ReleaseVolumeBlockGroup,
-      SpaceErrCode(uint32_t, const std::string&,
-                   const std::vector<dingofs::mds::space::BlockGroup>&));
+  MOCK_METHOD3(ReleaseVolumeBlockGroup,
+               SpaceErrCode(uint32_t, const std::string&,
+                            const std::vector<pb::mds::space::BlockGroup>&));
 
   MOCK_METHOD2(AllocOrGetMemcacheCluster,
-               bool(uint32_t, dingofs::mds::topology::MemcacheClusterInfo*));
+               bool(uint32_t, pb::mds::topology::MemcacheClusterInfo*));
 };
 }  // namespace rpcclient
 }  // namespace stub

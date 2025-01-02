@@ -31,15 +31,15 @@ namespace dingofs {
 namespace mds {
 namespace topology {
 
-class MockTopologyService : public TopologyService {
+class MockTopologyService : public pb::mds::topology::TopologyService {
  public:
-  MockTopologyService() : TopologyService() {}
-  ~MockTopologyService() = default;
+  MockTopologyService() = default;
+  ~MockTopologyService() override = default;
 
   MOCK_METHOD4(RegistMetaServer,
                void(google::protobuf::RpcController* cntl_base,
-                    const MetaServerRegistRequest* request,
-                    MetaServerRegistResponse* response,
+                    const pb::mds::topology::MetaServerRegistRequest* request,
+                    pb::mds::topology::MetaServerRegistResponse* response,
                     google::protobuf::Closure* done));
 };
 }  // namespace topology

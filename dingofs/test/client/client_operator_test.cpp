@@ -26,6 +26,7 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/test/client/mock_dentry_cache_mamager.h"
 #include "dingofs/test/client/mock_inode_cache_manager.h"
 #include "dingofs/test/client/mock_metaserver_client.h"
@@ -34,8 +35,11 @@
 namespace dingofs {
 namespace client {
 
+using dingofs::pb::mds::FSStatusCode;
+using dingofs::pb::metaserver::MetaStatusCode;
 using dingofs::stub::rpcclient::MockMdsClient;
 using dingofs::stub::rpcclient::MockMetaServerClient;
+
 using ::testing::DoAll;
 using ::testing::SetArgPointee;
 

@@ -42,13 +42,13 @@ namespace dingofs {
 namespace tools {
 namespace umount {
 
-using mds::Mountpoint;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
-using ::testing::Return;
 using ::testing::SetArgPointee;
-using ::testing::SetArgReferee;
+
+using pb::mds::FSStatusCode;
+using pb::mds::Mountpoint;
 
 class UmountfsToolTest : public testing::Test {
  protected:
@@ -82,8 +82,8 @@ class UmountfsToolTest : public testing::Test {
 };
 
 void UF(::google::protobuf::RpcController* controller,
-        const ::dingofs::mds::UmountFsRequest* request,
-        ::dingofs::mds::UmountFsResponse* response,
+        const pb::mds::UmountFsRequest* request,
+        pb::mds::UmountFsResponse* response,
         ::google::protobuf::Closure* done) {
   done->Run();
 }
@@ -91,8 +91,8 @@ void UF(::google::protobuf::RpcController* controller,
 TEST_F(UmountfsToolTest, test_umount_success) {
   FLAGS_mdsAddr = addr_;
   FLAGS_fsName = "test";
-  ::dingofs::mds::UmountFsResponse response;
-  response.set_statuscode(dingofs::mds::FSStatusCode::OK);
+  pb::mds::UmountFsResponse response;
+  response.set_statuscode(pb::mds::FSStatusCode::OK);
   EXPECT_CALL(mockMdsService_, UmountFs(_, _, _, _))
       .WillRepeatedly(DoAll(SetArgPointee<2>(response), Invoke(UF)));
   int ret = ut_.Run();
@@ -103,8 +103,8 @@ TEST_F(UmountfsToolTest, test_umount_success) {
 TEST_F(UmountfsToolTest, test_umount_failed) {
   FLAGS_mdsAddr = addr_;
   FLAGS_fsName = "test";
-  ::dingofs::mds::UmountFsResponse response;
-  response.set_statuscode(dingofs::mds::FSStatusCode::MOUNT_POINT_NOT_EXIST);
+  pb::mds::UmountFsResponse response;
+  response.set_statuscode(FSStatusCode::MOUNT_POINT_NOT_EXIST);
   EXPECT_CALL(mockMdsService_, UmountFs(_, _, _, _))
       .WillRepeatedly(DoAll(SetArgPointee<2>(response), Invoke(UF)));
   int ret = ut_.Run();
@@ -145,29 +145,29 @@ TEST_F(UmountfsToolTest, test_umount_tool_init) {
   std::shared_ptr<brpc::Channel> channel = std::make_shared<brpc::Channel>();
   std::shared_ptr<brpc::Controller> controller =
       std::make_shared<brpc::Controller>();
-  dingofs::mds::UmountFsRequest request;
+  pb::mds::UmountFsRequest request;
   request.set_fsname("123");
   auto* mp = new Mountpoint();
   mp->set_hostname("0.0.0.0");
   mp->set_port(9000);
   mp->set_path("/data");
   request.set_allocated_mountpoint(mp);
-  std::queue<dingofs::mds::UmountFsRequest> requestQueue;
+  std::queue<pb::mds::UmountFsRequest> requestQueue;
   requestQueue.push(request);
-  std::shared_ptr<dingofs::mds::UmountFsResponse> response =
-      std::make_shared<dingofs::mds::UmountFsResponse>();
+  std::shared_ptr<pb::mds::UmountFsResponse> response =
+      std::make_shared<pb::mds::UmountFsResponse>();
 
-  ::dingofs::mds::UmountFsResponse re;
-  re.set_statuscode(dingofs::mds::FSStatusCode::OK);
+  pb::mds::UmountFsResponse re;
+  re.set_statuscode(FSStatusCode::OK);
   EXPECT_CALL(mockMdsService_, UmountFs(_, _, _, _))
       .WillRepeatedly(DoAll(SetArgPointee<2>(re), Invoke(UF)));
 
-  std::shared_ptr<dingofs::mds::MdsService_Stub> service_stub =
-      std::make_shared<dingofs::mds::MdsService_Stub>(channel.get());
+  std::shared_ptr<pb::mds::MdsService_Stub> service_stub =
+      std::make_shared<pb::mds::MdsService_Stub>(channel.get());
 
   ut_.CurvefsToolRpc::Init(
       channel, controller, requestQueue, response, service_stub,
-      std::bind(&dingofs::mds::MdsService_Stub::UmountFs, service_stub.get(),
+      std::bind(&pb::mds::MdsService_Stub::UmountFs, service_stub.get(),
                 std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3, nullptr),
       nullptr);

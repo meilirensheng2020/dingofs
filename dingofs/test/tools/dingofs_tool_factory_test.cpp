@@ -36,16 +36,12 @@ namespace dingofs {
 namespace tools {
 
 namespace version {
-using ::testing::_;
-using ::testing::Invoke;
-using ::testing::SetArgPointee;
 
 class FactoryTest : public testing::Test {
  protected:
   void SetUp() override {}
   void TearDown() override {}
 
- protected:
   CurvefsToolFactory factory_;
 };
 

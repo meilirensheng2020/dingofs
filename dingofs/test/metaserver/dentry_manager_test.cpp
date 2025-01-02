@@ -27,18 +27,24 @@
 
 #include <memory>
 
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
+#include "dingofs/src/metaserver/storage/converter.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
 #include "dingofs/test/metaserver/storage/utils.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
 
 namespace dingofs {
 namespace metaserver {
 
-using ::dingofs::metaserver::storage::KVStorage;
-using ::dingofs::metaserver::storage::RandomStoragePath;
-using ::dingofs::metaserver::storage::RocksDBStorage;
-using ::dingofs::metaserver::storage::StorageOptions;
+using storage::KVStorage;
+using storage::NameGenerator;
+using storage::RandomStoragePath;
+using storage::RocksDBStorage;
+using storage::StorageOptions;
+
+using pb::metaserver::Dentry;
+using pb::metaserver::DentryFlag;
+using pb::metaserver::MetaStatusCode;
 
 namespace {
 auto localfs = dingofs::fs::Ext4FileSystemImpl::getInstance();

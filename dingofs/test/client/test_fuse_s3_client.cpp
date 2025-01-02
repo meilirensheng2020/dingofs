@@ -25,12 +25,15 @@
 
 #include <memory>
 
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/mds.pb.h"
 #include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/common/common.h"
 #include "dingofs/src/client/filesystem/error.h"
 #include "dingofs/src/client/filesystem/filesystem.h"
 #include "dingofs/src/client/filesystem/meta.h"
 #include "dingofs/src/client/fuse_s3_client.h"
+#include "dingofs/src/client/s3/client_s3_cache_manager.h"
 #include "dingofs/src/client/warmup/warmup_manager.h"
 #include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
@@ -75,6 +78,7 @@ using ::dingofs::client::common::FileSystemOption;
 using ::dingofs::client::filesystem::EntryOut;
 using ::dingofs::client::filesystem::FileOut;
 
+using dingofs::client::common::FuseClientOption;
 using dingofs::stub::filesystem::XATTR_DIR_ENTRIES;
 using dingofs::stub::filesystem::XATTR_DIR_FBYTES;
 using dingofs::stub::filesystem::XATTR_DIR_FILES;
@@ -85,6 +89,12 @@ using dingofs::stub::filesystem::XATTR_DIR_RSUBDIRS;
 using dingofs::stub::filesystem::XATTR_DIR_SUBDIRS;
 using dingofs::stub::rpcclient::MockMdsClient;
 using dingofs::stub::rpcclient::MockMetaServerClient;
+
+using dingofs::pb::common::FSType;
+using dingofs::pb::mds::FsInfo;
+using dingofs::pb::metaserver::Dentry;
+using dingofs::pb::metaserver::Inode;
+using dingofs::pb::metaserver::MetaStatusCode;
 
 #define EQUAL(a) (lhs.a() == rhs.a())
 
@@ -192,7 +202,7 @@ class TestFuseS3Client : public ::testing::Test {
 
 TEST_F(TestFuseS3Client, test_Init_with_KVCache) {
   dingofs::client::common::FLAGS_supportKVcache = true;
-  dingofs::mds::topology::MemcacheClusterInfo memcacheCluster;
+  dingofs::pb::mds::topology::MemcacheClusterInfo memcacheCluster;
   memcacheCluster.set_clusterid(1);
   auto testclient =
       std::make_shared<FuseS3Client>(mdsClient_, metaClient_, inodeManager_,

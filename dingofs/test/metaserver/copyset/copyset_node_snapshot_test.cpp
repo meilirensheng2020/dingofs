@@ -25,6 +25,8 @@
 #include <brpc/server.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/copyset/copyset_node.h"
 #include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/src/utils/uuid.h"
@@ -35,8 +37,6 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-using ::dingofs::fs::MockLocalFileSystem;
-using ::dingofs::utils::UUIDGenerator;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
@@ -44,6 +44,11 @@ using ::testing::Matcher;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
+using ::dingofs::fs::MockLocalFileSystem;
+using ::dingofs::pb::common::PartitionInfo;
+using ::dingofs::pb::common::Peer;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+using ::dingofs::utils::UUIDGenerator;
 class FakeSnapshotSaveClosure : public braft::Closure {
  public:
   FakeSnapshotSaveClosure() : mtx_(), cond_(), runned_(false) {}

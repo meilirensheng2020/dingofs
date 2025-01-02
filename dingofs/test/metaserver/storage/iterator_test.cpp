@@ -39,8 +39,10 @@ namespace storage {
 
 using Hash = std::unordered_map<std::string, std::string>;
 using ContainerType = std::map<std::string, std::string>;
-using google::protobuf::util::MessageDifferencer;
 
+using pb::metaserver::Dentry;
+using pb::metaserver::FsFileType;
+using pb::metaserver::Inode;
 class HashIterator : public Iterator {
  public:
   explicit HashIterator(Hash* hash) : hash_(hash) {}

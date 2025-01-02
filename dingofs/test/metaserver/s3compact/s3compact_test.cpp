@@ -31,6 +31,7 @@
 #include "dingofs/src/metaserver/s3compact_worker.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
+#include "dingofs/test/metaserver/mock_metaserver_s3_adaptor.h"
 #include "dingofs/test/metaserver/s3compact/mock_s3_adapter.h"
 #include "dingofs/test/metaserver/s3compact/mock_s3compact_inode.h"
 #include "dingofs/test/metaserver/s3compact/mock_s3infocache.h"
@@ -71,7 +72,7 @@ class S3CompactTest : public ::testing::Test {
     opts_.s3ReadMaxRetry = 2;
     opts_.s3ReadRetryInterval = 1;
     uint64_t s3adapterSize = 10;
-    S3AdapterOption opts;
+    aws::S3AdapterOption opts;
     s3adapterManager_ =
         std::make_shared<MockS3AdapterManager>(s3adapterSize, opts);
     s3adapter_ = std::make_shared<MockS3Adapter>();
@@ -144,22 +145,23 @@ TEST_F(S3CompactTest, test_CopysetNodeWrapper) {
 }
 
 TEST_F(S3CompactTest, test_S3InfoCache) {
-  auto mock_requests3info = [](uint64_t fsid, S3Info* info) {
+  auto mock_requests3info = [](uint64_t fsid, pb::common::S3Info* info) {
     if (fsid == 0) return S3InfoCache::RequestStatusCode::NOS3INFO;
     if (fsid == 1) return S3InfoCache::RequestStatusCode::RPCFAILURE;
     return S3InfoCache::RequestStatusCode::SUCCESS;
   };
   EXPECT_CALL(*s3infoCache_, GetS3Info(_, _))
-      .WillRepeatedly(testing::Invoke([&](uint64_t fsid, S3Info* info) {
-        return s3infoCache_->S3InfoCache::GetS3Info(fsid, info);
-      }));
+      .WillRepeatedly(
+          testing::Invoke([&](uint64_t fsid, pb::common::S3Info* info) {
+            return s3infoCache_->S3InfoCache::GetS3Info(fsid, info);
+          }));
   EXPECT_CALL(*s3infoCache_, InvalidateS3Info(_))
       .WillRepeatedly(testing::Invoke([&](uint64_t fsid) {
         return s3infoCache_->S3InfoCache::InvalidateS3Info(fsid);
       }));
   EXPECT_CALL(*s3infoCache_, RequestS3Info(_, _))
       .WillRepeatedly(testing::Invoke(mock_requests3info));
-  S3Info info;
+  pb::common::S3Info info;
   auto ret = s3infoCache_->GetS3Info(0, &info);
   // ASSERT_EQ(ret, -1);
   ret = s3infoCache_->GetS3Info(1, &info);
@@ -177,7 +179,7 @@ TEST_F(S3CompactTest, test_S3InfoCache) {
 }
 
 TEST_F(S3CompactTest, test_S3AdapterManager) {
-  S3AdapterOption opt;
+  aws::S3AdapterOption opt;
   opt.loglevel = 0;
   opt.s3Address = "";
   opt.ak = "";
@@ -586,7 +588,7 @@ TEST_F(S3CompactTest, test_CompactChunks) {
 
   EXPECT_CALL(*s3adapterManager_, ReleaseS3Adapter(_)).WillRepeatedly(Return());
 
-  auto mock_gets3info_success = [&](uint64_t fsid, S3Info* s3info) {
+  auto mock_gets3info_success = [&](uint64_t fsid, pb::common::S3Info* s3info) {
     s3info->set_ak("1");
     s3info->set_sk("2");
     s3info->set_endpoint("3");
@@ -609,7 +611,7 @@ TEST_F(S3CompactTest, test_CompactChunks) {
   EXPECT_CALL(*s3adapter_, GetBucketName()).WillRepeatedly(Return(v));
 
   struct CompactInodeJob::S3CompactTask t {
-    inodeManager_, Key4Inode(0, 1),
+    inodeManager_, storage::Key4Inode(0, 1),
         PartitionInfo(), std::move(mockCopysetNodeWrapper_)
   };
   // inode not exist
@@ -630,18 +632,18 @@ TEST_F(S3CompactTest, test_CompactChunks) {
   inode1.set_uid(0);
   inode1.set_gid(0);
   inode1.set_mode(0);
-  inode1.set_type(FsFileType::TYPE_FILE);
+  inode1.set_type(pb::metaserver::FsFileType::TYPE_FILE);
   ::google::protobuf::Map<uint64_t, S3ChunkInfoList> s3chunkinfoMap;
   *inode1.mutable_s3chunkinfomap() = s3chunkinfoMap;
   ASSERT_EQ(inodeStorage_->Insert(inode1), MetaStatusCode::OK);
-  t.inodeKey = Key4Inode(1, 1);
+  t.inodeKey = storage::Key4Inode(1, 1);
   mockImpl_->CompactChunks(t);
   // normal
   std::cerr << "normal" << std::endl;
   S3ChunkInfoList l0;
   S3ChunkInfoList l1;
   for (int i = 0; i < 16; i++) {
-    auto ref = l0.add_s3chunks();
+    auto* ref = l0.add_s3chunks();
     ref->set_chunkid(i);
     ref->set_compaction(0);
     ref->set_offset(i * 4);
@@ -650,7 +652,7 @@ TEST_F(S3CompactTest, test_CompactChunks) {
     ref->set_zero(false);
   }
   for (int i = 16; i < 22; i++) {
-    auto ref = l0.add_s3chunks();
+    auto* ref = l0.add_s3chunks();
     ref->set_chunkid(i);
     ref->set_compaction(0);
     ref->set_offset(i);
@@ -680,7 +682,9 @@ TEST_F(S3CompactTest, test_CompactChunks) {
   EXPECT_CALL(*mockImpl_, UpdateInode_rvr(_, _, _, _, _))
       .WillRepeatedly(Return(MetaStatusCode::UNKNOWN_ERROR));
   mockImpl_->CompactChunks(t);
-  auto mock_gets3info_fail = [&](uint64_t fsid, S3Info* s3info) { return -1; };
+  auto mock_gets3info_fail = [&](uint64_t fsid, pb::common::S3Info* s3info) {
+    return -1;
+  };
   EXPECT_CALL(*s3infoCache_, GetS3Info(_, _))
       .WillRepeatedly(testing::Invoke(mock_gets3info_fail));
   // copysetnode is not leader

@@ -28,14 +28,16 @@
 
 #include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/metaserver/copyset/meta_operator.h"
-#include "dingofs/test/utils/protobuf_message_utils.h"
 #include "dingofs/src/utils/macros.h"
+#include "dingofs/test/utils/protobuf_message_utils.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
 using ::dingofs::test::GenerateAnDefaultInitializedMessage;
+
+using namespace ::dingofs::pb::metaserver;
 
 TEST(RaftLogCodecTest, EncodeTest_RequestSerializeFailed) {
   OperatorType type = OperatorType::GetDentry;

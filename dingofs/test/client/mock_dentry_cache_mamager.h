@@ -29,10 +29,15 @@
 #include <list>
 #include <string>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/dentry_cache_manager.h"
 
 namespace dingofs {
 namespace client {
+
+using dingofs::client::filesystem::DINGOFS_ERROR;
+using dingofs::pb::metaserver::Dentry;
+using dingofs::pb::metaserver::FsFileType;
 
 class MockDentryCacheManager : public DentryCacheManager {
  public:

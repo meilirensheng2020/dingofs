@@ -28,21 +28,28 @@
 #include <memory>
 #include <string>
 
+#include "dingofs/proto/mds.pb.h"
 #include "dingofs/src/client/blockcache/block_cache.h"
 #include "dingofs/src/client/filesystem/filesystem.h"
 #include "dingofs/src/client/inode_wrapper.h"
 #include "dingofs/src/client/s3/client_s3_adaptor.h"
+#include "dingofs/src/stub/metric/metric.h"
 
 namespace dingofs {
 namespace client {
 
-using ::dingofs::client::blockcache::BlockCache;
-using ::dingofs::client::filesystem::FileSystem;
+using blockcache::BlockCache;
+using blockcache::S3Client;
+using common::S3ClientAdaptorOption;
+using dingofs::pb::mds::FSStatusCode;
+using filesystem::FileSystem;
+using stub::metric::InterfaceMetric;
+using stub::rpcclient::MdsClient;
 
 class MockS3ClientAdaptor : public S3ClientAdaptor {
  public:
   MOCK_METHOD9(Init,
-               DINGOFS_ERROR(const S3ClientAdaptorOption& option,
+               DINGOFS_ERROR(const common::S3ClientAdaptorOption& option,
                              std::shared_ptr<S3Client> client,
                              std::shared_ptr<InodeCacheManager> inodeManager,
                              std::shared_ptr<MdsClient> mdsClient,

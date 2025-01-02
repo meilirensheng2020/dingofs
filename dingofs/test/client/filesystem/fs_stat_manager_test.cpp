@@ -16,6 +16,7 @@
 
 #include <memory>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/test/client/mock_metaserver_client.h"
 #include "dingofs/test/client/mock_timer.h"
 #include "gmock/gmock.h"
@@ -29,6 +30,9 @@ namespace filesystem {
 using testing::Return;
 
 using base::timer::MockTimer;
+using dingofs::pb::metaserver::MetaStatusCode;
+using dingofs::pb::metaserver::Quota;
+using dingofs::pb::metaserver::Usage;
 using dingofs::stub::rpcclient::MockMetaServerClient;
 
 class FsStatManagerTest : public ::testing::Test {

@@ -26,6 +26,7 @@
 
 #include <cstdint>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/filesystem/defer_sync.h"
 #include "dingofs/src/client/filesystem/dir_cache.h"
 #include "dingofs/src/client/filesystem/openfile.h"
@@ -34,6 +35,7 @@
 #include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
 #include "dingofs/test/client/mock_metaserver_client.h"
+#include "dingofs/test/metaserver/mock_metaserver_s3_adaptor.h"
 
 namespace dingofs {
 namespace client {
@@ -61,7 +63,16 @@ using ::dingofs::stub::filesystem::XATTR_DIR_ENTRIES;
 using ::dingofs::stub::filesystem::XATTR_DIR_FBYTES;
 using ::dingofs::stub::filesystem::XATTR_DIR_FILES;
 using ::dingofs::stub::filesystem::XATTR_DIR_SUBDIRS;
+using dingofs::stub::rpcclient::InodeParam;
 using dingofs::stub::rpcclient::MockMetaServerClient;
+
+using dingofs::pb::metaserver::FsFileType;
+using dingofs::pb::metaserver::Inode;
+using dingofs::pb::metaserver::InodeAttr;
+using dingofs::pb::metaserver::MetaStatusCode;
+using dingofs::pb::metaserver::S3ChunkInfo;
+using dingofs::pb::metaserver::S3ChunkInfoList;
+using dingofs::pb::metaserver::XAttr;
 
 class TestInodeCacheManager : public ::testing::Test {
  protected:
@@ -73,7 +84,7 @@ class TestInodeCacheManager : public ::testing::Test {
     metaClient_ = std::make_shared<MockMetaServerClient>();
     iCacheManager_ = std::make_shared<InodeCacheManagerImpl>(metaClient_);
     iCacheManager_->SetFsId(fsId_);
-    RefreshDataOption option;
+    common::RefreshDataOption option;
     option.maxDataSize = 1;
     option.refreshDataIntervalSec = 0;
     auto deferSync = std::make_shared<DeferSync>(DeferSyncOption());
@@ -101,7 +112,7 @@ TEST_F(TestInodeCacheManager, GetInode) {
   inode.set_inodeid(inodeId);
   inode.set_fsid(fsId_);
   inode.set_length(fileLength);
-  inode.set_type(FsFileType::TYPE_S3);
+  inode.set_type(pb::metaserver::FsFileType::TYPE_S3);
   auto s3ChunkInfoMap = inode.mutable_s3chunkinfomap();
   S3ChunkInfoList* s3ChunkInfoList = new S3ChunkInfoList();
   S3ChunkInfo* s3ChunkInfo = s3ChunkInfoList->add_s3chunks();
@@ -337,7 +348,7 @@ TEST_F(TestInodeCacheManager, BatchGetInodeAttrAsync) {
 
   std::map<uint64_t, InodeAttr> attrs;
 
-  RepeatedPtrField<InodeAttr> inodeAttrs;
+  google::protobuf::RepeatedPtrField<InodeAttr> inodeAttrs;
   inodeAttrs.Add()->set_inodeid(inodeId2);
 
   // fill icache

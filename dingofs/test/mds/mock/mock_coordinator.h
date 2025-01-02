@@ -32,27 +32,28 @@
 
 namespace dingofs {
 namespace mds {
+
 using ::dingofs::mds::topology::CopySetKey;
 using ::dingofs::mds::topology::MetaServerIdType;
 using ::dingofs::mds::topology::PoolIdType;
+
 class MockCoordinator : public ::dingofs::mds::schedule::Coordinator {
  public:
-  MockCoordinator() {}
-  ~MockCoordinator() {}
+  MockCoordinator() = default;
+  ~MockCoordinator() override = default;
 
   MOCK_METHOD3(
       CopySetHeartbeat,
-      MetaServerIdType(
-          const ::dingofs::mds::topology::CopySetInfo& originInfo,
-          const ::dingofs::mds::heartbeat::ConfigChangeInfo& configChInfo,
-          ::dingofs::mds::heartbeat::CopySetConf* newConf));
+      MetaServerIdType(const ::dingofs::mds::topology::CopySetInfo& originInfo,
+                       const pb::mds::heartbeat::ConfigChangeInfo& configChInfo,
+                       pb::mds::heartbeat::CopySetConf* newConf));
 
   MOCK_METHOD2(MetaserverGoingToAdd, bool(MetaServerIdType, CopySetKey));
 
-  MOCK_METHOD2(
-      QueryMetaServerRecoverStatus,
-      schedule::ScheduleStatusCode(const std::vector<MetaServerIdType>&,
-                                   std::map<MetaServerIdType, bool>*));
+  MOCK_METHOD2(QueryMetaServerRecoverStatus,
+               pb::mds::schedule::ScheduleStatusCode(
+                   const std::vector<MetaServerIdType>&,
+                   std::map<MetaServerIdType, bool>*));
 };
 }  // namespace mds
 }  // namespace dingofs

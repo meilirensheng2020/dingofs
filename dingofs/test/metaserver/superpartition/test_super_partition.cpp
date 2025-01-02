@@ -20,6 +20,7 @@
  * Author: Jingli Chen (Wine93)
  */
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/base/math/math.h"
 #include "dingofs/src/metaserver/superpartition/access_log.h"
 #include "dingofs/src/metaserver/superpartition/super_partition_storage.h"
@@ -31,6 +32,10 @@ namespace metaserver {
 namespace superpartition {
 
 using ::dingofs::base::math::kGiB;
+
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::Quota;
+using pb::metaserver::Usage;
 
 class SuperPartitionTest : public ::testing::Test {
  protected:

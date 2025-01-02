@@ -23,6 +23,8 @@
 #include <gtest/gtest.h>
 
 #include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/stub/common/common.h"
+#include "dingofs/src/stub/common/config.h"
 #include "dingofs/src/stub/rpcclient/task_excutor.h"
 #include "dingofs/test/stub/rpcclient/mock_metacache.h"
 
@@ -30,10 +32,17 @@ namespace dingofs {
 namespace stub {
 namespace rpcclient {
 
-using ::dingofs::metaserver::MetaStatusCode;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
+
+using common::CopysetID;
+using common::ExcutorOpt;
+using common::LogicPoolID;
+using common::MetaserverID;
+using common::PartitionID;
+
+using pb::metaserver::MetaStatusCode;
 
 TEST(CreateInodeTaskExecutorTest, TestPartitionAllocIdFail) {
   auto context = std::make_shared<TaskContext>();

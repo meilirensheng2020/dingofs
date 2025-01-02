@@ -31,15 +31,17 @@
 #include "dingofs/test/metaserver/mock_topology_service.h"
 #include "dingofs/test/metaserver/storage/utils.h"
 
-using ::dingofs::mds::heartbeat::HeartbeatStatusCode;
-using ::dingofs::mds::heartbeat::MetaServerHeartbeatRequest;
-using ::dingofs::mds::heartbeat::MetaServerHeartbeatResponse;
 using ::dingofs::mds::heartbeat::MockHeartbeatService;
-using ::dingofs::mds::topology::MetaServerRegistRequest;
-using ::dingofs::mds::topology::MetaServerRegistResponse;
 using ::dingofs::mds::topology::MockTopologyService;
-using ::dingofs::mds::topology::TopoStatusCode;
 using ::dingofs::metaserver::storage::RandomStoragePath;
+using ::dingofs::pb::mds::heartbeat::HeartbeatStatusCode;
+using ::dingofs::pb::mds::heartbeat::MetaServerHeartbeatRequest;
+using ::dingofs::pb::mds::heartbeat::MetaServerHeartbeatResponse;
+using ::dingofs::pb::mds::topology::MetaServerRegistRequest;
+using ::dingofs::pb::mds::topology::MetaServerRegistResponse;
+using ::dingofs::pb::mds::topology::TopoStatusCode;
+using ::dingofs::utils::Configuration;
+
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::DoAll;

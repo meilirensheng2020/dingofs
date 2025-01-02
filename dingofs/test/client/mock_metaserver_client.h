@@ -34,11 +34,28 @@
 #include <utility>
 #include <vector>
 
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/stub/common/common.h"
+#include "dingofs/src/stub/common/config.h"
 #include "dingofs/src/stub/rpcclient/metaserver_client.h"
 
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
+
+using common::ExcutorOpt;
+using common::MetaserverID;
+
+using pb::metaserver::Dentry;
+using pb::metaserver::FsFileType;
+using pb::metaserver::Inode;
+using pb::metaserver::InodeAttr;
+using pb::metaserver::MetaStatusCode;
+using pb::metaserver::Quota;
+using pb::metaserver::S3ChunkInfoList;
+using pb::metaserver::Usage;
+using pb::metaserver::VolumeExtentList;
+using pb::metaserver::XAttr;
 
 class MockMetaServerClient : public MetaServerClient {
  public:

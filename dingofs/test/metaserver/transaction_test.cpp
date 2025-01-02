@@ -25,11 +25,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/dentry_manager.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
 #include "dingofs/test/metaserver/storage/utils.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
 
 namespace dingofs {
 namespace metaserver {
@@ -39,6 +40,11 @@ using ::dingofs::metaserver::storage::NameGenerator;
 using ::dingofs::metaserver::storage::RandomStoragePath;
 using ::dingofs::metaserver::storage::RocksDBStorage;
 using ::dingofs::metaserver::storage::StorageOptions;
+
+using ::dingofs::pb::metaserver::Dentry;
+using ::dingofs::pb::metaserver::DentryFlag;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+
 using TX_OP_TYPE = DentryStorage::TX_OP_TYPE;
 
 namespace {

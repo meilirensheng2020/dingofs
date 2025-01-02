@@ -54,7 +54,7 @@ TEST(OperatorTest, OperatorTest_Apply_Test) {
   // 2. finish remove peer
   originCopySetInfo.candidatePeerInfo = PeerInfo(3, 1, 1, "", 9000);
   originCopySetInfo.peers.erase(originCopySetInfo.peers.end() - 2);
-  auto replica = new ::dingofs::common::Peer();
+  auto replica = new ::dingofs::pb::common::Peer();
   replica->set_id(1);
   replica->set_address("192.168.10.1:9000:0");
   originCopySetInfo.configChangeInfo.set_allocated_peer(replica);
@@ -71,7 +71,7 @@ TEST(OperatorTest, OperatorTest_Apply_Test) {
   candidateErr->set_errtype(2);
   originCopySetInfo.candidatePeerInfo = PeerInfo(3, 1, 1, "", 9000);
   originCopySetInfo.configChangeInfo.set_finished(false);
-  replica = new ::dingofs::common::Peer();
+  replica = new ::dingofs::pb::common::Peer();
   replica->set_id(1);
   replica->set_address("192.168.10.1:9000:0");
   originCopySetInfo.configChangeInfo.set_allocated_peer(replica);

@@ -29,21 +29,24 @@
 #include <condition_variable>  // NOLINT
 
 #include "dingofs/proto/metaserver.pb.h"
-#include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/src/common/process.h"
 #include "dingofs/src/common/rpc_stream.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/copyset/copyset_node.h"
 #include "dingofs/src/metaserver/storage/converter.h"
+#include "dingofs/src/metaserver/storage/iterator.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
-#include "dingofs/test/metaserver/storage/utils.h"
+#include "dingofs/src/stub/filesystem/xattr.h"
 #include "dingofs/src/utils/uuid.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
+#include "dingofs/test/metaserver/storage/utils.h"
 
 namespace dingofs {
 namespace metaserver {
 
 using ::dingofs::metaserver::copyset::CopysetNode;
+using ::dingofs::metaserver::storage::Converter;
+using ::dingofs::metaserver::storage::Iterator;
 using ::dingofs::metaserver::storage::Key4S3ChunkInfoList;
 using ::dingofs::metaserver::storage::KVStorage;
 using ::dingofs::metaserver::storage::RandomStoragePath;
@@ -54,6 +57,12 @@ using ::dingofs::stub::filesystem::XATTR_DIR_ENTRIES;
 using ::dingofs::stub::filesystem::XATTR_DIR_FBYTES;
 using ::dingofs::stub::filesystem::XATTR_DIR_FILES;
 using ::dingofs::stub::filesystem::XATTR_DIR_SUBDIRS;
+
+using ::dingofs::pb::common::PartitionInfo;
+using ::dingofs::pb::common::PartitionStatus;
+
+using namespace ::dingofs::pb::metaserver;
+
 namespace {
 
 class MockSnapshotWriter : public braft::SnapshotWriter {
@@ -224,7 +233,7 @@ class MetastoreTest : public ::testing::Test {
     ASSERT_EQ(size, chunkIndexs.size());
   }
 
-  class OnSnapshotSaveDoneImpl : public OnSnapshotSaveDoneClosure {
+  class OnSnapshotSaveDoneImpl : public copyset::OnSnapshotSaveDoneClosure {
    public:
     void SetSuccess() {
       ret_ = true;
@@ -1194,7 +1203,7 @@ TEST_F(MetastoreTest, persist_dentry_fail) {
   partitionInfo.set_partitionid(partitionId);
   partitionInfo.set_start(100);
   partitionInfo.set_end(1000);
-  partitionInfo.set_status(common::PartitionStatus::READWRITE);
+  partitionInfo.set_status(PartitionStatus::READWRITE);
   createPartitionRequest.mutable_partition()->CopyFrom(partitionInfo);
   MetaStatusCode ret = metastore.CreatePartition(&createPartitionRequest,
                                                  &createPartitionResponse);

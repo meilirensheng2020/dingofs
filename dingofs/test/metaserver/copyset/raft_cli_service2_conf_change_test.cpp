@@ -43,6 +43,8 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 
+using namespace ::dingofs::pb::metaserver::copyset;
+
 const char* kServerAddress = "127.0.0.1:29919";
 
 class RaftCliService2ConfChangeTest : public testing::Test {

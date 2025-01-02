@@ -28,11 +28,19 @@
 #include <string>
 #include <vector>
 
+#include "dingofs/src/stub/common/common.h"
+#include "dingofs/src/stub/common/metacache_struct.h"
 #include "dingofs/src/stub/rpcclient/metacache.h"
 
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
+
+using common::CopysetInfo;
+using common::MetaserverID;
+using common::PartitionID;
+using pb::mds::topology::PartitionTxId;
+
 class MockMetaCache : public MetaCache {
  public:
   MockMetaCache() : MetaCache() {}

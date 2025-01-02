@@ -24,6 +24,7 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/common.pb.h"
 #include "dingofs/proto/mds.pb.h"
 #include "dingofs/src/mds/codec/codec.h"
 #include "dingofs/src/mds/fs_storage.h"
@@ -37,6 +38,13 @@ using ::testing::DoAll;
 using ::testing::Matcher;
 using ::testing::Return;
 using ::testing::SetArgPointee;
+
+using pb::common::FSType;
+using pb::common::Volume;
+using pb::mds::FsDetail;
+using pb::mds::FsInfo;
+using pb::mds::FsStatus;
+using pb::mds::FSStatusCode;
 
 class PersistKVStorageTest : public ::testing::Test {
  protected:
@@ -63,18 +71,18 @@ class PersistKVStorageTest : public ::testing::Test {
     hello.set_txsequence(0);
     hello.set_txowner("owner");
 
-    common::Volume volume;
+    Volume volume;
     volume.set_blocksize(4096);
     volume.set_volumesize(4096);
     volume.set_volumename("/hello");
     volume.set_user("test");
     volume.set_blockgroupsize(128ull * 1024 * 1024);
-    volume.set_bitmaplocation(common::BitmapLocation::AtStart);
+    volume.set_bitmaplocation(pb::common::BitmapLocation::AtStart);
     volume.set_slicesize(1ULL * 1024 * 1024 * 1024);
     volume.set_autoextend(false);
 
     FsDetail helloDetail;
-    helloDetail.set_allocated_volume(new common::Volume(volume));
+    helloDetail.set_allocated_volume(new Volume(volume));
     hello.set_allocated_detail(new FsDetail(helloDetail));
 
     FsInfo world;
@@ -91,7 +99,7 @@ class PersistKVStorageTest : public ::testing::Test {
     world.set_txsequence(0);
     world.set_txowner("owner");
 
-    common::S3Info s3info;
+    pb::common::S3Info s3info;
     s3info.set_ak("ak");
     s3info.set_sk("sk");
     s3info.set_endpoint("endpoint");
@@ -100,7 +108,7 @@ class PersistKVStorageTest : public ::testing::Test {
     s3info.set_chunksize(4096);
 
     FsDetail worldDetail;
-    worldDetail.set_allocated_s3info(new common::S3Info(s3info));
+    worldDetail.set_allocated_s3info(new pb::common::S3Info(s3info));
     world.set_allocated_detail(new FsDetail(worldDetail));
 
     std::string encodedFsName = codec::EncodeFsName(hello.fsname());
@@ -427,7 +435,7 @@ TEST_F(PersistKVStorageTest, TestUpdate) {
     FsInfoWrapper wrapper;
     EXPECT_EQ(FSStatusCode::OK, storage.Get("hello", &wrapper));
 
-    Mountpoint mountpoint;
+    pb::mds::Mountpoint mountpoint;
     mountpoint.set_hostname("1.2.3.4");
     mountpoint.set_path("/tmp");
     mountpoint.set_port(9000);
@@ -455,7 +463,7 @@ TEST_F(PersistKVStorageTest, TestUpdate) {
     FsInfoWrapper wrapper;
     EXPECT_EQ(FSStatusCode::OK, storage.Get("hello", &wrapper));
 
-    Mountpoint mountpoint;
+    pb::mds::Mountpoint mountpoint;
     mountpoint.set_hostname("1.2.3.4");
     mountpoint.set_path("/tmp");
     mountpoint.set_port(9000);

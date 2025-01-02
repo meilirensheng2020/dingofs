@@ -31,20 +31,22 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-class MockCopysetService : public CopysetService {
+class MockCopysetService : public pb::metaserver::copyset::CopysetService {
  public:
   MOCK_METHOD4(
       CreateCopysetNode,
       void(::google::protobuf::RpcController* controller,
-           const ::dingofs::metaserver::copyset::CreateCopysetRequest* request,
-           ::dingofs::metaserver::copyset::CreateCopysetResponse* response,
+           const ::dingofs::pb::metaserver::copyset::CreateCopysetRequest*
+               request,
+           ::dingofs::pb::metaserver::copyset::CreateCopysetResponse* response,
            ::google::protobuf::Closure* done));
 
   MOCK_METHOD4(
       GetCopysetStatus,
       void(::google::protobuf::RpcController* controller,
-           const ::dingofs::metaserver::copyset::CopysetStatusRequest* request,
-           ::dingofs::metaserver::copyset::CopysetStatusResponse* response,
+           const ::dingofs::pb::metaserver::copyset::CopysetStatusRequest*
+               request,
+           ::dingofs::pb::metaserver::copyset::CopysetStatusResponse* response,
            ::google::protobuf::Closure* done));
 };
 

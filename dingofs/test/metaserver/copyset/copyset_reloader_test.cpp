@@ -25,9 +25,9 @@
 #include <brpc/server.h>
 #include <gtest/gtest.h>
 
-#include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/fs/local_filesystem.h"
+#include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/test/fs/mock_local_filesystem.h"
 
 namespace dingofs {
@@ -37,7 +37,6 @@ namespace copyset {
 const char* kCopysetDataUri = "local://./runlog/copyset_reloader_test";
 const char* kTrashDataUri = "local://./runlog/copyset_reloader_test_trash";
 
-using ::dingofs::fs::Ext4FileSystemImpl;
 using ::dingofs::fs::FileSystemType;
 using ::dingofs::fs::LocalFileSystem;
 using ::dingofs::fs::LocalFsFactory;

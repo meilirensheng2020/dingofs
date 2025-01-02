@@ -19,6 +19,7 @@ set(TEST_DEPS
     glog
     gflags
     brpc::brpc
+    dl
 )
 
 add_subdirectory(base)

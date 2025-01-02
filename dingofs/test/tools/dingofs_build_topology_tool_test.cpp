@@ -23,17 +23,36 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/topology.pb.h"
 #include "dingofs/src/tools/create/dingofs_create_topology_tool.h"
 #include "dingofs/test/tools/mock_topology_service.h"
+
+namespace dingofs {
+namespace mds {
+namespace topology {
 
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::SetArgPointee;
 
-namespace dingofs {
-namespace mds {
-namespace topology {
+using pb::mds::topology::CreatePoolRequest;
+using pb::mds::topology::CreatePoolResponse;
+using pb::mds::topology::CreateZoneRequest;
+using pb::mds::topology::CreateZoneResponse;
+using pb::mds::topology::ListMetaServerResponse;
+using pb::mds::topology::ListPoolRequest;
+using pb::mds::topology::ListPoolResponse;
+using pb::mds::topology::ListPoolZoneRequest;
+using pb::mds::topology::ListPoolZoneResponse;
+using pb::mds::topology::ListZoneServerRequest;
+using pb::mds::topology::ListZoneServerResponse;
+using pb::mds::topology::PoolInfo;
+using pb::mds::topology::ServerInfo;
+using pb::mds::topology::ServerRegistRequest;
+using pb::mds::topology::ServerRegistResponse;
+using pb::mds::topology::TopoStatusCode;
+using pb::mds::topology::ZoneInfo;
 
 class BuildTopologyToolTest : public ::testing::Test {
  protected:
@@ -51,7 +70,7 @@ class BuildTopologyToolTest : public ::testing::Test {
   }
 
  protected:
-  CurvefsBuildTopologyTool tool_;
+  tools::topology::CurvefsBuildTopologyTool tool_;
 
   MockTopologyService mockTopologyService_;
   std::string addr_ = "127.0.0.1:16800";
@@ -74,7 +93,7 @@ void RpcService(google::protobuf::RpcController* cntl_base,
 TEST_F(BuildTopologyToolTest, test_BuildEmptyCluster) {
   // make list response
   ListPoolResponse listPoolResponse;
-  listPoolResponse.set_statuscode(TopoStatusCode::TOPO_OK);
+  listPoolResponse.set_statuscode(pb::mds::topology::TopoStatusCode::TOPO_OK);
   ListPoolZoneResponse listPoolZoneResponse;
   listPoolZoneResponse.set_statuscode(TopoStatusCode::TOPO_OK);
   ListZoneServerResponse listZoneServerResponse;

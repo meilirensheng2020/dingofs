@@ -26,6 +26,9 @@
 
 #include "dingofs/src/stub/metric/metric.h"
 
+namespace dingofs {
+namespace stub {
+
 using ::dingofs::stub::metric::ClientOpMetric;
 using ::dingofs::stub::metric::DiskCacheMetric;
 using ::dingofs::stub::metric::FSMetric;
@@ -36,9 +39,6 @@ using ::dingofs::stub::metric::S3ChunkInfoMetric;
 using ::dingofs::stub::metric::S3Metric;
 using ::dingofs::stub::metric::S3MultiManagerMetric;
 using ::dingofs::stub::metric::WarmupManagerS3Metric;
-
-namespace dingofs {
-namespace stub {
 
 class ClientMetricTest : public ::testing::Test {
  protected:

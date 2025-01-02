@@ -32,6 +32,7 @@
 
 #include <utility>
 
+#include "dingofs/proto/common.pb.h"
 #include "dingofs/src/fs/local_filesystem.h"
 #include "dingofs/src/metaserver/copyset/copyset_node_manager.h"
 #include "dingofs/src/metaserver/copyset/raft_cli2.h"
@@ -41,11 +42,14 @@ namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-using ::dingofs::utils::UUIDGenerator;
 using ::dingofs::fs::FileSystemType;
 using ::dingofs::fs::LocalFileSystem;
 using ::dingofs::fs::LocalFsFactory;
+using ::dingofs::utils::UUIDGenerator;
 using ::google::protobuf::util::MessageDifferencer;
+
+using namespace ::dingofs::pb::metaserver::copyset;
+using ::dingofs::pb::common::Peer;
 
 const char* kInitConf = "127.0.0.1:29910:0,127.0.0.1:29911:0,127.0.0.1:29912:0";
 const int kElectionTimeoutMs = 3000;
@@ -242,7 +246,7 @@ class RaftCliService2Test : public testing::Test {
   }
 
   static void UpdateConfigurations(
-      const google::protobuf::RepeatedPtrField<dingofs::common::Peer>& peers) {
+      const google::protobuf::RepeatedPtrField<Peer>& peers) {
     conf_.reset();
 
     for (auto& peer : peers) {
@@ -393,7 +397,7 @@ TEST_F(RaftCliService2Test, AddPeerTest) {
     ASSERT_EQ(3, response.oldpeers_size());
     ASSERT_EQ(4, response.newpeers_size());
     bool found = false;
-    for (auto& peer : response.newpeers()) {
+    for (const auto& peer : response.newpeers()) {
       if (MessageDifferencer::Equals(peer, *peerToAdd)) {
         found = true;
       }

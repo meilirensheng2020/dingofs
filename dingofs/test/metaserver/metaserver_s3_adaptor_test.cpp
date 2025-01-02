@@ -21,6 +21,13 @@
 
 #include "dingofs/test/metaserver/metaserver_s3_adaptor_test.h"
 
+using ::dingofs::pb::common::PartitionInfo;
+using ::dingofs::pb::metaserver::Dentry;
+using ::dingofs::pb::metaserver::FsFileType;
+using ::dingofs::pb::metaserver::Inode;
+using ::dingofs::pb::metaserver::ManageInodeType;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+
 namespace dingofs {
 namespace metaserver {
 
@@ -72,7 +79,7 @@ void InitInode(Inode* inode) {
   inode->set_gid(1);
   inode->set_mode(1);
   inode->set_nlink(1);
-  inode->set_type(dingofs::metaserver::FsFileType::TYPE_S3);
+  inode->set_type(dingofs::pb::metaserver::FsFileType::TYPE_S3);
 
   /*
   1. write 3MB+1 from 0; (write)
@@ -117,7 +124,7 @@ void InitInode(Inode* inode) {
 // delete chunks
 TEST_F(MetaserverS3AdaptorTest, test_delete_chunks) {
   // Init
-  dingofs::metaserver::Inode inode;
+  Inode inode;
   InitInode(&inode);
 
   // replace s3 delete
@@ -134,7 +141,7 @@ TEST_F(MetaserverS3AdaptorTest, test_delete_chunks) {
 
 TEST_F(MetaserverS3AdaptorTest, test_delete_idempotence) {
   // Init
-  dingofs::metaserver::Inode inode;
+  Inode inode;
   InitInode(&inode);
 
   // replace s3 delete
@@ -168,7 +175,7 @@ TEST_F(MetaserverS3AdaptorTest, test_delete_idempotence) {
 
 TEST_F(MetaserverS3AdaptorTest, test_delete_deleted) {
   // Init
-  dingofs::metaserver::Inode inode;
+  Inode inode;
   InitInode(&inode);
 
   // replace s3 delete
@@ -211,7 +218,7 @@ TEST_F(MetaserverS3AdaptorTest, test_delete_batch_chunks) {
   metaserverS3ClientAdaptor_->Init(option, mockMetaserverS3Client_);
 
   // Init
-  dingofs::metaserver::Inode inode;
+  Inode inode;
   InitInode(&inode);
 
   // replace s3 delete
@@ -240,7 +247,7 @@ TEST_F(MetaserverS3AdaptorTest, test_delete_batch_idempotence) {
   metaserverS3ClientAdaptor_->Init(option, mockMetaserverS3Client_);
 
   // Init
-  dingofs::metaserver::Inode inode;
+  Inode inode;
   InitInode(&inode);
 
   // replace s3 delete
@@ -286,7 +293,7 @@ TEST_F(MetaserverS3AdaptorTest, test_delete_batch_deleted) {
   metaserverS3ClientAdaptor_->Init(option, mockMetaserverS3Client_);
 
   // Init
-  dingofs::metaserver::Inode inode;
+  Inode inode;
   InitInode(&inode);
 
   // replace s3 delete

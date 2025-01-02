@@ -31,19 +31,25 @@
 #include <memory>
 #include <set>
 
+#include "dingofs/proto/metaserver.pb.h"
 #include "dingofs/src/client/inode_cache_manager.h"
 
 namespace dingofs {
 namespace client {
 
+using dingofs::pb::metaserver::Inode;
+using dingofs::pb::metaserver::InodeAttr;
+using dingofs::pb::metaserver::XAttr;
+
 class MockInodeCacheManager : public InodeCacheManager {
  public:
-  MockInodeCacheManager() {}
-  ~MockInodeCacheManager() {}
+  MockInodeCacheManager() = default;
+  ~MockInodeCacheManager() override = default;
 
-  MOCK_METHOD3(Init, DINGOFS_ERROR(RefreshDataOption option,
-                                   std::shared_ptr<OpenFiles> openFiles,
-                                   std::shared_ptr<DeferSync> deferSync));
+  MOCK_METHOD3(Init,
+               DINGOFS_ERROR(common::RefreshDataOption option,
+                             std::shared_ptr<filesystem::OpenFiles> openFiles,
+                             std::shared_ptr<filesystem::DeferSync> deferSync));
 
   MOCK_METHOD2(GetInode,
                DINGOFS_ERROR(uint64_t inodeId,
@@ -62,11 +68,11 @@ class MockInodeCacheManager : public InodeCacheManager {
                                             std::list<XAttr>* xattrs));
 
   MOCK_METHOD2(CreateInode,
-               DINGOFS_ERROR(const InodeParam& param,
+               DINGOFS_ERROR(const stub::rpcclient::InodeParam& param,
                              std::shared_ptr<InodeWrapper>& out));  // NOLINT
 
   MOCK_METHOD2(CreateManageInode,
-               DINGOFS_ERROR(const InodeParam& param,
+               DINGOFS_ERROR(const stub::rpcclient::InodeParam& param,
                              std::shared_ptr<InodeWrapper>& out));  // NOLINT
 
   MOCK_METHOD1(DeleteInode, DINGOFS_ERROR(uint64_t inodeid));

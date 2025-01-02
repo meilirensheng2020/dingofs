@@ -318,7 +318,7 @@ TEST(TestCopySetInfo, test_copySetInfo_function) {
 
   // 1.2 with configChangeInfo
   testcopySetInfo.candidatePeerInfo = PeerInfo(1, 1, 1, "", 9000);
-  auto replica = new ::dingofs::common::Peer();
+  auto replica = new ::dingofs::pb::common::Peer();
   replica->set_address("192.168.10.1:9000");
   testcopySetInfo.configChangeInfo.set_allocated_peer(replica);
   testcopySetInfo.configChangeInfo.set_type(ConfigChangeType::ADD_PEER);

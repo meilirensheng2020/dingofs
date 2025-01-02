@@ -26,13 +26,15 @@
 #include <butil/fast_rand.h>
 #include <gtest/gtest.h>
 
-#include "dingofs/src/metaserver/common/types.h"
 #include "dingofs/src/fs/local_filesystem.h"
+#include "dingofs/src/metaserver/common/types.h"
 #include "dingofs/test/fs/mock_local_filesystem.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
+
+using namespace ::dingofs::pb::metaserver::copyset;
 
 using ::dingofs::fs::FileSystemType;
 using ::dingofs::fs::LocalFileSystem;

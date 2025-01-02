@@ -44,17 +44,18 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
-using ::dingofs::client::blockcache::BCACHE_ERROR;
-using ::dingofs::client::blockcache::MockBlockCache;
-using ::dingofs::client::blockcache::StoreType;
+using dingofs::client::blockcache::BCACHE_ERROR;
+using dingofs::client::blockcache::MockBlockCache;
+using dingofs::client::blockcache::StoreType;
+using dingofs::client::common::S3ClientAdaptorOption;
 using dingofs::stub::rpcclient::MockMdsClient;
 
-// extern KVClientManager *g_kvClientManager;
+using dingofs::pb::mds::FSStatusCode;
 
 class ClientS3AdaptorTest : public testing::Test {
  protected:
   ClientS3AdaptorTest() {}
-  ~ClientS3AdaptorTest() {}
+  ~ClientS3AdaptorTest() override = default;
   void SetUp() override {
     s3ClientAdaptor_ = std::make_shared<S3ClientAdaptorImpl>();
     mockInodeManager_ = std::make_shared<MockInodeCacheManager>();
@@ -103,7 +104,7 @@ std::unique_ptr<InodeWrapper> InitInode() {
   inode.set_gid(1);
   inode.set_mode(1);
   inode.set_nlink(1);
-  inode.set_type(dingofs::metaserver::FsFileType::TYPE_S3);
+  inode.set_type(dingofs::pb::metaserver::FsFileType::TYPE_S3);
   gInodeId++;
 
   return absl::make_unique<InodeWrapper>(std::move(inode), nullptr);

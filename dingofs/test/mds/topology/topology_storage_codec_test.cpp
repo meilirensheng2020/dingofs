@@ -93,7 +93,7 @@ TEST_F(TopologyStorageCodecTest, TestServerDataEncodeDecodeEqual) {
 
 TEST_F(TopologyStorageCodecTest, TestMetaServerDataEncodeDecodeEqual) {
   MetaServer data(0x51, "metaserver", "token", 0x41, "127.0.0.1", 8080,
-                  "127.0.0.1", 8080, OnlineState::OFFLINE);
+                  "127.0.0.1", 8080, pb::mds::topology::OnlineState::OFFLINE);
   std::string value;
   ASSERT_TRUE(testObj.EncodeMetaServerData(data, &value));
 

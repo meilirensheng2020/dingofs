@@ -25,26 +25,27 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/common.pb.h"
 #include "dingofs/proto/mds.pb.h"
 
 namespace dingofs {
 namespace mds {
 
-using ::dingofs::common::S3Info;
-using ::dingofs::common::Volume;
 using ::google::protobuf::util::MessageDifferencer;
+using pb::mds::FsInfo;
+using pb::mds::Mountpoint;
 
 TEST(FsInfoWrapperTest, volumeTest) {
   FsInfo fsinfo;
 
   fsinfo.set_fsid(1);
   fsinfo.set_fsname("hello");
-  fsinfo.set_status(mds::FsStatus::INITED);
+  fsinfo.set_status(pb::mds::FsStatus::INITED);
   fsinfo.set_rootinodeid(1);
   fsinfo.set_capacity(8192);
   fsinfo.set_blocksize(4096);
   fsinfo.set_mountnum(0);
-  fsinfo.set_fstype(mds::FSType::TYPE_VOLUME);
+  fsinfo.set_fstype(pb::common::FSType::TYPE_VOLUME);
 
   FsInfoWrapper wrapper(fsinfo);
 
@@ -56,12 +57,12 @@ TEST(FsInfoWrapperTest, s3Test) {
 
   fsinfo.set_fsid(2);
   fsinfo.set_fsname("hello");
-  fsinfo.set_status(mds::FsStatus::INITED);
+  fsinfo.set_status(pb::mds::FsStatus::INITED);
   fsinfo.set_rootinodeid(1);
   fsinfo.set_capacity(8192);
   fsinfo.set_blocksize(4096);
   fsinfo.set_mountnum(0);
-  fsinfo.set_fstype(mds::FSType::TYPE_S3);
+  fsinfo.set_fstype(pb::common::FSType::TYPE_S3);
 
   FsInfoWrapper wrapper(fsinfo);
 
@@ -73,12 +74,12 @@ TEST(FsInfoWrapperTest, hybridTest) {
 
   fsinfo.set_fsid(3);
   fsinfo.set_fsname("hello");
-  fsinfo.set_status(mds::FsStatus::INITED);
+  fsinfo.set_status(pb::mds::FsStatus::INITED);
   fsinfo.set_rootinodeid(1);
   fsinfo.set_capacity(8192);
   fsinfo.set_blocksize(4096);
   fsinfo.set_mountnum(0);
-  fsinfo.set_fstype(mds::FSType::TYPE_HYBRID);
+  fsinfo.set_fstype(pb::common::FSType::TYPE_HYBRID);
 
   FsInfoWrapper wrapper(fsinfo);
 
@@ -90,12 +91,12 @@ TEST(FsInfoWrapperTest, mpconflictTest_disablecto) {
 
   fsinfo.set_fsid(3);
   fsinfo.set_fsname("hello");
-  fsinfo.set_status(mds::FsStatus::INITED);
+  fsinfo.set_status(pb::mds::FsStatus::INITED);
   fsinfo.set_rootinodeid(1);
   fsinfo.set_capacity(8192);
   fsinfo.set_blocksize(4096);
   fsinfo.set_mountnum(0);
-  fsinfo.set_fstype(mds::FSType::TYPE_S3);
+  fsinfo.set_fstype(pb::common::FSType::TYPE_S3);
   Mountpoint mp;
   mp.set_hostname("0.0.0.0");
   mp.set_port(9000);
@@ -123,12 +124,12 @@ TEST(FsInfoWrapperTest, mpconflictTest_enablecto) {
 
   fsinfo.set_fsid(3);
   fsinfo.set_fsname("hello");
-  fsinfo.set_status(mds::FsStatus::INITED);
+  fsinfo.set_status(pb::mds::FsStatus::INITED);
   fsinfo.set_rootinodeid(1);
   fsinfo.set_capacity(8192);
   fsinfo.set_blocksize(4096);
   fsinfo.set_mountnum(0);
-  fsinfo.set_fstype(mds::FSType::TYPE_S3);
+  fsinfo.set_fstype(pb::common::FSType::TYPE_S3);
   Mountpoint mp;
   mp.set_hostname("0.0.0.0");
   mp.set_port(9000);

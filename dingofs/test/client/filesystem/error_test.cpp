@@ -51,8 +51,9 @@ TEST_F(ErrorTest, SysErr) {
 }
 
 TEST_F(ErrorTest, ToFSError) {
-  ASSERT_EQ(ToFSError(MetaStatusCode::OK), DINGOFS_ERROR::OK);
-  ASSERT_EQ(ToFSError(MetaStatusCode::NOT_FOUND), DINGOFS_ERROR::NOTEXIST);
+  ASSERT_EQ(ToFSError(pb::metaserver::MetaStatusCode::OK), DINGOFS_ERROR::OK);
+  ASSERT_EQ(ToFSError(pb::metaserver::MetaStatusCode::NOT_FOUND),
+            DINGOFS_ERROR::NOTEXIST);
 }
 
 }  // namespace filesystem

@@ -25,16 +25,18 @@
 #include <gtest/gtest.h>
 
 #include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/mds.pb.h"
 #include "dingofs/src/mds/fs_manager.h"
 #include "dingofs/src/mds/metaserverclient/metaserver_client.h"
 #include "dingofs/src/mds/topology/topology_storage_codec.h"
 #include "dingofs/src/mds/topology/topology_storge_etcd.h"
+#include "dingofs/test/aws/mock_s3_adapter.h"
 #include "dingofs/test/mds/mock/mock_cli2.h"
 #include "dingofs/test/mds/mock/mock_fs_stroage.h"
 #include "dingofs/test/mds/mock/mock_metaserver.h"
 #include "dingofs/test/mds/mock/mock_topology.h"
-#include "dingofs/test/aws/mock_s3_adapter.h"
 
+using ::dingofs::aws::MockS3Adapter;
 using ::dingofs::mds::topology::DefaultIdGenerator;
 using ::dingofs::mds::topology::DefaultTokenGenerator;
 using ::dingofs::mds::topology::MockEtcdClient;
@@ -45,10 +47,14 @@ using ::dingofs::mds::topology::TopologyStorageCodec;
 using ::dingofs::mds::topology::TopologyStorageEtcd;
 using ::dingofs::mds::topology::TopologyTokenGenerator;
 using ::dingofs::mds::topology::TopoStatusCode;
-using ::dingofs::metaserver::copyset::GetLeaderRequest2;
-using ::dingofs::metaserver::copyset::GetLeaderResponse2;
 using ::dingofs::metaserver::copyset::MockCliService2;
-using ::dingofs::aws::MockS3Adapter;
+
+using ::dingofs::pb::common::FSType;
+using ::dingofs::pb::mds::FsDetail;
+using ::dingofs::pb::mds::FsInfo;
+using ::dingofs::pb::mds::FsStatus;
+using ::dingofs::pb::metaserver::copyset::GetLeaderRequest2;
+using ::dingofs::pb::metaserver::copyset::GetLeaderResponse2;
 
 namespace dingofs {
 namespace mds {
@@ -57,13 +63,11 @@ using ::dingofs::metaserver::MockMetaserverService;
 
 const char* kFsManagerTest2ServerAddress = "0.0.0.0:22000";
 
-using ::dingofs::common::S3Info;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Matcher;
 using ::testing::Return;
-using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 
 template <typename RpcRequestType, typename RpcResponseType,
@@ -159,7 +163,7 @@ TEST_F(FsManagerTest2, CreateFoundConflictFsNameAndNotIdenticalToPreviousOne) {
   s3Info->set_blocksize(4 * 1024);
   s3Info->set_chunksize(16 * 1024 * 1024);
 
-  CreateFsRequest req;
+  pb::mds::CreateFsRequest req;
   req.set_fsname(fsname);
   req.set_blocksize(blocksize);
   req.set_fstype(type);
@@ -216,7 +220,7 @@ TEST_F(FsManagerTest2, CreateFoundConflictFsNameAndNotIdenticalToPreviousOne) {
     auto s3Info2 = *s3Info;
     s3Info2.set_bucketname("different");
     fsinfo.mutable_detail()->set_allocated_s3info(
-        new dingofs::common::S3Info(s3Info2));
+        new dingofs::pb::common::S3Info(s3Info2));
 
     FsInfoWrapper wrapper(fsinfo);
 
@@ -251,7 +255,7 @@ TEST_F(FsManagerTest2, CreateFoundUnCompleteOperation) {
 
   auto s3Info2 = *s3Info;
   fsinfo.mutable_detail()->set_allocated_s3info(
-      new dingofs::common::S3Info(s3Info2));
+      new dingofs::pb::common::S3Info(s3Info2));
 
   FsInfoWrapper wrapper(fsinfo);
 
@@ -274,26 +278,26 @@ TEST_F(FsManagerTest2, CreateFoundUnCompleteOperation) {
   EXPECT_CALL(*topoManager_, GetCopysetMembers(_, _, _))
       .WillOnce(
           DoAll(SetArgPointee<2>(addrs), Return(TopoStatusCode::TOPO_OK)));
-  GetLeaderResponse2 getLeaderResponse;
-  getLeaderResponse.mutable_leader()->set_address("0.0.0.0:22000:0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address("0.0.0.0:22000:0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(getLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
 
   EXPECT_CALL(*metaserverService_, CreateRootInode(_, _, _, _))
       .WillOnce(Invoke(
           [](::google::protobuf::RpcController* controller,
-             const ::dingofs::metaserver::CreateRootInodeRequest* request,
-             ::dingofs::metaserver::CreateRootInodeResponse* response,
+             const ::dingofs::pb::metaserver::CreateRootInodeRequest* request,
+             ::dingofs::pb::metaserver::CreateRootInodeResponse* response,
              ::google::protobuf::Closure* done) {
-            response->set_statuscode(metaserver::MetaStatusCode::OK);
+            response->set_statuscode(pb::metaserver::MetaStatusCode::OK);
             done->Run();
           }));
 
   EXPECT_CALL(*storage_, Update(_)).WillOnce(Return(FSStatusCode::OK));
 
-  CreateFsRequest req;
+  pb::mds::CreateFsRequest req;
   req.set_fsname(fsname);
   req.set_blocksize(blocksize);
   req.set_fstype(type);
@@ -330,7 +334,7 @@ TEST_F(FsManagerTest2, createHybridFs) {
 
   auto s3Info2 = *s3Info;
   fsinfo.mutable_detail()->set_allocated_s3info(
-      new dingofs::common::S3Info(s3Info2));
+      new dingofs::pb::common::S3Info(s3Info2));
 
   FsInfoWrapper wrapper(fsinfo);
 
@@ -353,26 +357,26 @@ TEST_F(FsManagerTest2, createHybridFs) {
   EXPECT_CALL(*topoManager_, GetCopysetMembers(_, _, _))
       .WillOnce(
           DoAll(SetArgPointee<2>(addrs), Return(TopoStatusCode::TOPO_OK)));
-  GetLeaderResponse2 getLeaderResponse;
-  getLeaderResponse.mutable_leader()->set_address("0.0.0.0:22000:0");
+  GetLeaderResponse2 get_leader_response;
+  get_leader_response.mutable_leader()->set_address("0.0.0.0:22000:0");
   EXPECT_CALL(mockCliService2_, GetLeader(_, _, _, _))
       .WillOnce(
-          DoAll(SetArgPointee<2>(getLeaderResponse),
+          DoAll(SetArgPointee<2>(get_leader_response),
                 Invoke(RpcService<GetLeaderRequest2, GetLeaderResponse2>)));
 
   EXPECT_CALL(*metaserverService_, CreateRootInode(_, _, _, _))
       .WillOnce(Invoke(
           [](::google::protobuf::RpcController* controller,
-             const ::dingofs::metaserver::CreateRootInodeRequest* request,
-             ::dingofs::metaserver::CreateRootInodeResponse* response,
+             const ::dingofs::pb::metaserver::CreateRootInodeRequest* request,
+             ::dingofs::pb::metaserver::CreateRootInodeResponse* response,
              ::google::protobuf::Closure* done) {
-            response->set_statuscode(metaserver::MetaStatusCode::OK);
+            response->set_statuscode(pb::metaserver::MetaStatusCode::OK);
             done->Run();
           }));
 
   EXPECT_CALL(*storage_, Update(_)).WillOnce(Return(FSStatusCode::OK));
 
-  CreateFsRequest req;
+  pb::mds::CreateFsRequest req;
   req.set_fsname(fsname);
   req.set_blocksize(blocksize);
   req.set_fstype(type);

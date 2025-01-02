@@ -38,19 +38,22 @@
 #include <utility>
 #include <vector>
 
+#include "dingofs/proto/common.pb.h"
 #include "dingofs/proto/copyset.pb.h"
 #include "dingofs/proto/topology.pb.h"
-#include "dingofs/src/mds/kvstorageclient/etcd_client.h"
 #include "dingofs/src/mds/common/mds_define.h"
+#include "dingofs/src/mds/kvstorageclient/etcd_client.h"
 #include "dingofs/src/mds/topology/topology_id_generator.h"
 #include "dingofs/src/mds/topology/topology_manager.h"
 #include "dingofs/src/mds/topology/topology_service.h"
 
-using ::testing::_;
 using ::testing::Return;
 
 using ::dingofs::kvstorage::EtcdClientImp;
 using ::dingofs::kvstorage::KVStorageClient;
+
+using ::dingofs::pb::common::PartitionInfo;
+using ::dingofs::pb::common::PartitionStatus;
 
 namespace dingofs {
 namespace kvstorage {
@@ -83,7 +86,7 @@ class MockKVStorageClient : public KVStorageClient {
 };
 
 }  // namespace kvstorage
-}  // namespace dingo
+}  // namespace dingofs
 
 namespace dingofs {
 namespace mds {

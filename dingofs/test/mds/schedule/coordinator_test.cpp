@@ -34,6 +34,8 @@ using ::dingofs::mds::topology::MockTopology;
 using ::dingofs::mds::topology::TopologyIdGenerator;
 using ::dingofs::mds::topology::TopologyStorage;
 using ::dingofs::mds::topology::TopologyTokenGenerator;
+using ::dingofs::pb::mds::schedule::ScheduleStatusCode;
+
 using ::std::chrono::steady_clock;
 using ::testing::_;
 using ::testing::DoAll;
@@ -127,7 +129,7 @@ TEST_F(CoordinatorTest, test_AddPeer_CopySetHeartbeat) {
   MetaServerSpace space(10, 1);
   MetaServerInfo csInfo(peer, OnlineState::ONLINE, space);
 
-  ::dingofs::mds::heartbeat::CopySetConf res;
+  ::dingofs::pb::mds::heartbeat::CopySetConf res;
   {
     // 1. test copySet do not have operator
     EXPECT_CALL(*topoAdapter_, CopySetFromTopoToSchedule(_, _))
@@ -193,7 +195,7 @@ TEST_F(CoordinatorTest, test_AddPeer_CopySetHeartbeat) {
     info.candidatePeerInfo = PeerInfo(4, 1, 1, "", 9000);
     info.configChangeInfo.set_finished(false);
     info.configChangeInfo.set_type(ConfigChangeType::ADD_PEER);
-    auto replica = new ::dingofs::common::Peer();
+    auto replica = new ::dingofs::pb::common::Peer();
     replica->set_id(4);
     replica->set_address("192.168.10.4:9000:0");
     info.configChangeInfo.set_allocated_peer(replica);
@@ -257,7 +259,7 @@ TEST_F(CoordinatorTest, test_ChangePeer_CopySetHeartbeat) {
   PeerInfo peer1(1, 1, 1, "127.0.0.1", 9001);
   MetaServerInfo csInfo1(peer1, OnlineState::ONLINE, space);
 
-  ::dingofs::mds::heartbeat::CopySetConf res;
+  ::dingofs::pb::mds::heartbeat::CopySetConf res;
   {
     // 1. test copySet do not have operator
     EXPECT_CALL(*topoAdapter_, CopySetFromTopoToSchedule(_, _))
@@ -326,7 +328,7 @@ TEST_F(CoordinatorTest, test_ChangePeer_CopySetHeartbeat) {
     info.candidatePeerInfo = PeerInfo(4, 1, 1, "", 9000);
     info.configChangeInfo.set_finished(false);
     info.configChangeInfo.set_type(ConfigChangeType::ADD_PEER);
-    auto replica = new ::dingofs::common::Peer();
+    auto replica = new ::dingofs::pb::common::Peer();
     replica->set_id(4);
     replica->set_address("192.168.10.4:9000:0");
     info.configChangeInfo.set_allocated_peer(replica);
@@ -497,7 +499,7 @@ TEST_F(CoordinatorTest, test_QueryMetaServerRecoverStatus) {
 
   std::vector<PeerInfo> peersFor3({peerInfos[2], peerInfos[3], peerInfos[4]});
   ConfigChangeInfo configChangeInfoForCS3;
-  auto replica = new ::dingofs::common::Peer();
+  auto replica = new ::dingofs::pb::common::Peer();
   replica->set_id(6);
   replica->set_address("192.168.0.6:9000:0");
   configChangeInfoForCS3.set_allocated_peer(replica);
@@ -516,7 +518,7 @@ TEST_F(CoordinatorTest, test_QueryMetaServerRecoverStatus) {
         .WillOnce(Return(std::vector<CopySetInfo>{copyset3}));
 
     std::map<MetaServerIdType, bool> statusMap;
-    ASSERT_EQ(ScheduleStatusCode::Success,
+    ASSERT_EQ(pb::mds::schedule::ScheduleStatusCode::Success,
               coordinator_->QueryMetaServerRecoverStatus(
                   std::vector<MetaServerIdType>{}, &statusMap));
     ASSERT_EQ(6, statusMap.size());

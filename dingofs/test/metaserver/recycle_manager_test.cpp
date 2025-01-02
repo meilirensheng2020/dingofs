@@ -24,13 +24,18 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "dingofs/proto/common.pb.h"
+#include "dingofs/proto/metaserver.pb.h"
+#include "dingofs/src/fs/ext4_filesystem_impl.h"
 #include "dingofs/src/metaserver/storage/rocksdb_storage.h"
 #include "dingofs/src/metaserver/storage/storage.h"
 #include "dingofs/test/client/mock_metaserver_client.h"
-#include "dingofs/test/stub/rpcclient/mock_mds_client.h"
 #include "dingofs/test/metaserver/copyset/mock/mock_copyset_node.h"
 #include "dingofs/test/metaserver/storage/utils.h"
-#include "dingofs/src/fs/ext4_filesystem_impl.h"
+#include "dingofs/test/stub/rpcclient/mock_mds_client.h"
+
+namespace dingofs {
+namespace metaserver {
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -40,15 +45,24 @@ using ::testing::SetArgPointee;
 using ::testing::SetArgReferee;
 using ::testing::WithArg;
 
-using ::dingofs::stub::rpcclient::MockMdsClient;
-using ::dingofs::stub::rpcclient::MockMetaServerClient;
 using ::dingofs::metaserver::storage::KVStorage;
 using ::dingofs::metaserver::storage::RandomStoragePath;
 using ::dingofs::metaserver::storage::RocksDBStorage;
 using ::dingofs::metaserver::storage::StorageOptions;
+using ::dingofs::stub::rpcclient::MockMdsClient;
+using ::dingofs::stub::rpcclient::MockMetaServerClient;
 
-namespace dingofs {
-namespace metaserver {
+using ::dingofs::pb::common::PartitionInfo;
+using ::dingofs::pb::mds::FsInfo;
+using ::dingofs::pb::mds::FSStatusCode;
+using ::dingofs::pb::metaserver::Dentry;
+using ::dingofs::pb::metaserver::FsFileType;
+using ::dingofs::pb::metaserver::Inode;
+using ::dingofs::pb::metaserver::ManageInodeType;
+using ::dingofs::pb::metaserver::MetaStatusCode;
+using ::dingofs::stub::rpcclient::MockMdsClient;
+using ::dingofs::stub::rpcclient::MockMetaServerClient;
+
 namespace {
 auto localfs = dingofs::fs::Ext4FileSystemImpl::getInstance();
 }

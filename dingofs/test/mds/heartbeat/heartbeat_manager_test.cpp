@@ -27,16 +27,19 @@
 #include <sys/time.h>
 
 #include "dingofs/src/mds/heartbeat/metaserver_healthy_checker.h"
+#include "dingofs/src/utils/timeutility.h"
 #include "dingofs/test/mds/mock/mock_coordinator.h"
 #include "dingofs/test/mds/mock/mock_topology.h"
-#include "dingofs/src/utils/timeutility.h"
 
-using ::dingofs::mds::heartbeat::ConfigChangeType;
 using ::dingofs::mds::topology::MockIdGenerator;
 using ::dingofs::mds::topology::MockStorage;
 using ::dingofs::mds::topology::MockTokenGenerator;
 using ::dingofs::mds::topology::MockTopology;
 using ::dingofs::mds::topology::TopoStatusCode;
+
+using ::dingofs::pb::mds::heartbeat::ConfigChangeType;
+using ::dingofs::pb::mds::heartbeat::HeartbeatStatusCode;
+
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;
@@ -82,7 +85,7 @@ MetaServerHeartbeatRequest GetMetaServerHeartbeatRequestForTest() {
   request.set_starttime(1000);
   request.set_leadercount(10);
   request.set_copysetcount(100);
-  MetaServerSpaceStatus status;
+  pb::mds::heartbeat::MetaServerSpaceStatus status;
   status.set_diskthresholdbyte(0);
   status.set_diskcopysetminrequirebyte(0);
   status.set_diskusedbyte(0);
@@ -100,7 +103,7 @@ MetaServerHeartbeatRequest GetMetaServerHeartbeatRequestForTest() {
     auto peer = info->add_peers();
     peer->set_address(ip);
     if (i == 1) {
-      auto peer = new ::dingofs::common::Peer();
+      auto peer = new ::dingofs::pb::common::Peer();
       peer->set_address(ip);
       info->set_allocated_leaderpeer(peer);
     }
@@ -144,7 +147,8 @@ TEST_F(TestHeartbeatManager, test_checkReuqest_abnormal) {
   ASSERT_TRUE(request.IsInitialized());
   EXPECT_CALL(*topology_, GetMetaServer(_, _)).WillOnce(Return(false));
   heartbeatManager_->MetaServerHeartbeat(request, &response);
-  ASSERT_EQ(HeartbeatStatusCode::hbMetaServerUnknown, response.statuscode());
+  ASSERT_EQ(pb::mds::heartbeat::HeartbeatStatusCode::hbMetaServerUnknown,
+            response.statuscode());
 
   // 3. ip not same
   ::dingofs::mds::topology::MetaServer metaServer(
@@ -260,13 +264,13 @@ TEST_F(TestHeartbeatManager, test_getMetaserverIdByPeerStr) {
 
   // 1. test invalid form
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(10);
   auto replica = info.add_peers();
   replica->set_address("192.168.10.1:9000");
-  auto leader = new ::dingofs::common::Peer();
+  auto leader = new ::dingofs::pb::common::Peer();
   leader->set_address("192.168.10.1:9000");
   info.set_allocated_leaderpeer(leader);
   auto addInfos = request.add_copysetinfos();
@@ -322,7 +326,7 @@ TEST_F(TestHeartbeatManager, test_heartbeatCopySetInfo_to_topologyOne) {
 
   // 3. has candidate and cannot get candidate
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(10);
@@ -330,13 +334,13 @@ TEST_F(TestHeartbeatManager, test_heartbeatCopySetInfo_to_topologyOne) {
   for (int i = 1; i <= 4; i++) {
     std::string ip = "192.168.10." + std::to_string(i) + ":9000:0";
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
 
     if (i == 4) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       candidate->set_allocated_peer(replica);
       candidate->set_finished(true);
@@ -371,7 +375,7 @@ TEST_F(TestHeartbeatManager, test_not_leader) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -380,7 +384,7 @@ TEST_F(TestHeartbeatManager, test_not_leader) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 2) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
@@ -416,7 +420,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_LargerThan_mdsRecord_UpdateSuccess) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -425,7 +429,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_LargerThan_mdsRecord_UpdateSuccess) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
@@ -466,7 +470,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_LargerThan_mdsRecord_UpdateFail) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -475,7 +479,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_LargerThan_mdsRecord_UpdateFail) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
@@ -517,7 +521,7 @@ TEST_F(TestHeartbeatManager,
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -526,7 +530,7 @@ TEST_F(TestHeartbeatManager,
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
@@ -565,7 +569,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_no_candidate) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -574,7 +578,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_no_candidate) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
@@ -619,7 +623,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_topo_candidate) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -628,7 +632,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_topo_candidate) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
@@ -673,7 +677,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_report_candidate) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -683,13 +687,13 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_report_candidate) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
 
     if (i == 4) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       candidate->set_allocated_peer(replica);
       candidate->set_finished(false);
@@ -737,7 +741,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_has_candidate) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -747,13 +751,13 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_EqualTo_mdsRecord_has_candidate) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
 
     if (i == 4) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       candidate->set_allocated_peer(replica);
       candidate->set_finished(false);
@@ -802,7 +806,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_SmallThan_mdsRecord) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -811,7 +815,7 @@ TEST_F(TestHeartbeatManager, test_reqEpoch_SmallThan_mdsRecord) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }
@@ -849,7 +853,7 @@ TEST_F(TestHeartbeatManager, test_update_partition) {
   MetaServerHeartbeatResponse response;
 
   request.clear_copysetinfos();
-  ::dingofs::mds::heartbeat::CopySetInfo info;
+  ::dingofs::pb::mds::heartbeat::CopySetInfo info;
   info.set_poolid(1);
   info.set_copysetid(1);
   info.set_epoch(2);
@@ -858,7 +862,7 @@ TEST_F(TestHeartbeatManager, test_update_partition) {
     auto replica = info.add_peers();
     replica->set_address(ip);
     if (i == 1) {
-      auto replica = new ::dingofs::common::Peer();
+      auto replica = new ::dingofs::pb::common::Peer();
       replica->set_address(ip);
       info.set_allocated_leaderpeer(replica);
     }

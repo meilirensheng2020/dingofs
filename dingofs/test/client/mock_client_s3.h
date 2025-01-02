@@ -38,17 +38,17 @@ using ::testing::Return;
 namespace dingofs {
 namespace client {
 
+using ::dingofs::aws::GetObjectAsyncContext;
+using ::dingofs::aws::PutObjectAsyncContext;
 using ::dingofs::aws::S3AdapterOption;
 using ::dingofs::client::blockcache::BCACHE_ERROR;
-using ::dingofs::client::blockcache::GetObjectAsyncContext;
-using ::dingofs::client::blockcache::PutObjectAsyncContext;
 using ::dingofs::client::blockcache::S3Client;
 
 class MockS3Client : public S3Client {
  public:
-  MockS3Client() {}
+  MockS3Client() = default;
 
-  ~MockS3Client() {}
+  ~MockS3Client() override = default;
 
   MOCK_METHOD1(Init, void(const S3AdapterOption& options));
 

@@ -27,17 +27,19 @@
 #include <gtest/gtest.h>
 
 #include "dingofs/proto/copyset.pb.h"
-#include "dingofs/src/utils/uuid.h"
 #include "dingofs/src/fs/local_filesystem.h"
+#include "dingofs/src/utils/uuid.h"
 
 namespace dingofs {
 namespace metaserver {
 namespace copyset {
 
-using ::dingofs::utils::UUIDGenerator;
 using ::dingofs::fs::FileSystemType;
 using ::dingofs::fs::LocalFileSystem;
 using ::dingofs::fs::LocalFsFactory;
+using ::dingofs::utils::UUIDGenerator;
+
+using namespace ::dingofs::pb::metaserver::copyset;
 
 const std::string kTestDataPath =
     "./runlog/" + UUIDGenerator{}.GenerateUUID();             // NOLINT

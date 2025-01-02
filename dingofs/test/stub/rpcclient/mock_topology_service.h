@@ -30,52 +30,44 @@
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
-class MockTopologyService : public dingofs::mds::topology::TopologyService {
+class MockTopologyService : public pb::mds::topology::TopologyService {
  public:
-  MockTopologyService() : TopologyService() {}
-  ~MockTopologyService() = default;
+  MockTopologyService() = default;
+  ~MockTopologyService() override = default;
 
-  MOCK_METHOD4(
-      GetMetaServer,
-      void(::google::protobuf::RpcController* controller,
-           const ::dingofs::mds::topology::GetMetaServerInfoRequest* request,
-           ::dingofs::mds::topology::GetMetaServerInfoResponse* response,
-           ::google::protobuf::Closure* done));
+  MOCK_METHOD4(GetMetaServer,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::mds::topology::GetMetaServerInfoRequest* request,
+                    pb::mds::topology::GetMetaServerInfoResponse* response,
+                    ::google::protobuf::Closure* done));
   MOCK_METHOD4(
       GetMetaServerListInCopysets,
       void(::google::protobuf::RpcController* controller,
-           const ::dingofs::mds::topology::GetMetaServerListInCopySetsRequest*
-               request,
-           ::dingofs::mds::topology::GetMetaServerListInCopySetsResponse*
-               response,
+           const pb::mds::topology::GetMetaServerListInCopySetsRequest* request,
+           pb::mds::topology::GetMetaServerListInCopySetsResponse* response,
            ::google::protobuf::Closure* done));
-  MOCK_METHOD4(
-      CreatePartition,
-      void(::google::protobuf::RpcController* controller,
-           const ::dingofs::mds::topology::CreatePartitionRequest* request,
-           ::dingofs::mds::topology::CreatePartitionResponse* response,
-           ::google::protobuf::Closure* done));
-  MOCK_METHOD4(
-      ListPartition,
-      void(::google::protobuf::RpcController* controller,
-           const ::dingofs::mds::topology::ListPartitionRequest* request,
-           ::dingofs::mds::topology::ListPartitionResponse* response,
-           ::google::protobuf::Closure* done));
+  MOCK_METHOD4(CreatePartition,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::mds::topology::CreatePartitionRequest* request,
+                    pb::mds::topology::CreatePartitionResponse* response,
+                    ::google::protobuf::Closure* done));
+  MOCK_METHOD4(ListPartition,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::mds::topology::ListPartitionRequest* request,
+                    pb::mds::topology::ListPartitionResponse* response,
+                    ::google::protobuf::Closure* done));
   MOCK_METHOD4(
       GetCopysetOfPartition,
-      void(
-          ::google::protobuf::RpcController* controller,
-          const ::dingofs::mds::topology::GetCopysetOfPartitionRequest* request,
-          ::dingofs::mds::topology::GetCopysetOfPartitionResponse* response,
-          ::google::protobuf::Closure* done));
+      void(::google::protobuf::RpcController* controller,
+           const pb::mds::topology::GetCopysetOfPartitionRequest* request,
+           pb::mds::topology::GetCopysetOfPartitionResponse* response,
+           ::google::protobuf::Closure* done));
   MOCK_METHOD4(
       AllocOrGetMemcacheCluster,
-      void(
-          ::google::protobuf::RpcController* controller,
-          const ::dingofs::mds::topology::AllocOrGetMemcacheClusterRequest*
-              request,
-          ::dingofs::mds::topology::AllocOrGetMemcacheClusterResponse* response,
-          ::google::protobuf::Closure* done));
+      void(::google::protobuf::RpcController* controller,
+           const pb::mds::topology::AllocOrGetMemcacheClusterRequest* request,
+           pb::mds::topology::AllocOrGetMemcacheClusterResponse* response,
+           ::google::protobuf::Closure* done));
 };
 }  // namespace rpcclient
 }  // namespace stub

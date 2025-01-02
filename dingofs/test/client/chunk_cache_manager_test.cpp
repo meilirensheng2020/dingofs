@@ -40,11 +40,11 @@ using ::testing::WithArg;
 class ChunkCacheManagerTest : public testing::Test {
  protected:
   ChunkCacheManagerTest() {}
-  ~ChunkCacheManagerTest() {}
+  ~ChunkCacheManagerTest() override = default;
   void SetUp() override {
     uint64_t index = 0;
 
-    S3ClientAdaptorOption option;
+    common::S3ClientAdaptorOption option;
     option.blockSize = 1 * 1024 * 1024;
     option.chunkSize = 4 * 1024 * 1024;
     option.baseSleepUs = 500;

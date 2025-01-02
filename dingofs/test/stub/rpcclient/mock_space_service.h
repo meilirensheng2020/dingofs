@@ -31,35 +31,36 @@ namespace dingofs {
 namespace mds {
 namespace space {
 
-class MockSpaceService : public SpaceService {
+class MockSpaceService : public pb::mds::space::SpaceService {
  public:
   MOCK_METHOD4(AllocateBlockGroup,
                void(google::protobuf::RpcController* controller,
-                    const AllocateBlockGroupRequest* request,
-                    AllocateBlockGroupResponse* response,
+                    const pb::mds::space::AllocateBlockGroupRequest* request,
+                    pb::mds::space::AllocateBlockGroupResponse* response,
                     google::protobuf::Closure* done));
 
   MOCK_METHOD4(AcquireBlockGroup,
                void(google::protobuf::RpcController* controller,
-                    const AcquireBlockGroupRequest* request,
-                    AcquireBlockGroupResponse* response,
+                    const pb::mds::space::AcquireBlockGroupRequest* request,
+                    pb::mds::space::AcquireBlockGroupResponse* response,
                     google::protobuf::Closure* done));
 
   MOCK_METHOD4(ReleaseBlockGroup,
                void(google::protobuf::RpcController* controller,
-                    const ReleaseBlockGroupRequest* request,
-                    ReleaseBlockGroupResponse* response,
+                    const pb::mds::space::ReleaseBlockGroupRequest* request,
+                    pb::mds::space::ReleaseBlockGroupResponse* response,
                     google::protobuf::Closure* done));
 
   MOCK_METHOD4(StatSpace, void(google::protobuf::RpcController* controller,
-                               const StatSpaceRequest* request,
-                               StatSpaceResponse* response,
+                               const pb::mds::space::StatSpaceRequest* request,
+                               pb::mds::space::StatSpaceResponse* response,
                                google::protobuf::Closure* done));
 
-  MOCK_METHOD4(UpdateUsage, void(google::protobuf::RpcController* controller,
-                                 const UpdateUsageRequest* request,
-                                 UpdateUsageResponse* response,
-                                 google::protobuf::Closure* done));
+  MOCK_METHOD4(UpdateUsage,
+               void(google::protobuf::RpcController* controller,
+                    const pb::mds::space::UpdateUsageRequest* request,
+                    pb::mds::space::UpdateUsageResponse* response,
+                    google::protobuf::Closure* done));
 };
 
 }  // namespace space

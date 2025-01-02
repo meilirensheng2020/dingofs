@@ -31,19 +31,18 @@ namespace dingofs {
 namespace mds {
 namespace codec {
 
-using ::dingofs::common::FSType;
-using ::dingofs::common::S3Info;
-using ::dingofs::common::Volume;
+using pb::common::FSType;
+using pb::common::Volume;
 
 TEST(CodecTest, TestEncodeProtobufMessage) {
-  mds::FsInfo fsinfo;
+  pb::mds::FsInfo fsinfo;
 
   // empty message
   ASSERT_FALSE(fsinfo.IsInitialized());
 
   fsinfo.set_fsid(1);
   fsinfo.set_fsname("hello");
-  fsinfo.set_status(mds::FsStatus::INITED);
+  fsinfo.set_status(pb::mds::FsStatus::INITED);
   fsinfo.set_rootinodeid(1);
   fsinfo.set_capacity(8192);
   fsinfo.set_blocksize(4096);
@@ -59,7 +58,7 @@ TEST(CodecTest, TestEncodeProtobufMessage) {
   volume.set_volumename("/dingofs");
   volume.set_user("test");
   volume.set_blockgroupsize(4096);
-  volume.set_bitmaplocation(dingofs::common::BitmapLocation::AtEnd);
+  volume.set_bitmaplocation(pb::common::BitmapLocation::AtEnd);
   volume.set_slicesize(1ULL * 1024 * 1024 * 1024);
   volume.set_autoextend(false);
 
@@ -74,11 +73,11 @@ TEST(CodecTest, TestEncodeProtobufMessage) {
 }
 
 TEST(CodecTest, TestDecodeProtobufMessage) {
-  mds::FsInfo fsinfo;
+  pb::mds::FsInfo fsinfo;
 
   fsinfo.set_fsid(1);
   fsinfo.set_fsname("hello");
-  fsinfo.set_status(mds::FsStatus::INITED);
+  fsinfo.set_status(pb::mds::FsStatus::INITED);
   fsinfo.set_rootinodeid(1);
   fsinfo.set_capacity(8192);
   fsinfo.set_blocksize(4096);
@@ -94,7 +93,7 @@ TEST(CodecTest, TestDecodeProtobufMessage) {
   volume.set_volumename("/dingofs");
   volume.set_user("test");
   volume.set_blockgroupsize(4096);
-  volume.set_bitmaplocation(dingofs::common::BitmapLocation::AtEnd);
+  volume.set_bitmaplocation(pb::common::BitmapLocation::AtEnd);
   volume.set_slicesize(1ULL * 1024 * 1024 * 1024);
   volume.set_autoextend(false);
 
@@ -103,7 +102,7 @@ TEST(CodecTest, TestDecodeProtobufMessage) {
   std::string value;
   ASSERT_TRUE(EncodeProtobufMessage(fsinfo, &value));
 
-  mds::FsInfo decoded;
+  pb::mds::FsInfo decoded;
   ASSERT_TRUE(DecodeProtobufMessage(value, &decoded));
 
   ASSERT_TRUE(

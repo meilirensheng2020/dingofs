@@ -30,94 +30,88 @@
 namespace dingofs {
 namespace stub {
 namespace rpcclient {
-class MockMetaServerService : public dingofs::metaserver::MetaServerService {
+class MockMetaServerService : public pb::metaserver::MetaServerService {
  public:
-  MockMetaServerService() : MetaServerService() {}
-  ~MockMetaServerService() = default;
+  MockMetaServerService() = default;
+  ~MockMetaServerService() override = default;
 
-  MOCK_METHOD4(GetDentry,
-               void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::GetDentryRequest* request,
-                    ::dingofs::metaserver::GetDentryResponse* response,
-                    ::google::protobuf::Closure* done));
+  MOCK_METHOD4(GetDentry, void(::google::protobuf::RpcController* controller,
+                               const pb::metaserver::GetDentryRequest* request,
+                               pb::metaserver::GetDentryResponse* response,
+                               ::google::protobuf::Closure* done));
   MOCK_METHOD4(ListDentry,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::ListDentryRequest* request,
-                    ::dingofs::metaserver::ListDentryResponse* response,
+                    const pb::metaserver::ListDentryRequest* request,
+                    pb::metaserver::ListDentryResponse* response,
                     ::google::protobuf::Closure* done));
   MOCK_METHOD4(CreateDentry,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::CreateDentryRequest* request,
-                    ::dingofs::metaserver::CreateDentryResponse* response,
+                    const pb::metaserver::CreateDentryRequest* request,
+                    pb::metaserver::CreateDentryResponse* response,
                     ::google::protobuf::Closure* done));
   MOCK_METHOD4(DeleteDentry,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::DeleteDentryRequest* request,
-                    ::dingofs::metaserver::DeleteDentryResponse* response,
+                    const pb::metaserver::DeleteDentryRequest* request,
+                    pb::metaserver::DeleteDentryResponse* response,
                     ::google::protobuf::Closure* done));
 
-  MOCK_METHOD4(
-      PrepareRenameTx,
-      void(::google::protobuf::RpcController* controller,
-           const ::dingofs::metaserver::PrepareRenameTxRequest* request,
-           ::dingofs::metaserver::PrepareRenameTxResponse* response,
-           ::google::protobuf::Closure* done));
-
-  MOCK_METHOD4(GetInode,
+  MOCK_METHOD4(PrepareRenameTx,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::GetInodeRequest* request,
-                    ::dingofs::metaserver::GetInodeResponse* response,
+                    const pb::metaserver::PrepareRenameTxRequest* request,
+                    pb::metaserver::PrepareRenameTxResponse* response,
                     ::google::protobuf::Closure* done));
 
-  MOCK_METHOD4(
-      BatchGetInodeAttr,
-      void(::google::protobuf::RpcController* controller,
-           const ::dingofs::metaserver::BatchGetInodeAttrRequest* request,
-           ::dingofs::metaserver::BatchGetInodeAttrResponse* response,
-           ::google::protobuf::Closure* done));
+  MOCK_METHOD4(GetInode, void(::google::protobuf::RpcController* controller,
+                              const pb::metaserver::GetInodeRequest* request,
+                              pb::metaserver::GetInodeResponse* response,
+                              ::google::protobuf::Closure* done));
+
+  MOCK_METHOD4(BatchGetInodeAttr,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::metaserver::BatchGetInodeAttrRequest* request,
+                    pb::metaserver::BatchGetInodeAttrResponse* response,
+                    ::google::protobuf::Closure* done));
 
   MOCK_METHOD4(BatchGetXAttr,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::BatchGetXAttrRequest* request,
-                    ::dingofs::metaserver::BatchGetXAttrResponse* response,
+                    const pb::metaserver::BatchGetXAttrRequest* request,
+                    pb::metaserver::BatchGetXAttrResponse* response,
                     ::google::protobuf::Closure* done));
 
   MOCK_METHOD4(CreateInode,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::CreateInodeRequest* request,
-                    ::dingofs::metaserver::CreateInodeResponse* response,
+                    const pb::metaserver::CreateInodeRequest* request,
+                    pb::metaserver::CreateInodeResponse* response,
                     ::google::protobuf::Closure* done));
   MOCK_METHOD4(UpdateInode,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::UpdateInodeRequest* request,
-                    ::dingofs::metaserver::UpdateInodeResponse* response,
+                    const pb::metaserver::UpdateInodeRequest* request,
+                    pb::metaserver::UpdateInodeResponse* response,
                     ::google::protobuf::Closure* done));
   MOCK_METHOD4(DeleteInode,
                void(::google::protobuf::RpcController* controller,
-                    const ::dingofs::metaserver::DeleteInodeRequest* request,
-                    ::dingofs::metaserver::DeleteInodeResponse* response,
+                    const pb::metaserver::DeleteInodeRequest* request,
+                    pb::metaserver::DeleteInodeResponse* response,
                     ::google::protobuf::Closure* done));
 
   MOCK_METHOD4(
       GetOrModifyS3ChunkInfo,
       void(::google::protobuf::RpcController* controller,
-           const ::dingofs::metaserver::GetOrModifyS3ChunkInfoRequest* request,
-           ::dingofs::metaserver::GetOrModifyS3ChunkInfoResponse* response,
+           const pb::metaserver::GetOrModifyS3ChunkInfoRequest* request,
+           pb::metaserver::GetOrModifyS3ChunkInfoResponse* response,
            ::google::protobuf::Closure* done));
 
-  MOCK_METHOD4(
-      GetVolumeExtent,
-      void(::google::protobuf::RpcController* controller,
-           const ::dingofs::metaserver::GetVolumeExtentRequest* request,
-           ::dingofs::metaserver::GetVolumeExtentResponse* response,
-           ::google::protobuf::Closure* done));
+  MOCK_METHOD4(GetVolumeExtent,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::metaserver::GetVolumeExtentRequest* request,
+                    pb::metaserver::GetVolumeExtentResponse* response,
+                    ::google::protobuf::Closure* done));
 
-  MOCK_METHOD4(
-      UpdateVolumeExtent,
-      void(::google::protobuf::RpcController* controller,
-           const ::dingofs::metaserver::UpdateVolumeExtentRequest* request,
-           ::dingofs::metaserver::UpdateVolumeExtentResponse* response,
-           ::google::protobuf::Closure* done));
+  MOCK_METHOD4(UpdateVolumeExtent,
+               void(::google::protobuf::RpcController* controller,
+                    const pb::metaserver::UpdateVolumeExtentRequest* request,
+                    pb::metaserver::UpdateVolumeExtentResponse* response,
+                    ::google::protobuf::Closure* done));
 };
 }  // namespace rpcclient
 }  // namespace stub

@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "dingofs/src/mds/fs_info_wrapper.h"
 #include "dingofs/src/mds/fs_storage.h"
 
 namespace dingofs {
