@@ -577,7 +577,7 @@ void CopysetNode::ListPeers(std::vector<Peer>* peers) const {
 // partition info list success.
 bool CopysetNode::GetPartitionInfoList(
     std::list<pb::common::PartitionInfo>* partitionInfoList) {
-  uint32_t retryCount = 0;
+  uint32_t retry_count = 0;
   while (true) {
     if (IsLoading()) {
       LOG(INFO) << "Copyset is loading, return empty partition list";
@@ -587,8 +587,11 @@ bool CopysetNode::GetPartitionInfoList(
     if (ret) {
       return true;
     }
-    LOG(WARNING) << "Copyset is not loading, but GetPartitionInfoList fail,"
-                 << " retryCount = " << retryCount++;
+    retry_count++;
+    if (retry_count % 100 == 0) {
+      LOG(WARNING) << "Copyset is not loading, but GetPartitionInfoList fail,"
+                   << " retryCount = " << retry_count;
+    }
   }
 }
 

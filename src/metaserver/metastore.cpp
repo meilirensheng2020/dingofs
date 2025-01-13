@@ -30,8 +30,8 @@
 #include <vector>
 
 #include "absl/types/optional.h"
-#include "dingofs/metaserver.pb.h"
 #include "common/define.h"
+#include "dingofs/metaserver.pb.h"
 #include "metaserver/copyset/copyset_node.h"
 #include "metaserver/partition_clean_manager.h"
 #include "metaserver/recycle_cleaner.h"
@@ -219,25 +219,27 @@ void MetaStoreImpl::SaveBackground(const std::string& path,
 
 bool MetaStoreImpl::Save(const std::string& dir,
                          OnSnapshotSaveDoneClosure* done) {
-  brpc::ClosureGuard doneGuard(done);
-  WriteLockGuard writeLockGuard(rwLock_);
+  brpc::ClosureGuard done_guard(done);
+  {
+    WriteLockGuard write_lock_guard(rwLock_);
 
-  MetaStoreFStream fstream(&partitionMap_, kvStorage_,
-                           copysetNode_->GetPoolId(),
-                           copysetNode_->GetCopysetId());
+    MetaStoreFStream fstream(&partitionMap_, kvStorage_,
+                             copysetNode_->GetPoolId(),
+                             copysetNode_->GetCopysetId());
 
-  const std::string metadata = dir + "/" + kMetaDataFilename;
-  bool succ = fstream.Save(metadata);
-  if (!succ) {
-    done->SetError(MetaStatusCode::SAVE_META_FAIL);
-    return false;
+    const std::string metadata = dir + "/" + kMetaDataFilename;
+    bool succ = fstream.Save(metadata);
+    if (!succ) {
+      done->SetError(MetaStatusCode::SAVE_META_FAIL);
+      return false;
+    }
   }
 
   // checkpoint storage
   butil::Timer timer;
   timer.start();
   std::vector<std::string> files;
-  succ = kvStorage_->Checkpoint(dir, &files);
+  bool succ = kvStorage_->Checkpoint(dir, &files);
   if (!succ) {
     done->SetError(MetaStatusCode::SAVE_META_FAIL);
     return false;
@@ -443,15 +445,12 @@ bool MetaStoreImpl::GetPartitionInfoList(
   int ret = rwLock_.TryRDLock();
   if (ret == 0) {
     for (const auto& it : partitionMap_) {
-      PartitionInfo partitionInfo = it.second->GetPartitionInfo();
-      partitionInfoList->push_back(std::move(partitionInfo));
+      PartitionInfo partition_info = it.second->GetPartitionInfo();
+      partitionInfoList->push_back(std::move(partition_info));
     }
     rwLock_.Unlock();
     return true;
   } else {
-    LOG(WARNING) << "metastore GetPartitionInfoList fail, it fail to get"
-                    " the rwLock_, ret:"
-                 << ret;
     return false;
   }
 }
