@@ -25,6 +25,7 @@
 
 #include "common/dynamic_vlog.h"
 #include "mds/mds.h"
+#include "stub/common/version.h"
 #include "utils/configuration.h"
 
 using ::dingofs::common::FLAGS_vlog_level;
@@ -48,6 +49,10 @@ int main(int argc, char** argv) {
   // config initialization
   google::ParseCommandLineFlags(&argc, &argv, false);
 
+  if (dingofs::stub::common::FLAGS_show_version && argc == 1) {
+    dingofs::stub::common::ShowVerion();
+  }
+
   std::string confPath = FLAGS_confPath;
   auto conf = std::make_shared<Configuration>();
   conf->SetConfigPath(confPath);
@@ -65,6 +70,8 @@ int main(int argc, char** argv) {
 
   // initialize logging module
   google::InitGoogleLogging(argv[0]);
+
+  dingofs::stub::common::LogVerion();
 
   conf->PrintConfig();
 

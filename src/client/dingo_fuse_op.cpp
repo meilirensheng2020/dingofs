@@ -38,6 +38,7 @@
 #include "client/warmup/warmup_manager.h"
 #include "common/define.h"
 #include "common/dynamic_vlog.h"
+#include "stub/common/version.h"
 #include "stub/filesystem/xattr.h"
 #include "stub/metric/metric.h"
 #include "stub/rpcclient/base_client.h"
@@ -143,6 +144,8 @@ int InitLog(const char* conf_path, const char* argv0) {
 
   // initialize logging module
   google::InitGoogleLogging(argv0);
+
+  dingofs::stub::common::LogVerion();
 
   bool succ = InitAccessLog(FLAGS_log_dir) && InitBlockCacheLog(FLAGS_log_dir);
   if (!succ) {

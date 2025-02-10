@@ -29,6 +29,7 @@
 #include "common/threading.h"
 #include "metaserver/metaserver.h"
 #include "metaserver/superpartition/access_log.h"
+#include "stub/common/version.h"
 #include "utils/configuration.h"
 
 DEFINE_string(confPath, "dingofs/conf/metaserver.conf", "metaserver confPath");
@@ -112,6 +113,10 @@ int main(int argc, char** argv) {
   // config initialization
   google::ParseCommandLineFlags(&argc, &argv, false);
 
+  if (dingofs::stub::common::FLAGS_show_version && argc == 1) {
+    dingofs::stub::common::ShowVerion();
+  }
+
   ::dingofs::common::Process::InitSetProcTitle(argc, argv);
   butil::AtExitManager atExit;
 
@@ -128,6 +133,8 @@ int main(int argc, char** argv) {
 
   // initialize logging module
   google::InitGoogleLogging(argv[0]);
+
+  dingofs::stub::common::LogVerion();
 
   conf->PrintConfig();
 

@@ -20,6 +20,7 @@
  * Author: xuchaojie
  */
 
+#include <gflags/gflags.h>
 #include <glog/logging.h>
 
 #include <string>
@@ -27,6 +28,7 @@
 
 #include "client/dingo_fuse_op.h"
 #include "client/fuse_common.h"
+#include "stub/common/version.h"
 
 static const struct fuse_lowlevel_ops fuse_op = {
     .init = FuseOpInit,
@@ -153,6 +155,8 @@ void free_parsed_argv(char** parsed_argv, int alloc_size) {
 }
 
 int main(int argc, char* argv[]) {
+  dingofs::stub::common::ShowVerion();
+
   struct MountOption mOpts = {0};
   int parsed_argc = argc;
   char** parsed_argv = reinterpret_cast<char**>(malloc(sizeof(char*) * argc));

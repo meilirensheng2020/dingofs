@@ -50,6 +50,7 @@ target_link_libraries(mds_lib
     dingofs_utils
     aws_s3_adapter
     dingofs_concurrent
+    stub_common
     brpc::brpc
     gflags::gflags
     glog::glog
