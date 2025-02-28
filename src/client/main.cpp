@@ -26,141 +26,33 @@
 #include <string>
 #include <unordered_map>
 
-#include "client/fuse/fuse_common.h"
-#include "client/fuse/fuse_op.h"
+//#include "client/fuse/fuse_common.h"
+//#include "client/fuse/fuse_op.h"
+#include "client/fuse/fuse_lowlevel_ops_func.h"
+#include "client/fuse/fuse_passfd.h"
+#include "client/fuse/fuse_server.h"
 #include "stub/common/version.h"
 
-static const struct fuse_lowlevel_ops kFuseOp = {
-    .init = FuseOpInit,
-    .destroy = FuseOpDestroy,
-    .lookup = FuseOpLookup,
-    .forget = nullptr,
-    .getattr = FuseOpGetAttr,
-    .setattr = FuseOpSetAttr,
-    .readlink = FuseOpReadLink,
-    .mknod = FuseOpMkNod,
-    .mkdir = FuseOpMkDir,
-    .unlink = FuseOpUnlink,
-    .rmdir = FuseOpRmDir,
-    .symlink = FuseOpSymlink,
-    .rename = FuseOpRename,
-    .link = FuseOpLink,
-    .open = FuseOpOpen,
-    .read = FuseOpRead,
-    .write = FuseOpWrite,
-    .flush = FuseOpFlush,
-    .release = FuseOpRelease,
-    .fsync = FuseOpFsync,
-    .opendir = FuseOpOpenDir,
-#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-    .readdir = nullptr,
-#else
-    .readdir = FuseOpReadDir,
-#endif
-    .releasedir = FuseOpReleaseDir,
-    .fsyncdir = nullptr,
-    .statfs = FuseOpStatFs,
-    .setxattr = FuseOpSetXattr,
-    .getxattr = FuseOpGetXattr,
-    .listxattr = FuseOpListXattr,
-    .removexattr = nullptr,
-    .access = nullptr,
-    .create = FuseOpCreate,
-    .getlk = nullptr,
-    .setlk = nullptr,
-    .bmap = nullptr,
-#if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 8)
-    .ioctl = nullptr,
-    .poll = nullptr,
-#endif
-#if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 9)
-    .write_buf = nullptr,
-    .retrieve_reply = nullptr,
-    .forget_multi = nullptr,
-    .flock = nullptr,
-    .fallocate = nullptr,
-#endif
-#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-    .readdirplus = FuseOpReadDirPlus,
-#else
-    .readdirplus = nullptr,
-#endif
-#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 4)
-    .copy_file_range = nullptr,
-#endif
-#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 8)
-    .lseek = nullptr
-#endif
-};
-
-void PrintOptionHelp(const char* o, const char* msg) {
-  printf("    -o %-20s%s\n", o, msg);
-}
-
-void ExtraOptionsHelp() {
-  printf("\nExtra options:\n");
-  PrintOptionHelp("fsname", "[required] name of filesystem to be mounted");
-  PrintOptionHelp("fstype",
-                  "[required] type of filesystem to be mounted (s3/volume)");
-  PrintOptionHelp("conf", "[required] path of config file");
-  printf("    --mdsAddr              mdsAddr of dingofs cluster\n");
-}
-
-std::string MatchAnyPattern(
-    const std::unordered_map<std::string, char**>& patterns, const char* src) {
-  size_t src_len = strlen(src);
-  for (const auto& pair : patterns) {
-    const auto& pattern = pair.first;
-    if (pattern.length() < src_len &&
-        strncmp(pattern.c_str(), src, pattern.length()) == 0) {
-      return pattern;
-    }
-  }
-  return {};
-}
-
-int FuseAddOpts(struct fuse_args* args, const char* arg_value) {
-  if (fuse_opt_add_arg(args, "-o") == -1) return 1;
-  if (fuse_opt_add_arg(args, arg_value) == -1) return 1;
-  return 0;
-}
-
-void ParseOption(int argc, char** argv, int* parsed_argc_p, char** parsed_argv,
-                 struct MountOption* opts) {
-  // add support for parsing option value with comma(,)
-  std::unordered_map<std::string, char**> patterns = {
-      {"--mdsaddr=", &opts->mdsAddr}};
-  for (int i = 0, j = 0; j < argc; j++) {
-    std::string p = MatchAnyPattern(patterns, argv[j]);
-    int p_len = p.length();
-    int src_len = strlen(argv[j]);
-    if (p_len) {
-      if (*patterns[p]) {
-        free(*patterns[p]);
-      }
-      *patterns[p] =
-          reinterpret_cast<char*>(malloc(sizeof(char) * (src_len - p_len + 1)));
-      memcpy(*patterns[p], argv[j] + p_len, src_len - p_len);
-      (*patterns[p])[src_len - p_len] = '\0';
-      *parsed_argc_p = *parsed_argc_p - 1;
-    } else {
-      parsed_argv[i] =
-          reinterpret_cast<char*>(malloc(sizeof(char) * (src_len + 1)));
-      memcpy(parsed_argv[i], argv[j], src_len);
-      parsed_argv[i][src_len] = '\0';
-      i++;
-    }
-  }
-}
-
-void FreeParsedArgv(char** parsed_argv, int alloc_size) {
-  for (int i = 0; i < alloc_size; i++) {
-    free(parsed_argv[i]);
-  }
-  free(parsed_argv);
-}
-
 int main(int argc, char* argv[]) {
+  // init fuse log
+  dingofs::client::fuse::InitFuseLog("/home/yansp/logs/dingofs");
+  dingofs::client::fuse::FuseServer fuse_server(argc, argv);
+  if (fuse_server.FuseParseCmdLine() == 1) {
+    return 1;
+  }
+
+  if (fuse_server.FuseOptParse() == 1) {
+    return 1;
+  }
+
+  if (fuse_server.FuseServe() == 1) {
+    return 1;
+  }
+
+  return 0;
+
+  // dingofs::client::fuse::PrintData();
+
   struct MountOption m_opts = {nullptr};
   int parsed_argc = argc;
   char** parsed_argv = reinterpret_cast<char**>(malloc(sizeof(char*) * argc));
