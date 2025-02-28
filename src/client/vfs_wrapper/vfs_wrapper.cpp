@@ -42,30 +42,7 @@ namespace vfs {
   ClientOpMetricGuard clientOpMetricGuard( \
       &rc, {&client_op_metric_->op##REQUEST, &client_op_metric_->opAll});
 
-Status InitLog(const char* argv0, std::string conf_path) {
-  dingofs::utils::Configuration conf;
-  conf.SetConfigPath(conf_path);
-  if (!conf.LoadConfig()) {
-    LOG(ERROR) << "LoadConfig failed, confPath = " << conf_path;
-    return Status::InvalidParam("LoadConfig failed");
-  }
-
-  // set log dir
-  if (FLAGS_log_dir.empty()) {
-    if (!conf.GetStringValue("client.common.logDir", &FLAGS_log_dir)) {
-      LOG(WARNING) << "no client.common.logDir in " << conf_path
-                   << ", will log to /tmp";
-    }
-  }
-
-  dingofs::utils::GflagsLoadValueFromConfIfCmdNotSet dummy;
-  dummy.Load(&conf, "v", "client.loglevel", &FLAGS_v);
-  dingofs::common::FLAGS_vlog_level = FLAGS_v;
-
-  FLAGS_logbufsecs = 0;
-  // initialize logging module
-  google::InitGoogleLogging(argv0);
-
+Status InitLog() {
   bool succ = dingofs::client::InitAccessLog(FLAGS_log_dir) &&
               dingofs::client::blockcache::InitBlockCacheLog(FLAGS_log_dir) &&
               dingofs::client::vfs::InitMetaLog(FLAGS_log_dir);
@@ -80,7 +57,7 @@ Status VFSWrapper::Start(const char* argv0, const VFSConfig& vfs_con) {
   AccessLogGuard log(
       [&]() { return absl::StrFormat("start: %s", s.ToString()); });
 
-  s = InitLog(argv0, vfs_con.config_path);
+  s = InitLog();
   if (s.ok()) {
     client_op_metric_ = std::make_unique<stub::metric::ClientOpMetric>();
     if (vfs_con.fs_type == "vfs" || vfs_con.fs_type == "vfs_v1" ||
