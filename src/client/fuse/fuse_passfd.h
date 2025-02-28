@@ -1,0 +1,163 @@
+/*
+ * Copyright (c) 2024 dingodb.com, Inc. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef DINGOFS_SRC_CLIENT_FUSE_PASSFD_H
+#define DINGOFS_SRC_CLIENT_FUSE_PASSFD_H
+
+#include <butil/logging.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+
+#include "client/fuse/fuse_log.h"
+
+namespace dingofs {
+namespace client {
+namespace fuse {
+
+/**
+ * @brief FuseKernelData
+ *
+ * This struct is used to store fuse kernel data.
+ *
+ * @note
+ *  - fd is the file descriptor of /dev/fuse
+ *  - data is the pointer to the data buffer.
+ *  - data_size is the size of the data buffer.
+ */
+struct FuseKernelData {
+  int fd;
+  void* data;
+  int data_size;
+};
+
+/**
+ * Send a file descriptor over a Unix domain socket.
+ * Returns 0 on success, -1 on error.
+ *
+ * @param socket unix domain socket
+ * @param fd file descriptor to send
+ * @param data data to send
+ * @param data_size size of data to send
+ */
+inline int SendFd(int socket, int fd, void* data, int data_size) {
+  struct msghdr msg = {nullptr, 0, nullptr, 0, nullptr, 0, 0};
+  struct cmsghdr* cmsg = nullptr;
+  char buf[CMSG_SPACE(sizeof(int))];
+  struct iovec iov;
+
+  msg.msg_control = buf;
+  msg.msg_controllen = sizeof(buf);
+
+  cmsg = CMSG_FIRSTHDR(&msg);
+  cmsg->cmsg_level = SOL_SOCKET;
+  cmsg->cmsg_type = SCM_RIGHTS;
+  cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+
+  *((int*)CMSG_DATA(cmsg)) = fd;
+
+  msg.msg_controllen = cmsg->cmsg_len;
+
+  iov.iov_base = data;
+  iov.iov_len = data_size;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+
+  return sendmsg(socket, &msg, 0);
+}
+
+/**
+ * Get a file descriptor from a Unix domain socket.
+ * Returns fuse fd, -1 on error.
+ *
+ * @param socket unix domain socket
+ * @param fd file descriptor to send
+ * @param data buffer to store receive data
+ * @param data_size size of receive data
+ */
+inline int GetFd(int socket, void* data, int data_size) {
+  struct msghdr msg = {nullptr, 0, nullptr, 0, nullptr, 0, 0};
+  struct cmsghdr* cmsg = nullptr;
+  char buf[CMSG_SPACE(sizeof(int))];
+  struct iovec iov;
+
+  msg.msg_control = buf;
+  msg.msg_controllen = sizeof(buf);
+
+  iov.iov_base = data;
+  iov.iov_len = data_size;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+
+  if (recvmsg(socket, &msg, 0) == -1) {
+    return -1;
+  }
+  cmsg = CMSG_FIRSTHDR(&msg);
+  if (cmsg == nullptr || cmsg->cmsg_len != CMSG_LEN(sizeof(int))) {
+    return -1;
+  }
+  if (cmsg->cmsg_level != SOL_SOCKET || cmsg->cmsg_type != SCM_RIGHTS) {
+    return -1;
+  }
+  int tmpfd = *((int*)CMSG_DATA(cmsg));
+
+  return tmpfd;
+}
+
+/**
+ * Get /dev/fuse file descriptor from a Unix domain socket.
+ * Returns fuse fd, -1 on error.
+ *
+ * @param socket unix domain socket
+ * @param fd   /dev/fuse file descriptor
+ * @param data buffer to store fuse_init data
+ * @param data_size size of  fuse_init data
+ */
+inline int GetFuseFd(const char* socket_path, void* data, int data_size) {
+  struct sockaddr_un addr;
+  int client_fd = 0;
+
+  client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (client_fd == -1) {
+    return -1;
+  }
+
+  memset(&addr, 0, sizeof(addr));
+  addr.sun_family = AF_UNIX;
+  strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path) - 1);
+
+  if (connect(client_fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    close(client_fd);
+    return -1;
+  }
+
+  int fuse_fd = GetFd(client_fd, data, data_size);
+
+  if (fuse_fd == -1) {
+    close(client_fd);
+    return -1;
+  }
+
+  close(client_fd);
+
+  return fuse_fd;
+}
+
+}  // namespace fuse
+}  // namespace client
+}  // namespace dingofs
+
+#endif  // DINGOFS_SRC_CLIENT_FUSE_PASSFD_H

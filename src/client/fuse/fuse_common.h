@@ -27,8 +27,24 @@
 
 #include <fuse3/fuse.h>
 #include <fuse3/fuse_lowlevel.h>
+#include <poll.h>
+#include <sys/mount.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+#include <algorithm>
 #include <cstddef>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <unordered_map>
+
+#include "absl/strings/ascii.h"
+#include "base/string/string.h"
+#include "common/define.h"
+
+using ::dingofs::base::string::StrFormat;
+using ::dingofs::base::string::TrimSpace;
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,5 +70,157 @@ static const struct fuse_opt mount_opts[] = {
 #ifdef __cplusplus
 }  // extern "C"
 #endif
+
+inline void PrintOptionHelp(const char* o, const char* msg) {
+  printf("    -o %-20s%s\n", o, msg);
+}
+
+inline void ExtraOptionsHelp() {
+  printf("\nExtra options:\n");
+  PrintOptionHelp("fsname", "[required] name of filesystem to be mounted");
+  PrintOptionHelp("fstype",
+                  "[required] type of filesystem to be mounted (s3/volume)");
+  PrintOptionHelp("conf", "[required] path of config file");
+  printf("    --mdsAddr              mdsAddr of dingofs cluster\n");
+}
+
+inline std::string MatchAnyPattern(
+    const std::unordered_map<std::string, char**>& patterns, const char* src) {
+  size_t src_len = strlen(src);
+  for (const auto& pair : patterns) {
+    const auto& pattern = pair.first;
+    if (pattern.length() < src_len &&
+        strncmp(pattern.c_str(), src, pattern.length()) == 0) {
+      return pattern;
+    }
+  }
+  return {};
+}
+
+inline int FuseAddOpts(struct fuse_args* args, const char* arg_value) {
+  if (fuse_opt_add_arg(args, "-o") == -1) return 1;
+  if (fuse_opt_add_arg(args, arg_value) == -1) return 1;
+  return 0;
+}
+
+inline void ParseOption(int argc, char** argv, int* parsed_argc_p,
+                        char** parsed_argv, struct MountOption* opts) {
+  // add support for parsing option value with comma(,)
+  std::unordered_map<std::string, char**> patterns = {
+      {"--mdsaddr=", &opts->mdsAddr}};
+  for (int i = 0, j = 0; j < argc; j++) {
+    std::string p = MatchAnyPattern(patterns, argv[j]);
+    int p_len = p.length();
+    int src_len = strlen(argv[j]);
+    if (p_len) {
+      if (*patterns[p]) {
+        free(*patterns[p]);
+      }
+      *patterns[p] =
+          reinterpret_cast<char*>(malloc(sizeof(char) * (src_len - p_len + 1)));
+      memcpy(*patterns[p], argv[j] + p_len, src_len - p_len);
+      (*patterns[p])[src_len - p_len] = '\0';
+      *parsed_argc_p = *parsed_argc_p - 1;
+    } else {
+      parsed_argv[i] =
+          reinterpret_cast<char*>(malloc(sizeof(char) * (src_len + 1)));
+      memcpy(parsed_argv[i], argv[j], src_len);
+      parsed_argv[i][src_len] = '\0';
+      i++;
+    }
+  }
+}
+
+inline void FreeParsedArgv(char** parsed_argv, int alloc_size) {
+  for (int i = 0; i < alloc_size; i++) {
+    free(parsed_argv[i]);
+  }
+  free(parsed_argv);
+}
+
+// Get file inode number
+inline int GetFileInode(const char* file_name) {
+  struct stat file_info;
+
+  if (stat(file_name, &file_info) == 0) {
+    return file_info.st_ino;
+  }
+  return -1;
+}
+
+// read dingo-fuse runtime information from .stats file
+// At present, the purpose is to obtain the PID of old dingo-fuse, and in the
+// subsequent smooth upgrade, send signals old dingo-fuse
+inline std::unordered_map<std::string, std::string> LoadDingoRunTimeData(
+    const std::string& filename) {
+  std::unordered_map<std::string, std::string> result;
+  std::ifstream file(filename);
+
+  if (!file.is_open()) {
+    return result;
+  }
+
+  const std::string delimiter = ":";
+  std::string line;
+  while (std::getline(file, line)) {
+    size_t colon_pos = line.find(delimiter);
+    if (colon_pos == std::string::npos) {
+      continue;
+    }
+    std::string key = line.substr(0, colon_pos);
+    std::string value = line.substr(colon_pos + delimiter.length());
+    key = TrimSpace(key);
+    value = TrimSpace(value);
+    if (!key.empty()) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+inline int GetDingoFusePid(const std::string& filename) {
+  auto runtime_data = LoadDingoRunTimeData(filename);
+  auto it = runtime_data.find("pid");
+  if (it != runtime_data.end()) {
+    return std::stoi(it->second);
+  }
+  return -1;
+}
+
+// Smooth upgrade requires new dingo-fuse mount at same mountpoint as old
+inline bool CanShutdownGracefully(const char* mountpoint) {
+  if (GetFileInode(mountpoint) != dingofs::ROOTINODEID) {
+    return false;
+  }
+  std::string file_name = StrFormat("%s/%s", mountpoint, dingofs::STATSNAME);
+  return GetDingoFusePid(file_name) != -1;
+}
+
+inline void DingoSessionUnmount(const char* mountpoint, int fd) {
+  int res;
+
+  if (fd != -1) {
+    struct pollfd pfd;
+
+    pfd.fd = fd;
+    pfd.events = 0;
+    res = poll(&pfd, 1, 0);
+
+    /* Need to close file descriptor, otherwise synchronous umount
+       would recurse into filesystem, and deadlock.
+
+       Caller expects fuse_kern_unmount to close the fd, so close it
+       anyway. */
+    close(fd);
+
+    /* If file poll returns POLLERR on the device file descriptor,
+       then the filesystem is already unmounted or the connection
+       was severed via /sys/fs/fuse/connections/NNN/abort */
+    if (res == 1 && (pfd.revents & POLLERR)) return;
+  }
+
+  res = umount2(mountpoint, 2);
+  if (res == 0) return;
+}
 
 #endif  // DINGOFS_SRC_CLIENT_FUSE_COMMON_H_
