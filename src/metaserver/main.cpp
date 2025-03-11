@@ -24,6 +24,7 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
+#include "aws/s3_access_log.h"
 #include "common/dynamic_vlog.h"
 #include "common/process.h"
 #include "common/threading.h"
@@ -141,6 +142,9 @@ int main(int argc, char** argv) {
   // init access logging
   LOG_IF(FATAL, !InitAccessLog(FLAGS_log_dir))
       << "Init access log failed, log dir = " << FLAGS_log_dir;
+
+  // init s3 access log
+  dingofs::aws::InitS3AccessLog(FLAGS_log_dir);
 
   dingofs::metaserver::Metaserver metaserver;
 

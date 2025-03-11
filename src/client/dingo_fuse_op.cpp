@@ -22,11 +22,14 @@
 
 #include "client/dingo_fuse_op.h"
 
+#include <glog/logging.h>
+
 #include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "aws/s3_access_log.h"
 #include "client/blockcache/log.h"
 #include "client/common/common.h"
 #include "client/common/config.h"
@@ -168,7 +171,9 @@ int InitLog(const char* conf_path, const char* argv0) {
 
   dingofs::stub::common::LogVerion();
 
-  bool succ = InitAccessLog(FLAGS_log_dir) && InitBlockCacheLog(FLAGS_log_dir);
+  bool succ = InitAccessLog(FLAGS_log_dir) &&
+              InitBlockCacheLog(FLAGS_log_dir) &&
+              dingofs::aws::InitS3AccessLog(FLAGS_log_dir);
   if (!succ) {
     return -1;
   }

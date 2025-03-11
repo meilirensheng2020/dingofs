@@ -23,6 +23,7 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
+#include "aws/s3_access_log.h"
 #include "common/dynamic_vlog.h"
 #include "mds/mds.h"
 #include "stub/common/version.h"
@@ -72,6 +73,8 @@ int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
 
   dingofs::stub::common::LogVerion();
+
+  dingofs::aws::InitS3AccessLog(FLAGS_log_dir);
 
   conf->PrintConfig();
 
