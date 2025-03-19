@@ -111,6 +111,8 @@ void LoadConfigFromCmdline(Configuration* conf) {
 
 }  // namespace
 
+static void InstallSigHandler() { CHECK(SIG_ERR != signal(SIGPIPE, SIG_IGN)); }
+
 int main(int argc, char** argv) {
   // config initialization
   google::ParseCommandLineFlags(&argc, &argv, false);
@@ -132,6 +134,8 @@ int main(int argc, char** argv) {
   conf->GetValueFatalIfFail("metaserver.loglevel", &FLAGS_v);
   LoadConfigFromCmdline(conf.get());
   FLAGS_vlog_level = FLAGS_v;
+
+  InstallSigHandler();
 
   // initialize logging module
   google::InitGoogleLogging(argv[0]);

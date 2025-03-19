@@ -22,6 +22,7 @@
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <csignal>
 
 #include "aws/s3_access_log.h"
 #include "common/dynamic_vlog.h"
@@ -46,6 +47,8 @@ void LoadConfigFromCmdline(Configuration* conf) {
   }
 }
 
+static void InstallSigHandler() { CHECK(SIG_ERR != signal(SIGPIPE, SIG_IGN)); }
+
 int main(int argc, char** argv) {
   // config initialization
   google::ParseCommandLineFlags(&argc, &argv, false);
@@ -68,6 +71,8 @@ int main(int argc, char** argv) {
                    << ", will log to /tmp";
     }
   }
+
+  InstallSigHandler();
 
   // initialize logging module
   google::InitGoogleLogging(argv[0]);
