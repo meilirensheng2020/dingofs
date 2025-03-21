@@ -507,7 +507,7 @@ void S3Adapter::GetObjectAsync(std::shared_ptr<GetObjectAsyncContext> context) {
           const std::shared_ptr<const Aws::Client::AsyncCallerContext>&
               aws_ctx) {
         S3AccessLogGuard log(start_us, [&]() {
-          return absl::StrFormat("async_put_object %s (%d,%d)", context->key,
+          return absl::StrFormat("async_get_object %s (%d,%d)", context->key,
                                  context->offset, context->len);
         });
 
