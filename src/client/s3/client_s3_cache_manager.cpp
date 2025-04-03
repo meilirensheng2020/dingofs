@@ -741,7 +741,7 @@ void FileCacheManager::PrefetchS3Objs(
     uint64_t read_len = obj.second;
     VLOG(3) << "try to prefetch s3 obj inodeId=" << key.ino
             << " block: " << name << ", read len: " << read_len;
-    s3ClientAdaptor_->GetBlockCache()->PreFetch(key, read_len);
+    s3ClientAdaptor_->GetBlockCache()->SubmitPreFetch(key, read_len);
   }
 }
 

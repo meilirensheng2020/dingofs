@@ -158,7 +158,7 @@ BCACHE_ERROR BlockCacheImpl::Range(const BlockKey& key, off_t offset,
   return rc;
 }
 
-BCACHE_ERROR BlockCacheImpl::PreFetch(const BlockKey& key, size_t length) {
+void BlockCacheImpl::SubmitPreFetch(const BlockKey& key, size_t length) {
   prefetcher_->Submit(key, length);
 }
 

@@ -24,18 +24,14 @@
 
 #include <chrono>
 #include <memory>
-#include <mutex>
 #include <string>
-#include <utility>
 
 #include "absl/cleanup/cleanup.h"
-#include "client/blockcache/block_cache_uploader_cmmon.h"
 #include "client/blockcache/cache_store.h"
 #include "client/blockcache/error.h"
 #include "client/blockcache/local_filesystem.h"
 #include "client/blockcache/log.h"
 #include "client/blockcache/phase_timer.h"
-#include "client/blockcache/segments.h"
 #include "client/common/dynamic_config.h"
 
 namespace dingofs {
@@ -60,6 +56,7 @@ void BlockCacheUploader::Init(uint32_t upload_workers,
     // pending and uploading queue
     pending_queue_ = std::make_shared<PendingQueue>();
     uploading_queue_ = std::make_shared<UploadingQueue>(upload_queue_size);
+    uploading_queue_->Start();
 
     // scan stage block worker
     CHECK(scan_stage_thread_pool_->Start(1) == 0);
@@ -76,6 +73,7 @@ void BlockCacheUploader::Init(uint32_t upload_workers,
 
 void BlockCacheUploader::Shutdown() {
   if (running_.exchange(false)) {
+    uploading_queue_->Stop();
     scan_stage_thread_pool_->Stop();
     upload_stage_thread_pool_->Stop();
   }
@@ -84,9 +82,7 @@ void BlockCacheUploader::Shutdown() {
 void BlockCacheUploader::AddStageBlock(const BlockKey& key,
                                        const std::string& stage_path,
                                        BlockContext ctx) {
-  static std::atomic<uint64_t> g_seq_num(0);
-  auto seq_num = g_seq_num.fetch_add(1, std::memory_order_relaxed);
-  StageBlock stage_block(seq_num, key, stage_path, ctx);
+  StageBlock stage_block(key, stage_path, ctx);
   Staging(stage_block);
   pending_queue_->Push(stage_block);
 }
@@ -119,7 +115,9 @@ void BlockCacheUploader::ScaningWorker() {
 void BlockCacheUploader::UploadingWorker() {
   while (running_.load(std::memory_order_relaxed)) {
     auto stage_block = uploading_queue_->Pop();
-    UploadStageBlock(stage_block);
+   if (stage_block.Valid()) {
+      UploadStageBlock(stage_block);
+    }
   }
 }
 
