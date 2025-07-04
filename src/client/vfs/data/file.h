@@ -27,6 +27,7 @@
 #include "client/vfs/data/task/file_flush_task.h"
 #include "common/callback.h"
 #include "common/status.h"
+#include "json/value.h"
 
 namespace dingofs {
 namespace client {
@@ -49,6 +50,11 @@ class File : public IFile {
   Status Flush() override;
 
   void AsyncFlush(StatusCallback cb) override;
+
+  // TODO: implement dump and load
+  bool Dump(Json::Value& value) override { return true; };
+
+  bool Load(const Json::Value& value) override { return true; };
 
  private:
   VFSHub* vfs_hub_;

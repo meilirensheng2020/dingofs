@@ -70,9 +70,9 @@ class HandleManager {
   //  only called when process exit
   void FlushAll();
 
-  // Todo: implement dump and load
-  bool Dump(Json::Value& value) { return true; }
-  bool Load(const Json::Value& value) { return true; }
+  bool Dump(Json::Value& value);
+
+  bool Load(const Json::Value& value);
 
  private:
   std::mutex mutex_;

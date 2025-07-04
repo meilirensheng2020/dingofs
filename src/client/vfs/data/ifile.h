@@ -21,6 +21,7 @@
 
 #include "common/callback.h"
 #include "common/status.h"
+#include "json/value.h"
 
 namespace dingofs {
 namespace client {
@@ -39,6 +40,10 @@ class IFile {
   virtual Status Flush() = 0;
 
   virtual void AsyncFlush(StatusCallback cb) = 0;
+
+  virtual bool Dump(Json::Value& value) = 0;
+
+  virtual bool Load(const Json::Value& value) = 0;
 };
 
 }  // namespace vfs

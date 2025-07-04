@@ -18,6 +18,7 @@
 
 #include <memory>
 
+#include "client/vfs/data/file.h"
 #include "glog/logging.h"
 
 namespace dingofs {
@@ -54,6 +55,66 @@ void HandleManager::FlushAll() {
                  << ", error: " << s.ToString();
     }
   }
+}
+
+bool HandleManager::Dump(Json::Value& value) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  Json::Value handle_array;
+
+  for (const auto& handle : handles_) {
+    auto fileHandle = handle.second;
+
+    Json::Value item;
+    item["ino"] = fileHandle->ino;
+    item["fh"] = fileHandle->fh;
+    item["flags"] = fileHandle->flags;
+    // dump file
+    Json::Value file_item;
+    fileHandle->file->Dump(file_item);
+    item["file"] = file_item;
+
+    handle_array.append(item);
+  }
+
+  value["handlers"] = handle_array;
+  LOG(INFO) << "successfuly dump " << handles_.size() << " handlers";
+
+  return true;
+}
+
+bool HandleManager::Load(const Json::Value& value) {
+  const Json::Value& handlers = value["handlers"];
+  if (!handlers.isArray() && !handlers.isNull()) {
+    LOG(ERROR) << "handlers is not an array.";
+    return false;
+  }
+  if (handlers.empty()) {
+    LOG(INFO) << "no handlers to load";
+    return true;
+  }
+
+  uint64_t max_fh = 0;
+  for (const auto& handler : handlers) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto file_handler = std::make_shared<Handle>();
+
+    file_handler->ino = handler["ino"].asUInt64();
+    file_handler->fh = handler["fh"].asUInt64();
+    file_handler->flags = handler["flags"].asInt();
+    // file_handler->file =
+    //     std::make_unique<File>(vfs_hub_.get(), file_handler->ino);
+    // file_handler->file->Load(handler["file"]);
+    // vfs_hub_->GetPeriodicFlushManger()->SubmitToFlush(file_handler->fh);
+    handles_.emplace(file_handler->fh, file_handler);
+
+    max_fh = std::max(max_fh, file_handler->fh);
+  }
+  vfs::next_fh.store(max_fh + 1);  // update next_fh
+
+  LOG(INFO) << "successfuly load " << handles_.size()
+            << " handlers, next fh is:" << vfs::next_fh.load();
+
+  return true;
 }
 
 }  // namespace vfs
