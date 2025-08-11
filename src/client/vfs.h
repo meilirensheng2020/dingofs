@@ -33,7 +33,6 @@ namespace dingofs {
 namespace client {
 namespace vfs {
 
-
 struct VFSConfig {
   std::string mount_point;
   std::string fs_name;
@@ -136,6 +135,9 @@ class VFS {
                        const std::string& name) = 0;
 
   virtual Status StatFs(ContextSPtr ctx, Ino ino, FsStat* fs_stat) = 0;
+  virtual Status Ioctl(Ino ino, unsigned int cmd, void* arg, unsigned flags,
+                       const void* in_buf, size_t in_bufsz,
+                       size_t out_bufsz) = 0;
 
   virtual uint64_t GetFsId() = 0;
 

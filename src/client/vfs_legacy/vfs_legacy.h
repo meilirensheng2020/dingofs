@@ -129,6 +129,9 @@ class VFSOld : public VFS {
 
   Status StatFs(ContextSPtr ctx, Ino ino, FsStat* fs_stat) override;
 
+  Status Ioctl(Ino ino, unsigned int cmd, void* arg, unsigned flags,
+               const void* in_buf, size_t in_bufsz, size_t out_bufsz) override;
+
   uint64_t GetFsId() override { return fs_info_->fsid(); }
 
   uint64_t GetMaxNameLength() override;

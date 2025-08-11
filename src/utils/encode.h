@@ -48,11 +48,83 @@ inline uint64_t DecodeBigEndian(const char* buf) {
          (uint64_t(buf[6]) << 8) | uint64_t(buf[7]);
 }
 
+inline void EncodeLittleEndian(char* buf, uint64_t value) {
+  buf[0] = value & 0xff;
+  buf[1] = (value >> 8) & 0xff;
+  buf[2] = (value >> 16) & 0xff;
+  buf[3] = (value >> 24) & 0xff;
+  buf[4] = (value >> 32) & 0xff;
+  buf[5] = (value >> 40) & 0xff;
+  buf[6] = (value >> 48) & 0xff;
+  buf[7] = (value >> 56) & 0xff;
+}
+
+inline uint64_t DecodeLittleEndian(const char* buf) {
+  return uint64_t(buf[0]) | (uint64_t(buf[1]) << 8) | (uint64_t(buf[2]) << 16) |
+         (uint64_t(buf[3]) << 24) | (uint64_t(buf[4]) << 32) |
+         (uint64_t(buf[5]) << 40) | (uint64_t(buf[6]) << 48) |
+         (uint64_t(buf[7]) << 56);
+}
+
 inline void EncodeBigEndian_uint32(char* buf, uint32_t value) {
   buf[0] = (value >> 24) & 0xff;
   buf[1] = (value >> 16) & 0xff;
   buf[2] = (value >> 8) & 0xff;
   buf[3] = value & 0xff;
+}
+
+inline uint32_t DecodeBigEndian_uint32(const char* buf) {
+  return (uint32_t(buf[0]) << 24) | (uint32_t(buf[1]) << 16) |
+         (uint32_t(buf[2]) << 8) | uint32_t(buf[3]);
+}
+
+inline void EncodeLittleEndian_uint32(char* buf, uint32_t value) {
+  buf[0] = value & 0xff;
+  buf[1] = (value >> 8) & 0xff;
+  buf[2] = (value >> 16) & 0xff;
+  buf[3] = (value >> 24) & 0xff;
+}
+
+inline uint32_t DecodeLittleEndian_uint32(const char* buf) {
+  return uint32_t(buf[0]) | (uint32_t(buf[1]) << 8) | (uint32_t(buf[2]) << 16) |
+         (uint32_t(buf[3]) << 24);
+}
+
+inline bool IsLittleEndian() {
+  static const uint16_t num = 0x0102;
+  return reinterpret_cast<const uint8_t*>(&num)[0] == 0x02;
+}
+
+inline void EncodeNativeEndian(char* buf, uint64_t value) {
+  if (IsLittleEndian()) {
+    EncodeLittleEndian(buf, value);
+  } else {
+    EncodeBigEndian(buf, value);
+  }
+}
+
+inline uint64_t DecodeNativeEndian(const char* buf) {
+  if (IsLittleEndian()) {
+    return DecodeLittleEndian(buf);
+  } else {
+    return DecodeBigEndian(buf);
+  }
+}
+
+inline void EncodeNativeEndian_uint32(char* buf, uint32_t value) {
+  if (IsLittleEndian()) {
+    EncodeLittleEndian_uint32(buf, value);
+  } else {
+    EncodeBigEndian_uint32(buf, value);
+  }
+}
+
+inline uint32_t DecodeNativeEndian_uint32(const char* buf) {
+  if (IsLittleEndian()) {
+    return DecodeLittleEndian_uint32(buf);
+  } else {
+    return DecodeBigEndian_uint32(buf);
+  }
 }
 
 }  // namespace utils

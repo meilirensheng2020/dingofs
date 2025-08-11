@@ -23,7 +23,7 @@
 #ifndef DINGOFS_SRC_CLIENT_FUSE_COMMON_H_
 #define DINGOFS_SRC_CLIENT_FUSE_COMMON_H_
 
-#define FUSE_USE_VERSION 34
+#define FUSE_USE_VERSION 35
 
 #include <absl/strings/str_format.h>
 #include <fuse3/fuse.h>

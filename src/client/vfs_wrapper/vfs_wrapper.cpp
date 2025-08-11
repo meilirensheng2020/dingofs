@@ -16,10 +16,12 @@
 
 #include "client/vfs_wrapper/vfs_wrapper.h"
 
+#include <fcntl.h>
 #include <fmt/format.h>
 #include <glog/logging.h>
 #include <json/reader.h>
 #include <json/writer.h>
+#include <sys/stat.h>
 
 #include <cstdint>
 #include <fstream>
@@ -47,16 +49,32 @@
 #include "options/client/vfs_legacy/vfs_legacy_option.h"
 #include "stub/rpcclient/mds_access_log.h"
 #include "stub/rpcclient/meta_access_log.h"
+#include "utils/concurrent/name_lock.h"
 #include "utils/configuration.h"
+#include "utils/encode.h"
 
 namespace dingofs {
 namespace client {
 namespace vfs {
 
 #define METHOD_NAME() ("VFSWrapper::" + std::string(__FUNCTION__))
+#define FS_IMMUTABLE_FL 0x00000010 /* Immutable file */
+#define FS_APPEND_FL 0x00000020    /* writes to file may only append */
+#define FS_XFLAG_IMMUTABLE 0x00000008
+#define FS_XFLAG_APPEND 0x00000010
+
+const uint8_t kFlagImmutable = 0x01;
+const uint8_t kFlagAppend = 0x02;
+
+const uint64_t FS_IOC_GETFLAGS = 0x80086601;
+const uint64_t FS_IOC_SETFLAGS = 0x40086602;
+const uint64_t FS_IOC32_GETFLAGS = 0x80046601;
+const uint64_t FS_IOC32_SETFLAGS = 0x40046602;
+const uint64_t FS_IOC_FSGETXATTR = 0x801C581F;
 
 const std::string kFdStatePath = "/tmp/dingo-fuse-state.json";
 
+using namespace ::dingofs::utils;
 using ::dingofs::client::fuse::FuseUpgradeManager;
 using metrics::ClientOpMetricGuard;
 using metrics::VFSRWMetricGuard;
@@ -865,6 +883,119 @@ Status VFSWrapper::RmDir(Ino parent, const std::string& name) {
   if (!s.ok()) {
     op_metric.FailOp();
   }
+  return s;
+}
+
+Status VFSWrapper::Ioctl(Ino ino, uint32_t uid, unsigned int cmd,
+                         unsigned flags, const void* in_buf, size_t in_bufsz,
+                         char* out_buf, size_t out_bufsz) {
+  VLOG(1) << "VFSIoctl ino: " << ino << " cmd: " << cmd << " flags: " << flags
+          << " in_bufsz: " << in_bufsz << " out_bufsz: " << out_bufsz;
+  Status s;
+  AccessLogGuard log([&]() {
+    return absl::StrFormat("ioctl (%d,%u,%u,%zu,%zu): %s", ino, cmd, flags,
+                           in_bufsz, out_bufsz, s.ToString());
+  });
+
+  switch (cmd) {
+    case FS_IOC_SETFLAGS:
+    case FS_IOC32_SETFLAGS:
+    case FS_IOC_GETFLAGS:
+    case FS_IOC32_GETFLAGS:
+    case FS_IOC_FSGETXATTR:
+      break;
+
+    default:
+      s = Status::NotSupport(fmt::format("ioctl cmd({}) not supported", cmd));
+      return s;
+  }
+
+  Attr attr;
+  s = GetAttr(ino, &attr);
+  if (!s.ok()) {
+    return s;
+  }
+
+  auto op_code = cmd >> 30;
+  if (op_code == 1) {  // set
+    uint64_t iflag = 0;
+    if (in_bufsz == 8) {
+      iflag = utils::DecodeNativeEndian(static_cast<const char*>(in_buf));
+    } else if (in_bufsz == 4) {
+      iflag =
+          utils::DecodeNativeEndian_uint32(static_cast<const char*>(in_buf));
+    } else {
+      s = Status::InvalidParam(
+          fmt::format("out_bufsz({}) not supported", out_bufsz));
+      return s;
+    }
+
+    if (uid != 0 && (iflag & (FS_IMMUTABLE_FL | FS_APPEND_FL)) != 0) {
+      s = Status::NoPermission("set flags not allowed for non-root user");
+      return s;
+    }
+    if ((iflag & FS_IMMUTABLE_FL) != 0) {
+      std::cout << "FS_IOC_SETFLAGS: immutable flag is set" << std::endl;
+      attr.flags |= kFlagImmutable;
+    }
+    if ((iflag & FS_APPEND_FL) != 0) {
+      std::cout << "FS_IOC_SETFLAGS: append flag is set" << std::endl;
+      attr.flags |= kFlagAppend;
+    }
+
+    // iflag &= ~(FS_IMMUTABLE_FL | FS_APPEND_FL);
+    // if (iflag != 0) {
+    //   s = Status::NotSupport(
+    //       fmt::format("ioctl iflag({}) not supported", iflag));
+    //   return s;
+    // }
+
+    Attr out_attr;
+    s = SetAttr(ino, kSetAttrFlags, attr, &out_attr);
+    // s = Status::OK();  // Assume SetAttr is successful for this example
+    return s;
+  } else {
+    uint64_t iflag = 0;
+    if (((cmd >> 8) & 0xFF) == 'f') {  // FS_IOC_GETFLAGS
+      if ((attr.flags & kFlagImmutable) != 0) {
+        std::cout << "FS_IOC_GETFLAGS: immutable flag is set" << std::endl;
+        iflag |= FS_IMMUTABLE_FL;
+      }
+      if ((attr.flags & kFlagAppend) != 0) {
+        std::cout << "FS_IOC_GETFLAGS: append flag is set" << std::endl;
+        iflag |= FS_APPEND_FL;
+      }
+      if (out_bufsz == 8) {
+        // std::memcpy(out_buf, &iflag, out_bufsz);
+        utils::EncodeNativeEndian(out_buf, out_bufsz);
+      } else if (out_bufsz == 4) {
+        // std::memcpy(out_buf, &iflag, out_bufsz);
+        utils::EncodeNativeEndian_uint32(out_buf, out_bufsz);
+      } else {
+        s = Status::InvalidParam(
+            fmt::format("out_bufsz({}) not supported", out_bufsz));
+        return s;
+      }
+    } else {  // 'X', FS_IOC_FSGETXATTR
+      if ((attr.flags & kFlagImmutable) != 0) {
+        iflag |= FS_XFLAG_IMMUTABLE;
+      }
+      if ((attr.flags & kFlagAppend) != 0) {
+        iflag |= FS_XFLAG_APPEND;
+      }
+      if (out_bufsz == 28) {
+        utils::EncodeNativeEndian_uint32(out_buf, static_cast<uint32_t>(iflag));
+        std::memset(out_buf + 4, 0, 24);  // fill the rest with zeros
+      } else {
+        s = Status::InvalidParam(
+            fmt::format("out_bufsz({}) not supported", out_bufsz));
+        return s;
+      }
+    }
+  }
+
+  VLOG(1) << "VFSIoctl end, status: " << s.ToString();
+
   return s;
 }
 

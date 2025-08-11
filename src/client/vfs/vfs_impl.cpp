@@ -38,6 +38,7 @@
 #include "options/client/common_option.h"
 #include "trace/context.h"
 #include "utils/configuration.h"
+#include "utils/dingo_compiler_specific.h"
 #include "utils/net_common.h"
 
 #define VFS_CHECK_HANDLE(handle, ino, fh) \
@@ -473,6 +474,15 @@ Status VFSImpl::RmDir(ContextSPtr ctx, Ino parent, const std::string& name) {
 
 Status VFSImpl::StatFs(ContextSPtr ctx, Ino ino, FsStat* fs_stat) {
   return meta_system_->StatFs(ctx, ino, fs_stat);
+}
+
+Status VFSImpl::Ioctl(Ino ino, unsigned int cmd, void* arg, unsigned flags,
+                      const void* in_buf, size_t in_bufsz, size_t out_bufsz) {
+  // For internal inode, ioctl is not supported
+
+  if (DINGO_UNLIKELY(ino == STATSINODEID)) {
+    return Status::NotSupport("Ioctl is not supported for internal inode");
+  }
 }
 
 uint64_t VFSImpl::GetFsId() { return 10; }

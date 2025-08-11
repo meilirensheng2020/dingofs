@@ -2021,6 +2021,11 @@ Status VFSOld::StatFs(ContextSPtr ctx, Ino ino, FsStat* fs_stat) {
   return Status::OK();
 }
 
+Status VFSOld::Ioctl(Ino ino, unsigned int cmd, void* arg, unsigned flags,
+                     const void* in_buf, size_t in_bufsz, size_t out_bufsz) {
+  return Status::NotSupport("Ioctl is not supported in VFSOld");
+}
+
 uint64_t VFSOld::GetMaxNameLength() {
   return option_.fileSystemOption.maxNameLength;
 }
