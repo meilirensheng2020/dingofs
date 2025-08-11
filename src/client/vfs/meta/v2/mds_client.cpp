@@ -693,6 +693,11 @@ Status MDSClient::SetAttr(ContextSPtr ctx, Ino ino, const Attr& attr,
     temp_to_set |= mdsv2::kSetAttrLength;
   }
 
+  if (to_set & kSetAttrFlags) {
+    request.set_flags(attr.flags);
+    temp_to_set |= mdsv2::kSetAttrFlags;
+  }
+
   request.set_to_set(temp_to_set);
 
   auto status =

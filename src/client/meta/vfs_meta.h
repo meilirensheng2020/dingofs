@@ -42,6 +42,7 @@ constexpr int kSetAttrMtime = (1 << 5);
 constexpr int kSetAttrAtimeNow = (1 << 7);
 constexpr int kSetAttrMtimeNow = (1 << 8);
 constexpr int kSetAttrCtime = (1 << 10);
+constexpr int kSetAttrFlags = (1 << 11);
 
 enum FileType : uint8_t {
   kDirectory = 1,
@@ -76,6 +77,7 @@ struct Attr {
   FileType type;
   // TODO: refact, maybe use separate key for hardlink
   std::vector<Ino> parents;
+  uint32_t flags{0};
 };
 
 static void DumpAttr(const Attr& attr, Json::Value& value) {
@@ -95,6 +97,7 @@ static void DumpAttr(const Attr& attr, Json::Value& value) {
     parents.append(parent);
   }
   value["parents"] = parents;
+  value["flags"] = attr.flags;
 }
 
 static void LoadAttr(const Json::Value& value, Attr& attr) {
@@ -114,6 +117,7 @@ static void LoadAttr(const Json::Value& value, Attr& attr) {
   for (const auto& parent : parents) {
     attr.parents.push_back(parent.asUInt64());
   }
+  attr.flags = value["flags"].asUInt();
 }
 
 std::string Attr2Str(const Attr& attr, bool with_parent = false);

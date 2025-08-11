@@ -26,9 +26,10 @@ std::string Attr2Str(const Attr& attr, bool with_parent) {
   if (!with_parent) {
     return fmt::format(
         "(ino: {}, mode: {}, nlink: {}, uid: {}, gid: {}, length: {}, "
-        "rdev: {}, atime: {}, mtime: {}, ctime: {}, type: {})",
+        "rdev: {}, atime: {}, mtime: {}, ctime: {}, type: {}, flags: {})",
         attr.ino, attr.mode, attr.nlink, attr.uid, attr.gid, attr.length,
-        attr.rdev, attr.atime, attr.mtime, attr.ctime, FileType2Str(attr.type));
+        attr.rdev, attr.atime, attr.mtime, attr.ctime, FileType2Str(attr.type),
+        attr.flags);
   } else {
     std::string parents_str;
     for (size_t i = 0; i < attr.parents.size(); ++i) {
@@ -40,10 +41,11 @@ std::string Attr2Str(const Attr& attr, bool with_parent) {
 
     return fmt::format(
         "(ino: {}, mode: {}, nlink: {}, uid: {}, gid: {}, length: {}, "
-        "rdev: {}, atime: {}, mtime: {}, ctime: {}, type: {}, parents: [{}])",
+        "rdev: {}, atime: {}, mtime: {}, ctime: {}, type: {}, parents: [{}], "
+        "flags: {})",
         attr.ino, attr.mode, attr.nlink, attr.uid, attr.gid, attr.length,
         attr.rdev, attr.atime, attr.mtime, attr.ctime, FileType2Str(attr.type),
-        parents_str);
+        parents_str, attr.flags);
   }
 }
 

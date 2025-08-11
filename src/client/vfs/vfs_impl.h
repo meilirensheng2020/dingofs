@@ -25,10 +25,10 @@
 #include "client/vfs/handle/handle_manager.h"
 #include "client/vfs/hub/vfs_hub.h"
 #include "client/vfs/meta/meta_system.h"
+#include "client/vfs/service/fuse_stat_service.h"
 #include "client/vfs/service/inode_blocks_service.h"
 #include "options/client/option.h"
 #include "trace/context.h"
-#include "client/vfs/service/fuse_stat_service.h"
 
 namespace dingofs {
 namespace client {
@@ -36,7 +36,7 @@ namespace vfs {
 
 class VFSImpl : public VFS {
  public:
-  VFSImpl(const VFSOption& vfs_option) : vfs_option_(vfs_option){};
+  VFSImpl(const VFSOption& vfs_option) : vfs_option_(vfs_option) {};
 
   ~VFSImpl() override = default;
 
@@ -121,6 +121,10 @@ class VFSImpl : public VFS {
   Status RmDir(ContextSPtr ctx, Ino parent, const std::string& name) override;
 
   Status StatFs(ContextSPtr ctx, Ino ino, FsStat* fs_stat) override;
+
+  Status Ioctl(ContextSPtr ctx, Ino ino, uint32_t uid, unsigned int cmd,
+               unsigned flags, const void* in_buf, size_t in_bufsz,
+               char* out_buf, size_t out_bufsz) override;
 
   uint64_t GetFsId() override;
 
