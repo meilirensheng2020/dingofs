@@ -37,6 +37,7 @@
 #include "client/vfs/vfs_impl.h"
 #include "client/vfs_legacy/vfs_legacy.h"
 #include "client/vfs_wrapper/access_log.h"
+#include "common/define.h"
 #include "common/rpc_stream.h"
 #include "common/status.h"
 #include "metrics/blockaccess/block_accesser.h"
@@ -260,10 +261,12 @@ Status VFSWrapper::Lookup(Ino parent, const std::string& name, Attr* attr) {
   auto span = vfs_->GetTracer()->StartSpan(kVFSWrapperMoudule, METHOD_NAME());
   VLOG(1) << "VFSLookup parent: " << parent << " name: " << name;
   Status s;
-  AccessLogGuard log([&]() {
-    return absl::StrFormat("lookup (%d/%s): %s %s", parent, name, s.ToString(),
-                           StrAttr(attr));
-  });
+  AccessLogGuard log(
+      [&]() {
+        return absl::StrFormat("lookup (%d/%s): %s %s", parent, name,
+                               s.ToString(), StrAttr(attr));
+      },
+      !IsInternalName(name));
 
   ClientOpMetricGuard op_metric(
       {&client_op_metric_->opLookup, &client_op_metric_->opAll});
@@ -287,10 +290,12 @@ Status VFSWrapper::GetAttr(Ino ino, Attr* attr) {
   auto ctx = span->GetContext();
   VLOG(1) << "VFSGetAttr ino: " << ino;
   Status s;
-  AccessLogGuard log([&]() {
-    return absl::StrFormat("getattr (%d): %s %d %s", ino, s.ToString(),
-                           ctx->hit_cache, StrAttr(attr));
-  });
+  AccessLogGuard log(
+      [&]() {
+        return absl::StrFormat("getattr (%d): %s %d %s", ino, s.ToString(),
+                               ctx->hit_cache, StrAttr(attr));
+      },
+      !IsInternalNode(ino));
 
   ClientOpMetricGuard op_metric(
       {&client_op_metric_->opGetAttr, &client_op_metric_->opAll});
@@ -488,9 +493,11 @@ Status VFSWrapper::Open(Ino ino, int flags, uint64_t* fh) {
   auto span = vfs_->GetTracer()->StartSpan(kVFSWrapperMoudule, METHOD_NAME());
   VLOG(1) << "VFSOpen ino: " << ino << " octal flags: " << std::oct << flags;
   Status s;
-  AccessLogGuard log([&]() {
-    return absl::StrFormat("open (%d): %s [fh:%d]", ino, s.ToString(), *fh);
-  });
+  AccessLogGuard log(
+      [&]() {
+        return absl::StrFormat("open (%d): %s [fh:%d]", ino, s.ToString(), *fh);
+      },
+      !IsInternalNode(ino));
 
   ClientOpMetricGuard op_metric(
       {&client_op_metric_->opOpen, &client_op_metric_->opAll});
@@ -545,10 +552,12 @@ Status VFSWrapper::Read(Ino ino, char* buf, uint64_t size, uint64_t offset,
       ino, Char2Addr(buf), size, offset, fh);
 
   Status s;
-  AccessLogGuard log([&]() {
-    return absl::StrFormat("read (%d,%d,%d): %s (%d) [fh:%d]", ino, size,
-                           offset, s.ToString(), *out_rsize, fh);
-  });
+  AccessLogGuard log(
+      [&]() {
+        return absl::StrFormat("read (%d,%d,%d): %s (%d) [fh:%d]", ino, size,
+                               offset, s.ToString(), *out_rsize, fh);
+      },
+      !IsInternalNode(ino));
 
   ClientOpMetricGuard op_metric(
       {&client_op_metric_->opRead, &client_op_metric_->opAll});
@@ -598,9 +607,11 @@ Status VFSWrapper::Flush(Ino ino, uint64_t fh) {
   auto span = vfs_->GetTracer()->StartSpan(kVFSWrapperMoudule, METHOD_NAME());
   VLOG(1) << "VFSFlush ino: " << ino << " fh: " << fh;
   Status s;
-  AccessLogGuard log([&]() {
-    return absl::StrFormat("flush (%d): %s [fh:%d]", ino, s.ToString(), fh);
-  });
+  AccessLogGuard log(
+      [&]() {
+        return absl::StrFormat("flush (%d): %s [fh:%d]", ino, s.ToString(), fh);
+      },
+      !IsInternalNode(ino));
 
   ClientOpMetricGuard op_metric(
       {&client_op_metric_->opFlush, &client_op_metric_->opAll});
@@ -617,9 +628,12 @@ Status VFSWrapper::Release(Ino ino, uint64_t fh) {
   auto span = vfs_->GetTracer()->StartSpan(kVFSWrapperMoudule, METHOD_NAME());
   VLOG(1) << "VFSRelease ino: " << ino << " fh: " << fh;
   Status s;
-  AccessLogGuard log([&]() {
-    return absl::StrFormat("release (%d): %s [fh:%d]", ino, s.ToString(), fh);
-  });
+  AccessLogGuard log(
+      [&]() {
+        return absl::StrFormat("release (%d): %s [fh:%d]", ino, s.ToString(),
+                               fh);
+      },
+      !IsInternalNode(ino));
 
   ClientOpMetricGuard op_metric(
       {&client_op_metric_->opRelease, &client_op_metric_->opAll});
@@ -680,10 +694,12 @@ Status VFSWrapper::GetXattr(Ino ino, const std::string& name,
   auto ctx = span->GetContext();
   VLOG(1) << "VFSGetXattr ino: " << ino << " name: " << name;
   Status s;
-  AccessLogGuard log([&]() {
-    return absl::StrFormat("getxattr (%d,%s): %s %d %s", ino, name,
-                           s.ToString(), ctx->hit_cache, *value);
-  });
+  AccessLogGuard log(
+      [&]() {
+        return absl::StrFormat("getxattr (%d,%s): %s %d %s", ino, name,
+                               s.ToString(), ctx->hit_cache, *value);
+      },
+      !IsInternalNode(ino));
 
   ClientOpMetricGuard op_metric(
       {&client_op_metric_->opGetXattr, &client_op_metric_->opAll});
