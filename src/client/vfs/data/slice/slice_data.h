@@ -30,6 +30,7 @@
 #include "common/callback.h"
 #include "common/status.h"
 #include "fmt/format.h"
+#include "trace/context.h"
 
 namespace dingofs {
 namespace client {
@@ -46,7 +47,8 @@ class SliceData {
 
   ~SliceData() = default;
 
-  Status Write(const char* buf, uint64_t size, uint64_t chunk_offset);
+  Status Write(ContextSPtr ctx, const char* buf, uint64_t size,
+               uint64_t chunk_offset);
 
   // prected by chunk, this is should be called only once
   void FlushAsync(StatusCallback cb);

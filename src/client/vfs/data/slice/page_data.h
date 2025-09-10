@@ -20,31 +20,36 @@
 #include <cstdint>
 #include <memory>
 
+#include "client/vfs/hub/vfs_hub.h"
+
 namespace dingofs {
 namespace client {
 namespace vfs {
 
 struct PageData {
+  VFSHub* vfs_hub_{nullptr};
   const uint64_t index{0};
   const uint64_t page_size{0};  // size of the page, used for validation
   uint64_t data_offset{0};      // validate data offset in page
   uint64_t data_len{0};
   char* page{nullptr};  // not owned, mem managed by page allocator
 
-  explicit PageData(uint64_t p_index, uint64_t p_page_size, char* p_page,
-                    uint64_t p_data_offset)
-      : index(p_index),
+  explicit PageData(VFSHub* vfs_hub, uint64_t p_index, uint64_t p_page_size,
+                    char* p_page, uint64_t p_data_offset)
+      : vfs_hub_(vfs_hub),
+        index(p_index),
         page_size(p_page_size),
         page(p_page),
         data_offset(p_data_offset) {}
 
   ~PageData() = default;
 
-  void Write(const char* buf, uint64_t size, uint64_t page_offset);
+  void Write(ContextSPtr ctx, const char* buf, uint64_t size,
+             uint64_t page_offset);
 
   uint64_t DataEnd() const { return data_offset + data_len; }
 
-  std::string ToString() const ;
+  std::string ToString() const;
 };
 
 using PageDataUPtr = std::unique_ptr<PageData>;

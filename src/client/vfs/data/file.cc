@@ -22,15 +22,19 @@
 #include <mutex>
 #include <utility>
 
+#include "client/const.h"
 #include "client/vfs/data/common/async_util.h"
 #include "client/vfs/hub/vfs_hub.h"
 #include "common/callback.h"
 #include "common/status.h"
 #include "trace/context.h"
+#include "trace/itrace_span.h"
 
 namespace dingofs {
 namespace client {
 namespace vfs {
+
+#define METHOD_NAME() ("File::" + std::string(__FUNCTION__))
 
 uint64_t File::GetChunkSize() const { return vfs_hub_->GetFsInfo().chunk_size; }
 
@@ -51,11 +55,10 @@ Status File::PreCheck() {
   return tmp;
 }
 
-Status File::Write(const char* buf, uint64_t size, uint64_t offset,
-                   uint64_t* out_wsize) {
+Status File::Write(ContextSPtr ctx, const char* buf, uint64_t size,
+                   uint64_t offset, uint64_t* out_wsize) {
   DINGOFS_RETURN_NOT_OK(PreCheck());
-
-  Status s = file_writer_->Write(buf, size, offset, out_wsize);
+  Status s = file_writer_->Write(ctx, buf, size, offset, out_wsize);
   if (s.ok()) {
     file_reader_->Invalidate();
   }
@@ -82,9 +85,13 @@ void File::FileFlushed(StatusCallback cb, Status status) {
 }
 
 void File::AsyncFlush(StatusCallback cb) {
-  file_writer_->AsyncFlush([this, cb](auto&& ph1) {
-    FileFlushed(cb, std::forward<decltype(ph1)>(ph1));
-  });
+  auto span = vfs_hub_->GetTracer()->StartSpan(kVFSDataMoudule, METHOD_NAME());
+  file_writer_->AsyncFlush(
+      [this, span_raw_ptr = span.release(), cb](auto&& ph1) {
+        std::unique_ptr<ITraceSpan> flush_span(span_raw_ptr);
+        FileFlushed(std::move(cb), std::forward<decltype(ph1)>(ph1));
+        flush_span->End();
+      });
 }
 
 Status File::Flush() {

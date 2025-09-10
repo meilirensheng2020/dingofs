@@ -19,6 +19,7 @@
 #include <glog/logging.h>
 
 #include "client/common/utils.h"
+#include "client/const.h"
 #include "client/vfs/data/writer/chunk_writer.h"
 #include "client/vfs/hub/vfs_hub.h"
 
@@ -26,10 +27,15 @@ namespace dingofs {
 namespace client {
 namespace vfs {
 
+#define METHOD_NAME() ("FileWriter::" + std::string(__FUNCTION__))
+
 static std::atomic<uint64_t> file_flush_id_gen{1};
 
-Status FileWriter::Write(const char* buf, uint64_t size, uint64_t offset,
-                         uint64_t* out_wsize) {
+Status FileWriter::Write(ContextSPtr ctx, const char* buf, uint64_t size,
+                         uint64_t offset, uint64_t* out_wsize) {
+  auto span = vfs_hub_->GetTracer()->StartSpanWithContext(kVFSDataMoudule,
+                                                          METHOD_NAME(), ctx);
+
   uint64_t chunk_size = GetChunkSize();
   CHECK(chunk_size > 0) << "chunk size not allow 0";
 
@@ -49,7 +55,7 @@ Status FileWriter::Write(const char* buf, uint64_t size, uint64_t offset,
     uint64_t write_size = std::min(size, chunk_size - chunk_offset);
 
     ChunkWriter* chunk = GetOrCreateChunkWriter(chunk_index);
-    s = chunk->Write(pos, write_size, chunk_offset);
+    s = chunk->Write(ctx, pos, write_size, chunk_offset);
     if (!s.ok()) {
       LOG(WARNING) << "Fail write chunk, ino: " << ino_
                    << ", chunk_index: " << chunk_index

@@ -322,6 +322,9 @@ Status VFSImpl::Write(ContextSPtr ctx, Ino ino, const char* buf, uint64_t size,
   auto handle = handle_manager_->FindHandler(fh);
   VFS_CHECK_HANDLE(handle, ino, fh);
 
+  auto span = vfs_hub_->GetTracer()->StartSpanWithContext(
+      kVFSDataMoudule, "VFSImpl::Write", ctx);
+
   if (handle->file == nullptr) {
     LOG(ERROR) << "file is null in handle, ino: " << ino << ", fh: " << fh;
     s = Status::BadFd(fmt::format("bad  fh:{}", fh));
@@ -336,7 +339,7 @@ Status VFSImpl::Write(ContextSPtr ctx, Ino ino, const char* buf, uint64_t size,
     vfs_hub_->GetHandleManager()->TriggerFlushAll();
   }
 
-  s = handle->file->Write(buf, size, offset, out_wsize);
+  s = handle->file->Write(ctx, buf, size, offset, out_wsize);
   if (s.ok()) {
     s = meta_system_->Write(ctx, ino, offset, size, fh);
   }

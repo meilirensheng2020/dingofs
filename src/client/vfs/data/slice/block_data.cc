@@ -24,10 +24,13 @@
 #include <cstdint>
 
 #include "client/common/utils.h"
+#include "client/const.h"
 
 namespace dingofs {
 namespace client {
 namespace vfs {
+
+#define METHOD_NAME() ("BlockData::" + std::string(__FUNCTION__))
 
 void BlockData::FreePageData() {
   VLOG(6) << fmt::format("{} FreePageData, block_data: {}", UUID(), ToString());
@@ -77,8 +80,9 @@ PageData* BlockData::FindOrCreatePageData(uint64_t page_index,
   }
 
   auto [new_iter, inserted] = pages_.emplace(
-      page_index, std::make_unique<PageData>(page_index, context_.page_size,
-                                             AllocPage(), page_offset));
+      page_index,
+      std::make_unique<PageData>(vfs_hub_, page_index, context_.page_size,
+                                 AllocPage(), page_offset));
   CHECK(inserted);
 
   VLOG(6) << fmt::format("{} Creating new page_data: {} for page index: {}",
@@ -87,7 +91,11 @@ PageData* BlockData::FindOrCreatePageData(uint64_t page_index,
   return new_iter->second.get();
 }
 
-Status BlockData::Write(const char* buf, uint64_t size, uint64_t block_offset) {
+Status BlockData::Write(ContextSPtr ctx, const char* buf, uint64_t size,
+                        uint64_t block_offset) {
+  auto* tracer = vfs_hub_->GetTracer();
+  auto span = tracer->StartSpanWithContext(kVFSDataMoudule, METHOD_NAME(), ctx);
+
   uint64_t end_write_block_offset = (block_offset + size);
 
   uint64_t write_chunk_offset =
@@ -124,7 +132,7 @@ Status BlockData::Write(const char* buf, uint64_t size, uint64_t block_offset) {
     uint64_t write_size = std::min(remain_len, page_size - page_offset);
     PageData* page_data = FindOrCreatePageData(page_index, page_offset);
 
-    page_data->Write(buf_pos, write_size, page_offset);
+    page_data->Write(span->GetContext(), buf_pos, write_size, page_offset);
 
     remain_len -= write_size;
     buf_pos += write_size;
@@ -150,7 +158,7 @@ Status BlockData::Write(const char* buf, uint64_t size, uint64_t block_offset) {
   return Status::OK();
 }
 
-static void NoopDeleter(void* data) {  }
+static void NoopDeleter(void* data) {}
 
 IOBuffer BlockData::ToIOBuffer() const {
   butil::IOBuf iobuf;
