@@ -31,8 +31,8 @@ class IFile {
  public:
   virtual ~IFile() = default;
 
-  virtual Status Write(const char* buf, uint64_t size, uint64_t offset,
-                       uint64_t* out_wsize) = 0;
+  virtual Status Write(ContextSPtr ctx, const char* buf, uint64_t size,
+                       uint64_t offset, uint64_t* out_wsize) = 0;
 
   virtual Status Read(ContextSPtr ctx, char* buf, uint64_t size,
                       uint64_t offset, uint64_t* out_rsize) = 0;

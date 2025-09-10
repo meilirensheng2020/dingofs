@@ -28,17 +28,18 @@
 #include <mutex>
 #include <utility>
 
-#include "client/meta/vfs_meta.h"
 #include "client/const.h"
+#include "client/meta/vfs_meta.h"
 #include "client/vfs/data/slice/task/slice_flush_task.h"
 #include "client/vfs/hub/vfs_hub.h"
 #include "common/callback.h"
 #include "common/status.h"
-#include "trace/tracer.h"
 
 namespace dingofs {
 namespace client {
 namespace vfs {
+
+#define METHOD_NAME() ("SliceData::" + std::string(__FUNCTION__))
 
 BlockData* SliceData::FindOrCreateBlockDataUnlocked(uint64_t block_index,
                                                     uint64_t block_offset) {
@@ -51,9 +52,9 @@ BlockData* SliceData::FindOrCreateBlockDataUnlocked(uint64_t block_index,
   }
 
   auto [new_iter, inserted] = block_datas_.emplace(
-      block_index,
-      std::make_unique<BlockData>(context_, vfs_hub_->GetPageAllocator(),
-                                  block_index, block_offset));
+      block_index, std::make_unique<BlockData>(context_, vfs_hub_,
+                                               vfs_hub_->GetPageAllocator(),
+                                               block_index, block_offset));
   CHECK(inserted);
 
   VLOG(4) << fmt::format(
@@ -64,7 +65,11 @@ BlockData* SliceData::FindOrCreateBlockDataUnlocked(uint64_t block_index,
 }
 
 // no overlap slice write will come here
-Status SliceData::Write(const char* buf, uint64_t size, uint64_t chunk_offset) {
+Status SliceData::Write(ContextSPtr ctx, const char* buf, uint64_t size,
+                        uint64_t chunk_offset) {
+  auto* tracer = vfs_hub_->GetTracer();
+  auto span = tracer->StartSpanWithContext(kVFSDataMoudule, METHOD_NAME(), ctx);
+
   uint64_t end_in_chunk = chunk_offset + size;
 
   VLOG(4) << fmt::format("{} Start writing chunk_range: [{}-{}] len: {}",
@@ -91,7 +96,8 @@ Status SliceData::Write(const char* buf, uint64_t size, uint64_t chunk_offset) {
       BlockData* block_data =
           FindOrCreateBlockDataUnlocked(block_index, block_offset);
 
-      Status s = block_data->Write(buf_pos, write_size, block_offset);
+      Status s = block_data->Write(span->GetContext(), buf_pos, write_size,
+                                   block_offset);
       CHECK(s.ok()) << fmt::format(
           "{} Failed to write data to block data, block_index: {}, "
           "chunk_range: [{}-{}], len: {}, slice: {}, status: {}",

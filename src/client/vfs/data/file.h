@@ -44,7 +44,7 @@ class File : public IFile {
 
   ~File() override = default;
 
-  Status Write(const char* buf, uint64_t size, uint64_t offset,
+  Status Write(ContextSPtr ctx, const char* buf, uint64_t size, uint64_t offset,
                uint64_t* out_wsize) override;
 
   Status Read(ContextSPtr ctx, char* buf, uint64_t size, uint64_t offset,

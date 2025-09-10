@@ -24,7 +24,6 @@
 #include <memory>
 
 #include "absl/cleanup/cleanup.h"
-#include "cache/utils/context.h"
 #include "client/const.h"
 #include "client/meta/vfs_meta.h"
 #include "client/vfs/hub/vfs_hub.h"
@@ -33,6 +32,8 @@
 namespace dingofs {
 namespace client {
 namespace vfs {
+
+#define METHOD_NAME() ("ChunkWriter::" + std::string(__FUNCTION__))
 
 // protected by mutex_
 ChunkWriter::ChunkWriter(VFSHub* hub, uint64_t fh, uint64_t ino, uint64_t index)
@@ -46,8 +47,11 @@ ChunkWriter::~ChunkWriter() {
                          static_cast<const void*>(this));
 }
 
-Status ChunkWriter::Write(const char* buf, uint64_t size,
+Status ChunkWriter::Write(ContextSPtr ctx, const char* buf, uint64_t size,
                           uint64_t chunk_offset) {
+  auto* tracer = hub_->GetTracer();
+  auto span = tracer->StartSpanWithContext(kVFSDataMoudule, METHOD_NAME(), ctx);
+
   uint64_t write_file_offset = chunk_.chunk_start + chunk_offset;
   ChunkWriteInfo info(buf, size, chunk_offset, write_file_offset);
   Writer writer;
@@ -115,8 +119,9 @@ Status ChunkWriter::Write(const char* buf, uint64_t size,
 
       CHECK_NOTNULL(writing_slice);
 
-      Status s = writing_slice->Write(write_info->buf, write_info->size,
-                                      write_info->chunk_offset);
+      Status s =
+          writing_slice->Write(span->GetContext(), write_info->buf,
+                               write_info->size, write_info->chunk_offset);
       CHECK(s.ok());
 
       if (writing_slice->Len() == chunk_.chunk_size) {

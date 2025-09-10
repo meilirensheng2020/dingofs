@@ -22,10 +22,13 @@
 #include <cstdint>
 
 #include "client/common/utils.h"
+#include "client/const.h"
 
 namespace dingofs {
 namespace client {
 namespace vfs {
+
+#define METHOD_NAME() ("PageData::" + std::string(__FUNCTION__))
 
 std::string PageData::ToString() const {
   return fmt::format(
@@ -34,7 +37,11 @@ std::string PageData::ToString() const {
       index, page_size, data_offset, DataEnd(), data_len, Char2Addr(page));
 }
 
-void PageData::Write(const char* buf, uint64_t size, uint64_t page_offset) {
+void PageData::Write(ContextSPtr ctx, const char* buf, uint64_t size,
+                     uint64_t page_offset) {
+  auto* tracer = vfs_hub_->GetTracer();
+  auto span = tracer->StartSpanWithContext(kVFSDataMoudule, METHOD_NAME(), ctx);
+
   uint64_t write_page_end = page_offset + size;
   VLOG(8) << fmt::format("{} Write Start page_range: [{}-{}], size: {}",
                          ToString(), page_offset, write_page_end, size);

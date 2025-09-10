@@ -26,8 +26,10 @@
 #include "client/memory/page_allocator.h"
 #include "client/vfs/data/slice/common.h"
 #include "client/vfs/data/slice/page_data.h"
+#include "client/vfs/hub/vfs_hub.h"
 #include "common/io_buffer.h"
 #include "common/status.h"
+#include "trace/context.h"
 
 namespace dingofs {
 namespace client {
@@ -36,9 +38,11 @@ namespace vfs {
 // protected by slice data
 class BlockData {
  public:
-  explicit BlockData(const SliceDataContext& context, PageAllocator* allocator,
-                     uint64_t block_index, uint64_t block_offset)
+  explicit BlockData(const SliceDataContext& context, VFSHub* vfs_hub,
+                     PageAllocator* allocator, uint64_t block_index,
+                     uint64_t block_offset)
       : context_(context),
+        vfs_hub_(vfs_hub),
         page_allocator_(allocator),
         block_index_(block_index),
         block_offset_(block_offset),
@@ -47,7 +51,8 @@ class BlockData {
 
   ~BlockData() { FreePageData(); }
 
-  Status Write(const char* buf, uint64_t size, uint64_t block_offset);
+  Status Write(ContextSPtr ctx, const char* buf, uint64_t size,
+               uint64_t block_offset);
 
   IOBuffer ToIOBuffer() const;
 
@@ -83,6 +88,7 @@ class BlockData {
   PageData* FindOrCreatePageData(uint64_t page_index, uint64_t page_offset);
 
   const SliceDataContext context_;
+  VFSHub* vfs_hub_{nullptr};
   PageAllocator* page_allocator_{nullptr};
   const uint64_t block_index_;
   uint64_t block_offset_{0};

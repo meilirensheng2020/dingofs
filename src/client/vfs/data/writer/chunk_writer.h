@@ -76,7 +76,8 @@ class ChunkWriter : public std::enable_shared_from_this<ChunkWriter> {
   ~ChunkWriter();
 
   // chunk_offset is the offset in the chunk, not in the file
-  Status Write(const char* buf, uint64_t size, uint64_t chunk_offset);
+  Status Write(ContextSPtr ctx, const char* buf, uint64_t size,
+               uint64_t chunk_offset);
 
   // All slice data can be flushed in concurrent, but commit must be in order.
   // If slice data is empty, the empty flush task must be submitted
