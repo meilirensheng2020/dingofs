@@ -8,21 +8,19 @@ import json
 import configparser
 import subprocess
 import re
+import argparse
 
 DingoFS_TOOL = "dingo"
 HOSTNAME_PORT_REGEX = r"[^\"\ ]\S*:\d+"
 IP_PORT_REGEX = r"[0-9]+(?:\.[0-9]+){3}:\d+"
 
 targetPath=None
-etcdTargetPath=None
 
 def loadConf():
     global targetPath
-    global etcdTargetPath
     conf=configparser.ConfigParser()
     conf.read("target.ini")
     targetPath=conf.get("path", "target_path")
-    etcdTargetPath=conf.get("path", "etcd_target_path")
 
 def runDingofsToolCommand(command):
     cmd = [DingoFS_TOOL]+command
@@ -41,42 +39,11 @@ def loadMdsServer():
     label = lablesValue(None, "mds")
     if ret == 0 :
         data = json.loads(output)
-        for mdsInfo in data["result"]:
-            # hostname:port:path
-            dummyAddr = mdsInfo["dummyAddr"]
-            mdsServers.append(dummyAddr)
+        result = data["result"]
+        for mdsInfo in result["mdses"]:
+            location = mdsInfo["location"]
+            mdsServers.append(ipPort2Addr(location["host"],location["port"]))
     return unitValue(label, mdsServers)
-
-def loadMetaServer():
-    ret, data = runDingofsToolCommand(["list", "topology","--format=json"])
-    if ret == 0:
-       jsonData = json.loads(data)
-       jsonData = jsonData["result"]   
-
-    metaservers = []
-    if jsonData is not None:
-        for pool in jsonData["poollist"]:
-            for zone in pool["zoneList"]:
-                for server in zone["serverList"]:
-                    for metaserver in server["metaserverList"]:
-                        metaservers.append(metaserver)
-    targets = []
-    labels = lablesValue(None, "metaserver")
-    for server in metaservers:
-        targets.append(ipPort2Addr(server["externalIp"], server["externalPort"]))
-    targets = list(set(targets))
-    return unitValue(labels, targets)
-
-def loadEtcdServer():
-    ret, output = runDingofsToolCommand(["status","etcd","--format=json"])
-    etcdServers = []
-    label = lablesValue(None, "etcd")
-    if ret == 0 :
-        data = json.loads(output)
-        for etcdInfo in data["result"]:
-            etcdAddr = etcdInfo["addr"]
-            etcdServers.append(etcdAddr)
-    return unitValue(label, etcdServers)
 
 def loadClient():
     ret, output = runDingofsToolCommand(["list","mountpoint","--format=json"])
@@ -84,20 +51,25 @@ def loadClient():
     label = lablesValue(None, "client")
     if ret == 0 :
         data = json.loads(output)
-        for fsinfo in data["result"]:
-            # hostname:port:path
-            mountpoint = str(fsinfo["mountpoint"])
-            muontListData=mountpoint.split(":")
-            clients.append(muontListData[0] + ":" + muontListData[1])
+        result = data["result"]
+        for fsinfo in result["fsInfos"]:
+            mountPoints = fsinfo.get("mountPoints")
+            if mountPoints is None:   
+                continue
+            for mountpoint in mountPoints:    
+                clients.append(ipPort2Addr(mountpoint["hostname"],mountpoint["port"]))
     return unitValue(label, clients)
 
-def loadType(hostType):
-    ret, output = runDingofsToolCommand(["status-%s"%hostType])
-    targets = []
-    if ret == 0:
-        targets = re.findall(IP_PORT_REGEX, str(output))
-    labels = lablesValue(None, hostType)
-    return unitValue(labels, targets)
+def loadRemoteCacheServer():
+    ret, output = runDingofsToolCommand(["list","cachemember","--format=json"])
+    cacheServers = []
+    label = lablesValue(None, "remotecache")
+    if ret == 0 :
+        data = json.loads(output)
+        result = data["result"]
+        for cacheMember in result["members"]:
+            cacheServers.append(ipPort2Addr(cacheMember["ip"],cacheMember["port"]))
+    return unitValue(label, cacheServers)
 
 def ipPort2Addr(ip, port):
     return str(ip) + ":" + str(port)
@@ -119,22 +91,18 @@ def unitValue(lables, targets):
     return unit
 
 
-def refresh():
+def refresh(isShow=False):
     targets = []
-    etcd_targets = []
 
     # load mds
     mdsServers = loadMdsServer()
     targets.append(mdsServers)
-    # load metaserver
-    metaServers = loadMetaServer()
-    targets.append(metaServers)
     # load client
     client = loadClient()
     targets.append(client)
-    # load etcd
-    etcdServers = loadEtcdServer()
-    etcd_targets.append(etcdServers)
+    # load cachemember
+    cachemember = loadRemoteCacheServer()   
+    targets.append(cachemember)
 
     with open(targetPath+'.new', 'w', 0o777) as fd:
         json.dump(targets, fd, indent=4)
@@ -144,17 +112,41 @@ def refresh():
     os.rename(targetPath+'.new', targetPath)
     os.chmod(targetPath, 0o777)
 
-    with open(etcdTargetPath+'.new', 'w', 0o777) as etcd_fd:
-        json.dump(etcd_targets, etcd_fd, indent=4)
-        etcd_fd.flush()
-        os.fsync(etcd_fd.fileno())
-        
-    os.rename(etcdTargetPath+'.new', etcdTargetPath)
-    os.chmod(etcdTargetPath, 0o777)
+    if isShow:
+        print(json.dumps(targets, indent=4))    
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='generate target for dingofs monitor',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument('--interval', 
+                       type=int, 
+                       default=60,
+                       help='execute internal(s), default 60s')
+    
+    parser.add_argument('--count', 
+                       type=int,
+                       help='execute count, default infinite, always execute')
+
+    parser.add_argument('--show', 
+                       type=bool,
+                       default=False,
+                       help='show target info, default False')
+    
+    args = parser.parse_args()
+
+    interval = args.interval
+    count = args.count
+    isShow = args.show
+
+    print("Realtime update target is running, ","interval:", interval, "count:", count, "show:", isShow)
+
+    current_count = 0
     while True:
+        current_count += 1
         loadConf()
-        refresh()
-        # refresh every 30s
-        time.sleep(30)
+        refresh(isShow)
+        if count is not None and current_count >= count:
+            break
+        time.sleep(interval)
