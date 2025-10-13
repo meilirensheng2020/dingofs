@@ -8,9 +8,8 @@ monitor
 ├── grafana                 # grafana相关目录
 │   ├── dashboards          # grafana所有dashboards的json文件存放目录，grafana将从该目录加载文件来创建dashboards；
 |   |   |                   
-│   │   ├── etcd.json
 │   │   ├── mds.json
-│   │   ├── metaserver.json
+│   │   ├── remotecache.json
 │   │   └── clinet.json
 │   ├── grafana.ini         # grafana的启动配置文件，将映射到容器的 `/etc/grafana/grafana.ini` 上
 │   ├── provisioning        # grafana预配置相关目录，将映射到容器的`/etc/grafana/provisioning`上
@@ -114,7 +113,7 @@ ff6f895bf9b1   grafana/grafana                            "/run.sh"             
 
 * 手工修改
 
-你可以手工修改监控目标文件targets.json和etcd_targets.json来新增或者删除目标，如下所示：
+你可以手工修改监控目标文件targets.json来新增或者删除目标，如下所示：
 
 targets.json:
 ```
@@ -127,16 +126,6 @@ targets.json:
             "172.20.0.10:7700",
             "172.20.0.11:7700",
             "172.20.0.12:7700"
-        ]
-    },
-    {
-        "labels": {
-            "job": "metaserver"
-        },
-        "targets": [
-            "172.20.0.10:6800",
-            "172.20.0.11:6800",
-            "172.20.0.12:6800",
         ]
     },
     {
@@ -161,22 +150,6 @@ targets.json:
 ]
 ```
 
-etcd_targets.json:
-```
-[
-    {
-        "labels": {
-            "job": "etcd"
-        },
-        "targets": [
-            "172.20.0.10:2379",
-            "172.20.0.11:2379",
-            "172.20.0.12:2379",
-        ]
-    }
-]
-```
-
 * 自动更新
 
 自动更新需要依赖于dingo工具，确保已经安装好dingo工具和配置文件($HOME/.dingo/dingo.yaml)，并在PATH配置好dingo安装路径。
@@ -192,7 +165,12 @@ dingo version
 ```
 nohup python3 target_json.py &
 ```
-target_json.py工具每隔30秒会通过dingo工具拉去集群信息，并更新targets.json文件，后续新增挂载点或者卸载挂载点，都将会自动更新。
+target_json.py工具默认每隔60秒会通过dingo工具拉去集群信息，并更新targets.json文件，后续新增挂载点或者卸载挂载点，都将会自动更新。
+
+你也可以通过参数来制定时间间隔和次数：
+```
+python3 target_json.py --interval 10 --count 2
+```
 
 # 7.监控系统的访问
 
