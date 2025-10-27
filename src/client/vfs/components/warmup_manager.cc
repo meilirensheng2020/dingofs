@@ -257,7 +257,7 @@ Status WarmupManagerImpl::WarmUpFiles(WarmupTask& task) {
 }
 
 Status WarmupManagerImpl::WarmUpFile(Ino ino, AsyncPrefetchCb cb) {
-  vfs_hub_->GetPrefetchManager()->AsyncPrefetch(ino, cb);
+  // vfs_hub_->GetPrefetchManager()->AsyncPrefetch(ino, cb);
 
   return Status::OK();
 }

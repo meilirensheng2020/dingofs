@@ -28,6 +28,7 @@ namespace client {
 namespace vfs {
 
 using BCountDown = bthread::CountdownEvent;
+using AsyncPrefetchCb = std::function<void(Status status, uint64_t len)>;
 
 class WarmupManagerImpl;
 
