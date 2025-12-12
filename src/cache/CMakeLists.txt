@@ -35,6 +35,7 @@ target_link_libraries(cache_lib
     cache_cachegroup
     cache_remotecache
     cache_tiercache
+    dingofs_options
 )
 
 add_executable(dingo-cache main.cc)
