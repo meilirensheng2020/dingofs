@@ -18,6 +18,7 @@
 
 #include <csignal>
 #include <cstdlib>
+#include <iostream>
 
 #include "absl/cleanup/cleanup.h"
 #include "client/common/global_log.h"
@@ -27,6 +28,8 @@
 #include "common/flag.h"
 #include "common/options/cache.h"
 #include "common/options/client.h"
+#include "common/options/common.h"
+#include "utils/daemonize.h"
 
 using FuseServer = dingofs::client::fuse::FuseServer;
 
@@ -65,7 +68,8 @@ dingo-fuse --client_log_dir=/mnt/logs 10.220.32.1:6700/dingofs /mnt/dingofs
 dingo-fuse --flagfile client.conf 10.220.32.1:6700/dingofs /mnt/dingofs
 )",
     .patterns = {"src/client", "cache/tiercache", "cache/blockcache",
-                 "cache/remotecache", "options/blockaccess", "options/client"},
+                 "cache/remotecache", "options/blockaccess", "options/client",
+                 "options/common"},
 };
 
 int main(int argc, char* argv[]) {
@@ -96,6 +100,14 @@ int main(int argc, char* argv[]) {
   }
   // used for remote cache
   dingofs::cache::FLAGS_mds_addrs = mds_addrs;
+
+  // run in daemon mode
+  if (dingofs::FLAGS_daemonize) {
+    if (!dingofs::utils::Daemonize()) {
+      std::cerr << "failed to daemonize process.\n";
+      return EXIT_FAILURE;
+    }
+  }
 
   struct MountOption mount_option{.mount_point = argv[2],
                                   .fs_name = fs_name,

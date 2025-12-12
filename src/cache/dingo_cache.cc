@@ -30,6 +30,8 @@
 #include "cache/utils/logging.h"
 #include "cache/utils/offload_thread_pool.h"
 #include "common/options/cache.h"
+#include "common/options/common.h"
+#include "utils/daemonize.h"
 
 namespace dingofs {
 namespace cache {
@@ -96,6 +98,14 @@ int DingoCache::Run(int argc, char** argv) {
   int rc = ParseFlags(argc, argv);
   if (rc != 0) {
     return rc;
+  }
+
+  // run in daemon mode
+  if (dingofs::FLAGS_daemonize) {
+    if (!dingofs::utils::Daemonize()) {
+      std::cerr << "failed to daemonize process.\n";
+      return -1;
+    }
   }
 
   GlobalInitOrDie();

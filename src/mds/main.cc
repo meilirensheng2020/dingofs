@@ -19,6 +19,7 @@
 #include <string>
 
 #include "backtrace.h"
+#include "common/options/common.h"
 #include "common/options/mds.h"
 #include "dlfcn.h"
 #include "fmt/format.h"
@@ -28,6 +29,7 @@
 #include "mds/common/helper.h"
 #include "mds/common/version.h"
 #include "mds/server.h"
+#include "utils/daemonize.h"
 
 DEFINE_string(conf, "./conf/mds.conf", "mds config path");
 DEFINE_string(storage_url, "file://./conf/coor_list", "storage url, e.g. file://<path> or list://<addr1>");
@@ -322,6 +324,14 @@ int main(int argc, char* argv[]) {
   if (dingofs::mds::FLAGS_mds_storage_engine != "dummy" && !CheckStorageUrl(FLAGS_storage_url)) return -1;
 
   SetupSignalHandler();
+
+  // run in daemon mode
+  if (dingofs::FLAGS_daemonize) {
+    if (!dingofs::utils::Daemonize()) {
+      std::cerr << "failed to daemonize process.\n";
+      return 1;
+    }
+  }
 
   dingofs::mds::Server& server = dingofs::mds::Server::GetInstance();
 
