@@ -23,8 +23,6 @@
 #ifndef DINGOFS_SRC_CACHE_DINGO_CACHE_H_
 #define DINGOFS_SRC_CACHE_DINGO_CACHE_H_
 
-#include "cache/common/flag.h"
-
 namespace dingofs {
 namespace cache {
 
@@ -41,8 +39,6 @@ class DingoCache {
   static void GlobalInitOrDie();
 
   static int StartServer();
-
-  static FlagsInfo flags;
 };
 
 }  // namespace cache

@@ -49,10 +49,10 @@ namespace cache {
 DEFINE_string(id, "", "Specified the cache node id");
 DEFINE_validator(id, Helper::NonEmptyString);
 
-DEFINE_string(group_name, "", "Which group this cache node belongs to");
+DEFINE_string(group_name, "default", "Which group this cache node belongs to");
 DEFINE_validator(group_name, Helper::NonEmptyString);
 
-DEFINE_string(listen_ip, "",
+DEFINE_string(listen_ip, "0.0.0.0",
               "IP address to listen on for this cache group node");
 DEFINE_validator(listen_ip, Helper::NonEmptyString);
 
