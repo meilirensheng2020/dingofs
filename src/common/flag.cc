@@ -73,16 +73,14 @@ std::string FlagsHelper::GenHelp(const FlagsInfo& flags) {
   os << "Usage:\n";
   os << flags.extra_info.usage << "\n";
   os << "\n";
+  os << "Examples:\n";
+  os << flags.extra_info.examples << "\n";
   os << "Options:\n";
   for (const auto& row : rows) {
     os << "  --" << std::left << std::setw(max_name_length) << row.name
        << std::right << "  " << row.description << " " << row.default_value
        << "\n";
   }
-
-  os << "\n";
-  os << "Examples:\n";
-  os << flags.extra_info.examples << "\n";
 
   os << "\n";
   os << flags.extra_info.program

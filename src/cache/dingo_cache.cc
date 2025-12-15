@@ -25,10 +25,9 @@
 #include <iostream>
 
 #include "cache/cachegroup/cache_group_node_server.h"
-#include "cache/common/flag.h"
-#include "cache/common/version.h"
 #include "cache/utils/logging.h"
 #include "cache/utils/offload_thread_pool.h"
+#include "common/flag.h"
 #include "common/options/cache.h"
 #include "common/options/common.h"
 #include "utils/daemonize.h"
@@ -36,19 +35,20 @@
 namespace dingofs {
 namespace cache {
 
-FlagsInfo DingoCache::flags;
+static dingofs::FlagExtraInfo extras = {
+    .program = "dingo-cache",
+    .usage = "  dingo-cache [OPTIONS] --id <cache_node_uuid>",
+    .examples =
+        R"(  $ dingo-cache --id=85a4b352-4097-4868-9cd6-9ec5e53db1b6
+  $ dingo-cache --flagfile cache.conf --daemonize
+)",
+    .patterns = {"src/cache", "options/common"},
+};
 
 int DingoCache::ParseFlags(int argc, char** argv) {
-  flags = FlagsHelper::Parse(argc, argv);
-  if (flags.show_help) {
-    std::cout << FlagsHelper::GenHelp(flags) << "\n";
-    return 1;
-  } else if (flags.show_version) {
-    std::cout << Version() << "\n";
-    return 1;
-  } else if (flags.create_template) {
-    std::cout << FlagsHelper::GenTemplate(flags);
-    return 1;
+  int rc = dingofs::ParseFlags(&argc, &argv, extras);
+  if (rc != 0) {
+    return -1;
   }
 
   // validate flags
@@ -71,9 +71,7 @@ int DingoCache::ParseFlags(int argc, char** argv) {
 
 void DingoCache::InitGlog() { InitLogging("dingo-cache"); }
 
-void DingoCache::LogFlags() {
-  LOG(INFO) << FlagsHelper::GenCurrentFlags(flags);
-}
+void DingoCache::LogFlags() { LOG(INFO) << dingofs::GenCurrentFlags(); }
 
 void DingoCache::InitThreadPool() { OffloadThreadPool::GetInstance().Start(); }
 
