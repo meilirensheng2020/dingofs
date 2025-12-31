@@ -40,17 +40,6 @@ inline bool Daemonize(const bool chdir_root = false,
     return false;
   }
 
-  // second fork, prevent from acquiring a controlling terminal
-  pid = fork();
-  if (pid < 0) {
-    perror("second fork() failed");
-    return false;
-  }
-  if (pid > 0) {
-    // first child process exit
-    std::exit(0);
-  }
-
   if (chdir_root) {
     // change working directory to root
     if (chdir("/") < 0) {
