@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <glog/logging.h>
+
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -116,7 +118,23 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  std::string mountpoint = dingofs::Helper::ToCanonicalPath(argv[2]);
+  // check mountpoint path is accessable
+  const char* orig_mountpoint = argv[2];
+  struct stat sb;
+  if (stat(orig_mountpoint, &sb) == -1) {
+    if (errno == ENOTCONN) {  // mountpoint not umount last time
+      std::cout << fmt::format(
+          "{} cleaning mountpoint: {}, last time may not unmount normally.",
+          dingofs::client::RedString("WARNING:"), orig_mountpoint);
+      CHECK(dingofs::client::Umount(orig_mountpoint));
+    } else {
+      std::cerr << fmt::format("can't stat {}, errmsg: {}\n", orig_mountpoint,
+                               strerror(errno));
+      return EXIT_FAILURE;
+    }
+  }
+
+  std::string mountpoint = dingofs::Helper::ToCanonicalPath(orig_mountpoint);
   if (mountpoint == "/") {
     std::cerr << "can not mount on the root directory\n";
     return EXIT_FAILURE;

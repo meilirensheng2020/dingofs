@@ -17,7 +17,11 @@
 #ifndef DINGOFS_CLIENT_COMMON_HELPER_H_
 #define DINGOFS_CLIENT_COMMON_HELPER_H_
 
+#include <sys/mount.h>
+
+#include <cerrno>
 #include <climits>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -92,6 +96,27 @@ static std::vector<std::pair<std::string, std::string>> GenConfigs(
                   dingofs::client::FLAGS_vfs_dummy_server_port));
 
   return configs;
+}
+
+static bool Umount(const std::string& mountpoint) {
+  if (umount2(mountpoint.c_str(), 0) != 0) {
+    if (errno == EPERM) {  // normal user to umount, use fusemount3 to umount
+      std::string command = fmt::format("fusermount3 -u {}", mountpoint);
+      if (std::system(command.c_str()) == 0) {  // NOLINT
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static std::string RedString(const std::string& str) {
+  return fmt::format("\x1B[31m{}\033[0m", str);
 }
 
 }  // namespace client
