@@ -30,6 +30,7 @@
 #include "common/helper.h"
 #include "common/logging.h"
 #include "common/options/cache.h"
+#include "common/options/client.h"
 #include "common/options/common.h"
 #include "common/types.h"
 #include "fmt/format.h"
@@ -171,7 +172,7 @@ int main(int argc, char* argv[]) {
   if (!dingofs::FLAGS_conf.empty()) {
     CHECK(dingofs::Helper::IsExistPath(dingofs::FLAGS_conf))
         << fmt::format("config file {} not exist.", dingofs::FLAGS_conf);
-    gflags::ReadFromFlagsFile(dingofs::FLAGS_conf, argv[0], true);
+    dingofs::ParseFromFlagsFile(dingofs::FLAGS_conf, extras);
   }
 
   // reset brpc flag default value if not set
