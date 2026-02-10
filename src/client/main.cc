@@ -130,12 +130,15 @@ int main(int argc, char* argv[]) {
   struct stat sb;
   if (stat(orig_mountpoint, &sb) == -1) {
     if (errno == ENOTCONN) {  // mountpoint not umount last time
-      std::cout << fmt::format(
-                       "{} cleaning mountpoint: {}, last time may not unmount "
-                       "normally.",
-                       dingofs::client::RedString("WARNING:"), orig_mountpoint)
-                << "\n";
-      CHECK(dingofs::client::Umount(orig_mountpoint));
+      std::cerr << fmt::format(
+          "{} auto umount {}, last time not unmount properly\n",
+          dingofs::client::RedString("WARNING:"), orig_mountpoint);
+      int umount_rc = dingofs::client::Umount(orig_mountpoint);
+      if (umount_rc != 0) {
+        std::cerr << fmt::format("failed to umount {}, errmsg: {}\n",
+                                 orig_mountpoint, strerror(umount_rc));
+        return EXIT_FAILURE;
+      }
     } else {
       std::cerr << fmt::format("can't stat {}, errmsg: {}\n", orig_mountpoint,
                                strerror(errno));

@@ -98,21 +98,13 @@ static std::vector<std::pair<std::string, std::string>> GenConfigs(
   return configs;
 }
 
-static bool Umount(const std::string& mountpoint) {
-  if (umount2(mountpoint.c_str(), 0) != 0) {
-    if (errno == EPERM) {  // normal user to umount, use fusemount3 to umount
-      std::string command = fmt::format("fusermount3 -u {}", mountpoint);
-      if (std::system(command.c_str()) == 0) {  // NOLINT
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
+static int Umount(const std::string& mountpoint) {
+  if (umount2(mountpoint.c_str(), 0) == 0) return 0;
 
-  return true;
+  if (errno != EPERM) return errno;
+
+  const std::string command = fmt::format("fusermount3 -u {}", mountpoint);
+  return std::system(command.c_str()) == 0 ? 0 : errno;
 }
 
 static std::string RedString(const std::string& str) {
