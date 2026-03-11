@@ -38,7 +38,8 @@ namespace cache {
 
 DEFINE_bool(wide_access, true, "whether to enable wide access listen address");
 
-DEFINE_string(listen_ip, "", "ip address to listen on for this cache node");
+DEFINE_string(listen_ip, "0.0.0.0",
+              "ip address to listen on for this cache node");
 DEFINE_validator(listen_ip, iutil::StringValidator);
 
 DEFINE_uint32(listen_port, 9300, "port to listen on for this cache node");
@@ -67,9 +68,9 @@ Status Server::Start() {
   InstallSignal();
 
   std::string listen_ip = FLAGS_wide_access ? "0.0.0.0" : FLAGS_listen_ip;
-  auto status = StartRpcServer(FLAGS_listen_ip, FLAGS_listen_port);
+  auto status = StartRpcServer(listen_ip, FLAGS_listen_port);
   if (!status.ok()) {
-    LOG(ERROR) << "Fail to start rpc server at " << FLAGS_listen_ip << ":"
+    LOG(ERROR) << "Fail to start rpc server at " << listen_ip << ":"
                << FLAGS_listen_port;
     return status;
   }
